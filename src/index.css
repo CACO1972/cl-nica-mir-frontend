@@ -196,6 +196,10 @@
   .animate-reveal {
     animation: reveal 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
   }
+
+  .animate-gentle-bounce {
+    animation: gentleBounce 2.5s ease-in-out infinite;
+  }
 }
 
 @keyframes fadeIn {
@@ -226,6 +230,15 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes gentleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
   }
 }
 
