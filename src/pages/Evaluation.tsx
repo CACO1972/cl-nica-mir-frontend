@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -6,6 +7,45 @@ import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const [showWizard, setShowWizard] = useState(false);
+
+  // If wizard is active, show it full screen
+  if (showWizard) {
+    return (
+      <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
+        {/* Minimal Header */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
+            <div className="flex items-center justify-between h-20">
+              <button 
+                onClick={() => setShowWizard(false)}
+                className="font-serif text-xl tracking-tight editorial-link"
+              >
+                Clínica Miró
+              </button>
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => setLanguage(language === "es" ? "en" : "es")}
+                  className="caption text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {language === "es" ? "EN" : "ES"}
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className="caption text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {theme === "light" ? "Night" : "Day"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="pt-20">
+          <PreEvaluationWizard />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
@@ -34,7 +74,7 @@ const Evaluation = () => {
         </div>
       </header>
 
-      {/* Hero Section - Editorial, shorter than home */}
+      {/* Hero Section */}
       <section className="min-h-[60vh] flex flex-col justify-center px-6 lg:px-12 pt-20">
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 animate-slide-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
@@ -156,58 +196,71 @@ const Evaluation = () => {
         </div>
       </section>
 
-      {/* Pre-Evaluation Wizard */}
-      <PreEvaluationWizard />
-
-      {/* Otros Accesos Section */}
+      {/* How to Begin - 4 Equal Options */}
       <section className="py-section px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="mb-24">
             <p className="caption text-muted-foreground mb-6">
-              {t("eval.access.caption")}
+              {t("eval.begin.caption")}
             </p>
-            <h2 className="display-medium text-foreground">
-              {t("eval.access.headline")}
+            <h2 className="display-large text-foreground">
+              {t("eval.begin.headline")}
             </h2>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-16 lg:gap-24">
+          <div className="grid md:grid-cols-2 gap-16 lg:gap-24">
+            {/* Pre-Evaluación Predictiva */}
+            <div className="space-y-6">
+              <h3 className="body-small text-foreground">
+                {t("eval.begin.preevaluation.title")}
+              </h3>
+              <p className="body-large text-muted-foreground">
+                {t("eval.begin.preevaluation.desc")}
+              </p>
+              <button 
+                onClick={() => setShowWizard(true)}
+                className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest"
+              >
+                {t("eval.begin.preevaluation.cta")}
+              </button>
+            </div>
+
             {/* Portal Paciente */}
             <div className="space-y-6">
               <h3 className="body-small text-foreground">
-                {t("eval.access.portal.title")}
+                {t("eval.begin.portal.title")}
               </h3>
               <p className="body-large text-muted-foreground">
-                {t("eval.access.portal.desc")}
+                {t("eval.begin.portal.desc")}
               </p>
               <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
-                {t("eval.access.portal.cta")}
+                {t("eval.begin.portal.cta")}
               </button>
             </div>
 
             {/* Segunda Opinión */}
             <div className="space-y-6">
               <h3 className="body-small text-foreground">
-                {t("eval.access.opinion.title")}
+                {t("eval.begin.opinion.title")}
               </h3>
               <p className="body-large text-muted-foreground">
-                {t("eval.access.opinion.desc")}
+                {t("eval.begin.opinion.desc")}
               </p>
               <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
-                {t("eval.access.opinion.cta")}
+                {t("eval.begin.opinion.cta")}
               </button>
             </div>
 
             {/* Pacientes Internacionales */}
             <div className="space-y-6">
               <h3 className="body-small text-foreground">
-                {t("eval.access.international.title")}
+                {t("eval.begin.international.title")}
               </h3>
               <p className="body-large text-muted-foreground">
-                {t("eval.access.international.desc")}
+                {t("eval.begin.international.desc")}
               </p>
               <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
-                {t("eval.access.international.cta")}
+                {t("eval.begin.international.cta")}
               </button>
             </div>
           </div>
