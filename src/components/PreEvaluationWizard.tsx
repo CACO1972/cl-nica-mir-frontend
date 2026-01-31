@@ -320,34 +320,47 @@ const PreEvaluationWizard = () => {
 
   const renderStep7 = () => (
     <div className="space-y-12 animate-fade-in">
+      {/* Header */}
       <div className="space-y-4">
         <p className="caption text-muted-foreground">{t("wizard.step7.caption")}</p>
         <h2 className="display-medium text-foreground">{t("wizard.step7.headline")}</h2>
+        <p className="body-large text-foreground/80">{t("wizard.step7.subtitle")}</p>
       </div>
-      <div className="max-w-lg space-y-10">
-        <p className="body-large text-muted-foreground">
+      
+      <div className="max-w-xl space-y-12">
+        {/* Brief intro */}
+        <p className="body-large text-muted-foreground leading-relaxed">
           {t("wizard.step7.intro")}
         </p>
         
-        {/* What's included - subtle list */}
-        <div className="space-y-4">
-          <p className="caption text-muted-foreground">{t("wizard.step7.includes")}</p>
-          <ul className="space-y-3">
+        {/* What's included - editorial section */}
+        <div className="space-y-6">
+          <p className="caption text-gold-muted tracking-widest">{t("wizard.step7.includes")}</p>
+          <div className="space-y-5 pl-1">
             {["item1", "item2", "item3"].map((item) => (
-              <li key={item} className="flex items-center gap-3 body-small text-foreground/80">
-                <Check className="w-4 h-4 text-gold-muted" strokeWidth={1.5} />
-                {t(`wizard.step7.${item}`)}
-              </li>
+              <div key={item} className="flex items-start gap-4">
+                <Check className="w-4 h-4 text-gold-muted mt-1 flex-shrink-0" strokeWidth={1.5} />
+                <p className="body-small text-foreground/90 leading-relaxed">
+                  {t(`wizard.step7.${item}`)}
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
 
-        {/* Payment card - editorial style */}
+        {/* Experience section */}
+        <div className="space-y-4">
+          <p className="caption text-gold-muted tracking-widest">{t("wizard.step7.experience")}</p>
+          <p className="body-small text-muted-foreground leading-relaxed pl-1">
+            {t("wizard.step7.experienceText")}
+          </p>
+        </div>
+
+        {/* Price and CTA - editorial card */}
         <div className="border border-border p-8 space-y-6">
-          <div className="flex items-baseline justify-between">
-            <span className="body-small text-foreground tracking-wide">
-              {t("wizard.step7.product")}
-            </span>
+          <div className="space-y-2">
+            <p className="display-small text-foreground">{t("wizard.step7.price")}</p>
+            <p className="body-small text-muted-foreground">{t("wizard.step7.priceNote")}</p>
           </div>
           <div className="pt-4 border-t border-border">
             <button
