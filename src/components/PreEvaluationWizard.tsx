@@ -343,7 +343,7 @@ const PreEvaluationWizard = () => {
                 className="group relative pl-6 py-4 pr-4 border-l-2 border-gold-muted/30 hover:border-gold-muted bg-background/30 hover:bg-background/50 transition-all duration-500 ease-out"
                 style={{ 
                   animationDelay: `${index * 150}ms`,
-                  animation: 'fade-in 0.6s ease-out forwards',
+                  animation: 'slideUp 0.6s ease-out forwards',
                   opacity: 0
                 }}
               >
