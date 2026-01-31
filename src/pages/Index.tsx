@@ -18,26 +18,18 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-center px-6 lg:px-12 pt-20">
+      <section className="min-h-[100svh] flex flex-col justify-center px-6 lg:px-12">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="space-y-8 animate-slide-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-            <p className="caption text-muted-foreground">
-              Predictive Dentistry
-            </p>
-            <h1 className="display-huge text-foreground max-w-5xl">
-              Beyond<br />
-              Treatment
+          <div className="animate-slide-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
+            <h1 className="display-massive text-foreground">
+              Beyond
             </h1>
-            <p className="body-large text-muted-foreground max-w-xl pt-8">
-              We anticipate what others can only react to.
+          </div>
+          <div className="mt-4 lg:mt-6 animate-slide-up" style={{ animationDelay: "0.5s", animationFillMode: "both" }}>
+            <p className="body-large text-muted-foreground">
+              We see what remains unseen.
             </p>
           </div>
-        </div>
-        
-        <div className="absolute bottom-12 left-6 lg:left-12">
-          <p className="caption text-muted-foreground animate-fade-in" style={{ animationDelay: "1.5s", animationFillMode: "both" }}>
-            Scroll
-          </p>
         </div>
       </section>
 
