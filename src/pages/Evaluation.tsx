@@ -159,25 +159,6 @@ const Evaluation = () => {
       {/* Pre-Evaluation Wizard */}
       <PreEvaluationWizard />
 
-      {/* CTA Section */}
-      <section className="py-section px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-12">
-            <h2 className="display-large text-foreground">
-              {t("eval.cta.headline")}
-            </h2>
-            <p className="body-large text-muted-foreground max-w-xl mx-auto">
-              {t("eval.cta.subline")}
-            </p>
-            <button 
-              className="inline-block editorial-link body-small text-foreground tracking-widest cursor-pointer bg-transparent border-none"
-              onClick={() => window.location.href = 'mailto:contacto@clinicamiro.cl?subject=Request Evaluation'}
-            >
-              {t("eval.cta.button")}
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="py-16 px-6 lg:px-12 border-t border-border">
