@@ -121,7 +121,7 @@ const Evaluation = () => {
       {/* Editorial Break */}
       <section className="py-section-sm px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          <div className="border-t border-border" />
+          <div className="border-t border-gold-muted/40" />
         </div>
       </section>
 
@@ -219,7 +219,7 @@ const Evaluation = () => {
               </p>
               <button 
                 onClick={() => setShowWizard(true)}
-                className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest"
+                className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest"
               >
                 {t("eval.begin.preevaluation.cta")}
               </button>
@@ -233,7 +233,7 @@ const Evaluation = () => {
               <p className="body-large text-muted-foreground">
                 {t("eval.begin.portal.desc")}
               </p>
-              <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
+              <button className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest">
                 {t("eval.begin.portal.cta")}
               </button>
             </div>
@@ -246,7 +246,7 @@ const Evaluation = () => {
               <p className="body-large text-muted-foreground">
                 {t("eval.begin.opinion.desc")}
               </p>
-              <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
+              <button className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest">
                 {t("eval.begin.opinion.cta")}
               </button>
             </div>
@@ -259,7 +259,7 @@ const Evaluation = () => {
               <p className="body-large text-muted-foreground">
                 {t("eval.begin.international.desc")}
               </p>
-              <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
+              <button className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest">
                 {t("eval.begin.international.cta")}
               </button>
             </div>
@@ -280,7 +280,7 @@ const Evaluation = () => {
               </p>
             </div>
             <div className="text-right space-y-2">
-              <p className="caption text-muted-foreground">{t("location")}</p>
+              <p className="caption text-gold-muted">{t("location")}</p>
               <p className="caption text-muted-foreground">© 2025</p>
             </div>
           </div>
