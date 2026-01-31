@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft, Upload, Camera } from "lucide-react";
+import { ChevronRight, ChevronLeft, Upload, Camera, Check } from "lucide-react";
 
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -29,6 +28,7 @@ interface FormData {
 const PreEvaluationWizard = () => {
   const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -58,6 +58,14 @@ const PreEvaluationWizard = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as WizardStep);
     }
+  };
+
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+    // Simulated payment processing - placeholder for real payment integration
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsProcessingPayment(false);
+    nextStep();
   };
 
   const renderStepIndicator = () => (
@@ -316,13 +324,41 @@ const PreEvaluationWizard = () => {
         <p className="caption text-muted-foreground">{t("wizard.step7.caption")}</p>
         <h2 className="display-medium text-foreground">{t("wizard.step7.headline")}</h2>
       </div>
-      <div className="max-w-lg space-y-8">
+      <div className="max-w-lg space-y-10">
         <p className="body-large text-muted-foreground">
           {t("wizard.step7.intro")}
         </p>
-        <button className="editorial-link body-small text-foreground tracking-widest">
-          {t("wizard.step7.button")}
-        </button>
+        
+        {/* What's included - subtle list */}
+        <div className="space-y-4">
+          <p className="caption text-muted-foreground">{t("wizard.step7.includes")}</p>
+          <ul className="space-y-3">
+            {["item1", "item2", "item3"].map((item) => (
+              <li key={item} className="flex items-center gap-3 body-small text-foreground/80">
+                <Check className="w-4 h-4 text-gold-muted" strokeWidth={1.5} />
+                {t(`wizard.step7.${item}`)}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Payment card - editorial style */}
+        <div className="border border-border p-8 space-y-6">
+          <div className="flex items-baseline justify-between">
+            <span className="body-small text-foreground tracking-wide">
+              {t("wizard.step7.product")}
+            </span>
+          </div>
+          <div className="pt-4 border-t border-border">
+            <button
+              onClick={handlePayment}
+              disabled={isProcessingPayment}
+              className="w-full py-4 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 caption tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isProcessingPayment ? t("wizard.step7.processing") : t("wizard.step7.button")}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -333,15 +369,23 @@ const PreEvaluationWizard = () => {
         <p className="caption text-muted-foreground">{t("wizard.step8.caption")}</p>
         <h2 className="display-medium text-foreground">{t("wizard.step8.headline")}</h2>
       </div>
-      <div className="max-w-lg space-y-8">
-        <p className="body-large text-muted-foreground">
-          {t("wizard.step8.intro")}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-6">
-          <button className="editorial-link body-small text-foreground tracking-widest">
+      <div className="max-w-lg space-y-10">
+        {/* Confirmation indicator */}
+        <div className="flex items-center gap-4">
+          <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+            <Check className="w-4 h-4 text-gold" strokeWidth={1.5} />
+          </div>
+          <p className="body-large text-muted-foreground">
+            {t("wizard.step8.intro")}
+          </p>
+        </div>
+        
+        {/* Scheduling options */}
+        <div className="flex flex-col sm:flex-row gap-6 pt-4">
+          <button className="flex-1 py-4 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 caption tracking-widest">
             {t("wizard.step8.schedule")}
           </button>
-          <button className="editorial-link body-small text-foreground tracking-widest">
+          <button className="flex-1 py-4 border border-border text-foreground hover:border-foreground transition-colors duration-300 caption tracking-widest">
             {t("wizard.step8.whatsapp")}
           </button>
         </div>

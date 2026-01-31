@@ -137,16 +137,22 @@ const translations: Record<Language, Record<string, string>> = {
     "wizard.step6.p2": "Durante tu visita, realizaremos imágenes tridimensionales completas, análisis predictivo detallado, y una conversación profunda sobre tus opciones.",
     "wizard.step6.p3": "Esta es la base sobre la cual construimos tu plan de cuidado personalizado.",
 
-    // Wizard Step 7
+    // Wizard Step 7 - Payment
     "wizard.step7.caption": "Paso 7 de 8",
-    "wizard.step7.headline": "Confirma tu Evaluación",
-    "wizard.step7.intro": "Para reservar tu evaluación presencial, procede con el pago de la consulta. Este valor se aplica posteriormente a cualquier tratamiento que decidas realizar.",
-    "wizard.step7.button": "Proceder al Pago",
+    "wizard.step7.headline": "Evaluación Presencial Premium",
+    "wizard.step7.intro": "Para confirmar escenarios clínicos y definir un plan real, es necesaria una evaluación presencial avanzada.",
+    "wizard.step7.includes": "Qué incluye:",
+    "wizard.step7.item1": "Revisión clínica completa",
+    "wizard.step7.item2": "Análisis de estudios e imágenes",
+    "wizard.step7.item3": "Discusión de escenarios y alternativas",
+    "wizard.step7.product": "Evaluación Presencial Premium",
+    "wizard.step7.button": "Confirmar Evaluación",
+    "wizard.step7.processing": "Procesando...",
 
-    // Wizard Step 8
+    // Wizard Step 8 - Confirmation
     "wizard.step8.caption": "Paso 8 de 8",
-    "wizard.step8.headline": "Agenda tu Visita",
-    "wizard.step8.intro": "Pago confirmado. Ahora puedes agendar tu evaluación presencial en el horario que mejor te convenga.",
+    "wizard.step8.headline": "Evaluación Confirmada",
+    "wizard.step8.intro": "Tu evaluación presencial ha sido reservada. Selecciona cómo deseas agendar tu visita a la clínica.",
     "wizard.step8.schedule": "Agendar Online",
     "wizard.step8.whatsapp": "Agendar por WhatsApp",
 
@@ -290,16 +296,22 @@ const translations: Record<Language, Record<string, string>> = {
     "wizard.step6.p2": "During your visit, we will perform complete three-dimensional imaging, detailed predictive analysis, and a deep conversation about your options.",
     "wizard.step6.p3": "This is the foundation upon which we build your personalized care plan.",
 
-    // Wizard Step 7
+    // Wizard Step 7 - Payment
     "wizard.step7.caption": "Step 7 of 8",
-    "wizard.step7.headline": "Confirm Your Evaluation",
-    "wizard.step7.intro": "To reserve your in-person evaluation, proceed with the consultation payment. This amount applies to any treatment you decide to pursue.",
-    "wizard.step7.button": "Proceed to Payment",
+    "wizard.step7.headline": "Premium In-Person Evaluation",
+    "wizard.step7.intro": "To confirm clinical scenarios and define a real plan, an advanced in-person evaluation is required.",
+    "wizard.step7.includes": "What's included:",
+    "wizard.step7.item1": "Complete clinical review",
+    "wizard.step7.item2": "Analysis of studies and images",
+    "wizard.step7.item3": "Discussion of scenarios and alternatives",
+    "wizard.step7.product": "Premium In-Person Evaluation",
+    "wizard.step7.button": "Confirm Evaluation",
+    "wizard.step7.processing": "Processing...",
 
-    // Wizard Step 8
+    // Wizard Step 8 - Confirmation
     "wizard.step8.caption": "Step 8 of 8",
-    "wizard.step8.headline": "Schedule Your Visit",
-    "wizard.step8.intro": "Payment confirmed. You can now schedule your in-person evaluation at the time that suits you best.",
+    "wizard.step8.headline": "Evaluation Confirmed",
+    "wizard.step8.intro": "Your in-person evaluation has been reserved. Select how you would like to schedule your clinic visit.",
     "wizard.step8.schedule": "Schedule Online",
     "wizard.step8.whatsapp": "Schedule via WhatsApp",
 
