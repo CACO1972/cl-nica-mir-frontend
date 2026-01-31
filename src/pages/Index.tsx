@@ -87,7 +87,7 @@ const Index = () => {
       {/* Editorial Break */}
       <section className="py-section-sm px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          <div className="border-t border-border" />
+          <div className="border-t border-gold-muted/40" />
         </div>
       </section>
 
@@ -148,7 +148,7 @@ const Index = () => {
             </h2>
             <Link 
               to="/evaluation"
-              className="inline-block editorial-link body-small text-foreground tracking-widest"
+              className="inline-block editorial-link body-small text-foreground hover:text-gold tracking-widest transition-colors"
             >
               {t("cta.button")}
             </Link>
@@ -167,7 +167,7 @@ const Index = () => {
               </p>
             </div>
             <div className="text-right space-y-2">
-              <p className="caption text-muted-foreground">{t("location")}</p>
+              <p className="caption text-gold-muted">{t("location")}</p>
               <p className="caption text-muted-foreground">© 2025</p>
             </div>
           </div>

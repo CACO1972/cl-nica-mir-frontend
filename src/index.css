@@ -41,6 +41,10 @@
     --input: 0 0% 90%;
     --ring: 0 0% 8%;
 
+    /* Accent gold - champagne muted */
+    --gold: 38 35% 58%;
+    --gold-muted: 38 25% 70%;
+
     --radius: 0;
 
     --sidebar-background: 0 0% 98%;
@@ -81,6 +85,10 @@
     --border: 0 0% 18%;
     --input: 0 0% 18%;
     --ring: 0 0% 95%;
+
+    /* Accent gold - champagne muted (dark mode) */
+    --gold: 38 30% 50%;
+    --gold-muted: 38 20% 40%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

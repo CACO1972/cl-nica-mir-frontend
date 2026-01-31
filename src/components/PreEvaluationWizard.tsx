@@ -80,9 +80,9 @@ const PreEvaluationWizard = () => {
             key={step}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               step === currentStep
-                ? "bg-foreground w-6"
+                ? "bg-gold w-6"
                 : step < currentStep
-                ? "bg-foreground/40"
+                ? "bg-gold-muted"
                 : "bg-border"
             }`}
           />
