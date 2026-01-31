@@ -13,10 +13,6 @@ const translations: Record<Language, Record<string, string>> = {
     // Header
     "location": "Santiago, Chile",
     
-    // Hero
-    "hero.headline": "Más Allá",
-    "hero.subline": "Vemos lo que permanece invisible.",
-    
     // Philosophy Section
     "philosophy.caption": "Nuestra Filosofía",
     "philosophy.headline": "Prevenir es precisión.",
@@ -77,10 +73,6 @@ const translations: Record<Language, Record<string, string>> = {
   en: {
     // Header
     "location": "Santiago, Chile",
-    
-    // Hero
-    "hero.headline": "Beyond",
-    "hero.subline": "We see what remains unseen.",
     
     // Philosophy Section
     "philosophy.caption": "Our Philosophy",

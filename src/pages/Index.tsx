@@ -41,12 +41,12 @@ const Index = () => {
         <div className="max-w-7xl mx-auto w-full">
           <div className="animate-slide-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <h1 className="display-massive text-foreground">
-              {t("hero.headline")}
+              Odontología Predictiva
             </h1>
           </div>
-          <div className="mt-4 lg:mt-6 animate-slide-up" style={{ animationDelay: "0.5s", animationFillMode: "both" }}>
-            <p className="body-large text-muted-foreground">
-              {t("hero.subline")}
+          <div className="mt-12 lg:mt-16 animate-slide-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
+            <p className="body-small text-muted-foreground tracking-widest">
+              Clarity before treatment
             </p>
           </div>
         </div>
