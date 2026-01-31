@@ -100,10 +100,12 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
+    overflow-x: hidden;
     font-family: 'Inter', sans-serif;
     font-weight: 300;
     letter-spacing: 0.01em;
