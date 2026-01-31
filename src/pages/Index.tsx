@@ -46,23 +46,32 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="min-h-[100svh] flex flex-col justify-center items-center px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)] relative">
+      {/* Hero Section - Institutional Declaration */}
+      <section className="min-h-[110svh] flex flex-col justify-center items-center px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)] relative">
         <div className="max-w-7xl mx-auto w-full text-center">
-          <div className="animate-slide-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
-            <h1 className="display-massive text-foreground dark:text-[hsl(30,10%,96%)]">
+          {/* Primary headline - maximum visual authority */}
+          <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
+            <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block">
               Odontología Predictiva
+              {/* Subtle gold underline accent */}
+              <span 
+                className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-px bg-gradient-to-r from-transparent via-gold-muted/50 to-transparent"
+                style={{ animation: 'fadeIn 1.5s ease-out 1s forwards', opacity: 0 }}
+              />
             </h1>
           </div>
-          <div className="mt-16 lg:mt-24 animate-slide-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
-            <p className="text-sm font-normal text-muted-foreground dark:text-[hsl(0,0%,50%)] tracking-[0.2em] uppercase">
+          
+          {/* Subheadline - clearly separated, deliberate reading */}
+          <div className="mt-20 lg:mt-32 animate-slide-up" style={{ animationDelay: "0.8s", animationFillMode: "both" }}>
+            <p className="text-sm font-light text-muted-foreground/70 dark:text-[hsl(0,0%,45%)] tracking-[0.25em] uppercase">
               Clarity before treatment
             </p>
           </div>
         </div>
+        
         {/* Minimal scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
-          <ChevronDown className="w-5 h-5 text-muted-foreground/50 animate-gentle-bounce" strokeWidth={1} />
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-fade-in" style={{ animationDelay: "1.5s", animationFillMode: "both" }}>
+          <ChevronDown className="w-4 h-4 text-muted-foreground/30 animate-gentle-bounce" strokeWidth={1} />
         </div>
       </section>
 
