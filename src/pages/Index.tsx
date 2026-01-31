@@ -139,7 +139,7 @@ const Index = () => {
               Ready to begin?
             </h2>
             <Link 
-              to="/evaluacion-premium"
+              to="/evaluation"
               className="inline-block editorial-link body-small text-foreground tracking-widest"
             >
               Begin Evaluation
