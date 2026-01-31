@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import MenuOverlay from "@/components/MenuOverlay";
+import EditorialQuote from "@/components/EditorialQuote";
 
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -101,6 +102,16 @@ const Evaluation = () => {
           </div>
         </div>
       </section>
+
+      {/* Editorial Quote 1 - After Hero */}
+      <EditorialQuote 
+        lines={[
+          language === "es" ? "Reparar, sonreír, revivir." : "Repair, smile, revive.",
+          language === "es" ? "La sonrisa no es la meta. Es el inicio." : "The smile is not the goal. It's the beginning."
+        ]}
+        goldWord={language === "es" ? "inicio" : "beginning"}
+        variant="large"
+      />
 
       {/* What It Is Section */}
       <section className="py-section px-6 lg:px-12">
@@ -207,9 +218,37 @@ const Evaluation = () => {
         </div>
       </section>
 
+      {/* Editorial Quote 2 - Before How to Begin */}
+      <EditorialQuote 
+        lines={[
+          language === "es" ? "La inteligencia artificial no decide por ti." : "Artificial intelligence doesn't decide for you.",
+          language === "es" ? "Ni por nosotros." : "Nor for us.",
+          language === "es" ? "Nos permite tener la seguridad de que estamos tomando la mejor decisión posible." : "It allows us the certainty that we're making the best possible decision."
+        ]}
+        goldWord={language === "es" ? "seguridad" : "certainty"}
+        variant="medium"
+      />
+
       {/* How to Begin - 4 Equal Options */}
       <section className="py-section px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
+          {/* Editorial Quote 3 - Before grid */}
+          <div className="mb-24 text-center max-w-3xl mx-auto">
+            <div className="relative py-12">
+              <div className="absolute left-1/2 -translate-x-1/2 top-0 w-8 h-px bg-gold-muted/30" />
+              <p 
+                className="font-serif font-light text-foreground/90 text-2xl md:text-3xl lg:text-4xl leading-relaxed"
+              >
+                {language === "es" ? (
+                  <>Tu sonrisa merece <span className="text-gold-muted">atención inteligente</span>.</>
+                ) : (
+                  <>Your smile deserves <span className="text-gold-muted">intelligent care</span>.</>
+                )}
+              </p>
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-8 h-px bg-gold-muted/30" />
+            </div>
+          </div>
+
           <div className="mb-24">
             <p className="caption text-muted-foreground mb-6">
               {t("eval.begin.caption")}
