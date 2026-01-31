@@ -159,6 +159,60 @@ const Evaluation = () => {
       {/* Pre-Evaluation Wizard */}
       <PreEvaluationWizard />
 
+      {/* Otros Accesos Section */}
+      <section className="py-section px-6 lg:px-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-24">
+            <p className="caption text-muted-foreground mb-6">
+              {t("eval.access.caption")}
+            </p>
+            <h2 className="display-medium text-foreground">
+              {t("eval.access.headline")}
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-16 lg:gap-24">
+            {/* Portal Paciente */}
+            <div className="space-y-6">
+              <h3 className="body-small text-foreground">
+                {t("eval.access.portal.title")}
+              </h3>
+              <p className="body-large text-muted-foreground">
+                {t("eval.access.portal.desc")}
+              </p>
+              <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
+                {t("eval.access.portal.cta")}
+              </button>
+            </div>
+
+            {/* Segunda Opinión */}
+            <div className="space-y-6">
+              <h3 className="body-small text-foreground">
+                {t("eval.access.opinion.title")}
+              </h3>
+              <p className="body-large text-muted-foreground">
+                {t("eval.access.opinion.desc")}
+              </p>
+              <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
+                {t("eval.access.opinion.cta")}
+              </button>
+            </div>
+
+            {/* Pacientes Internacionales */}
+            <div className="space-y-6">
+              <h3 className="body-small text-foreground">
+                {t("eval.access.international.title")}
+              </h3>
+              <p className="body-large text-muted-foreground">
+                {t("eval.access.international.desc")}
+              </p>
+              <button className="editorial-link caption text-muted-foreground hover:text-foreground transition-colors tracking-widest">
+                {t("eval.access.international.cta")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="py-16 px-6 lg:px-12 border-t border-border">
