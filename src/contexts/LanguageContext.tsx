@@ -70,6 +70,19 @@ const translations: Record<Language, Record<string, string>> = {
     "eval.cta.subline": "Una sesión. Claridad completa.",
     "eval.cta.button": "Solicitar Evaluación",
 
+    // Otros Accesos
+    "eval.access.caption": "Otros Accesos",
+    "eval.access.headline": "Más formas de conectar.",
+    "eval.access.portal.title": "Portal Paciente",
+    "eval.access.portal.desc": "Acceso privado a tus evaluaciones, informes detallados y seguimiento continuo de tu plan de cuidado. Tu historial clínico, siempre disponible.",
+    "eval.access.portal.cta": "Acceder al portal",
+    "eval.access.opinion.title": "Segunda Opinión",
+    "eval.access.opinion.desc": "Si ya tienes estudios o diagnósticos previos, podemos analizarlos con nuestra perspectiva predictiva. Una mirada fresca antes de decidir.",
+    "eval.access.opinion.cta": "Solicitar segunda opinión",
+    "eval.access.international.title": "Pacientes Internacionales",
+    "eval.access.international.desc": "Evaluaciones optimizadas para quienes viajan o residen fuera de Chile. Maximizamos cada visita con un proceso diseñado para tu tiempo.",
+    "eval.access.international.cta": "Ver modalidad internacional",
+
     // Wizard Step 1
     "wizard.step1.caption": "Paso 1 de 8",
     "wizard.step1.headline": "Datos Personales",
@@ -198,6 +211,19 @@ const translations: Record<Language, Record<string, string>> = {
     "eval.cta.headline": "Request your evaluation.",
     "eval.cta.subline": "One session. Complete clarity.",
     "eval.cta.button": "Request Evaluation",
+
+    // Other Access
+    "eval.access.caption": "Other Access",
+    "eval.access.headline": "More ways to connect.",
+    "eval.access.portal.title": "Patient Portal",
+    "eval.access.portal.desc": "Private access to your evaluations, detailed reports, and continuous follow-up of your care plan. Your clinical history, always available.",
+    "eval.access.portal.cta": "Access portal",
+    "eval.access.opinion.title": "Second Opinion",
+    "eval.access.opinion.desc": "If you already have studies or previous diagnoses, we can analyze them with our predictive perspective. A fresh look before deciding.",
+    "eval.access.opinion.cta": "Request second opinion",
+    "eval.access.international.title": "International Patients",
+    "eval.access.international.desc": "Optimized evaluations for those traveling or living outside Chile. We maximize every visit with a process designed for your time.",
+    "eval.access.international.cta": "View international options",
 
     // Wizard Step 1
     "wizard.step1.caption": "Step 1 of 8",
