@@ -61,19 +61,33 @@ const PreEvaluationWizard = () => {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center gap-2 mb-16">
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
-        <div
-          key={step}
-          className={`w-2 h-2 rounded-full transition-all duration-300 ${
-            step === currentStep
-              ? "bg-foreground w-6"
-              : step < currentStep
-              ? "bg-foreground/40"
-              : "bg-border"
-          }`}
-        />
-      ))}
+    <div className="relative mb-16">
+      {/* Minimal back arrow - upper left, editorial style */}
+      {currentStep > 1 && (
+        <button
+          onClick={prevStep}
+          className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors duration-300"
+          aria-label={t("wizard.nav.back")}
+        >
+          <ChevronLeft className="w-5 h-5" strokeWidth={1} />
+        </button>
+      )}
+      
+      {/* Step dots - centered */}
+      <div className="flex items-center justify-center gap-2">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
+          <div
+            key={step}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              step === currentStep
+                ? "bg-foreground w-6"
+                : step < currentStep
+                ? "bg-foreground/40"
+                : "bg-border"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 
