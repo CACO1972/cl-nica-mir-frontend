@@ -1,14 +1,20 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronDown } from "lucide-react";
+import MenuOverlay from "@/components/MenuOverlay";
 
 const Index = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
+      {/* Menu Overlay */}
+      <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Minimal Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -29,9 +35,12 @@ const Index = () => {
               >
                 {theme === "light" ? "Night" : "Day"}
               </button>
-              <span className="caption text-muted-foreground hidden sm:block">
-                {t("location")}
-              </span>
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="caption text-muted-foreground hover:text-gold transition-colors duration-300"
+              >
+                {t("menu.open")}
+              </button>
             </div>
           </div>
         </div>

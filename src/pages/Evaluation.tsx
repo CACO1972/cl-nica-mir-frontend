@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
+import MenuOverlay from "@/components/MenuOverlay";
 
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [showWizard, setShowWizard] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // If wizard is active, show it full screen
   if (showWizard) {
@@ -49,6 +51,9 @@ const Evaluation = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
+      {/* Menu Overlay */}
+      <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Minimal Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -68,6 +73,12 @@ const Evaluation = () => {
                 className="caption text-muted-foreground hover:text-foreground transition-colors"
               >
                 {theme === "light" ? "Night" : "Day"}
+              </button>
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="caption text-muted-foreground hover:text-gold transition-colors duration-300"
+              >
+                {t("menu.open")}
               </button>
             </div>
           </div>

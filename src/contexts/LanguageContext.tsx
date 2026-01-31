@@ -153,6 +153,14 @@ const translations: Record<Language, Record<string, string>> = {
     // Wizard Navigation
     "wizard.nav.back": "Volver",
     "wizard.nav.continue": "Continuar",
+
+    // Menu
+    "menu.open": "Menú",
+    "menu.close": "Cerrar",
+    "menu.evaluation": "Evaluación Predictiva",
+    "menu.portal": "Portal Paciente",
+    "menu.opinion": "Segunda Opinión",
+    "menu.international": "Pacientes Internacionales",
   },
   en: {
     // Header
@@ -298,6 +306,14 @@ const translations: Record<Language, Record<string, string>> = {
     // Wizard Navigation
     "wizard.nav.back": "Back",
     "wizard.nav.continue": "Continue",
+
+    // Menu
+    "menu.open": "Menu",
+    "menu.close": "Close",
+    "menu.evaluation": "Predictive Evaluation",
+    "menu.portal": "Patient Portal",
+    "menu.opinion": "Second Opinion",
+    "menu.international": "International Patients",
   },
 };
 
