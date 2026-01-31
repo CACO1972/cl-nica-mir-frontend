@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { ChevronDown } from "lucide-react";
 
 const Index = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
       {/* Minimal Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -37,7 +38,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="min-h-[100svh] flex flex-col justify-center items-center px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)]">
+      <section className="min-h-[100svh] flex flex-col justify-center items-center px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)] relative">
         <div className="max-w-7xl mx-auto w-full text-center">
           <div className="animate-slide-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <h1 className="display-massive text-foreground dark:text-[hsl(30,10%,96%)]">
@@ -49,6 +50,10 @@ const Index = () => {
               Clarity before treatment
             </p>
           </div>
+        </div>
+        {/* Minimal scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
+          <ChevronDown className="w-5 h-5 text-muted-foreground/50" strokeWidth={1} />
         </div>
       </section>
 
