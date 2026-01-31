@@ -118,10 +118,10 @@
   /* Editorial typography scale */
   .display-massive {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(5rem, 18vw, 16rem);
-    line-height: 0.85;
+    font-size: clamp(2.5rem, 12vw, 10rem);
+    line-height: 1;
     font-weight: 300;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.03em;
   }
 
   .display-huge {
