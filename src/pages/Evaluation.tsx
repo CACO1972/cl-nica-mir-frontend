@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
       {/* Minimal Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -28,16 +29,13 @@ const Evaluation = () => {
               >
                 {theme === "light" ? "Night" : "Day"}
               </button>
-              <span className="caption text-muted-foreground hidden sm:block">
-                {t("eval.caption")}
-              </span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="min-h-[70vh] flex flex-col justify-center px-6 lg:px-12 pt-20">
+      {/* Hero Section - Editorial, shorter than home */}
+      <section className="min-h-[60vh] flex flex-col justify-center px-6 lg:px-12 pt-20">
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 animate-slide-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
             <p className="caption text-muted-foreground">
@@ -87,7 +85,7 @@ const Evaluation = () => {
         </div>
       </section>
 
-      {/* Why Different Section */}
+      {/* Who It's For Section */}
       <section className="py-section px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
@@ -114,7 +112,7 @@ const Evaluation = () => {
         </div>
       </section>
 
-      {/* What's Included Section */}
+      {/* What You Get Section */}
       <section className="py-section px-6 lg:px-12 bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl mb-16">
@@ -157,6 +155,9 @@ const Evaluation = () => {
           </div>
         </div>
       </section>
+
+      {/* Pre-Evaluation Wizard */}
+      <PreEvaluationWizard />
 
       {/* CTA Section */}
       <section className="py-section px-6 lg:px-12">
