@@ -53,7 +53,7 @@ const Index = () => {
         </div>
         {/* Minimal scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
-          <ChevronDown className="w-5 h-5 text-muted-foreground/50" strokeWidth={1} />
+          <ChevronDown className="w-5 h-5 text-muted-foreground/50 animate-gentle-bounce" strokeWidth={1} />
         </div>
       </section>
 
