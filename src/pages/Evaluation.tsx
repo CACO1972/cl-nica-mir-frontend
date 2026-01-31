@@ -211,7 +211,7 @@ const Evaluation = () => {
           <div className="grid md:grid-cols-2 gap-16 lg:gap-24">
             {/* Pre-Evaluación Predictiva */}
             <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground">
+              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
                 {t("eval.begin.preevaluation.title")}
               </h3>
               <p className="body-large text-muted-foreground">
@@ -227,7 +227,7 @@ const Evaluation = () => {
 
             {/* Portal Paciente */}
             <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground">
+              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
                 {t("eval.begin.portal.title")}
               </h3>
               <p className="body-large text-muted-foreground">
@@ -240,7 +240,7 @@ const Evaluation = () => {
 
             {/* Segunda Opinión */}
             <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground">
+              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
                 {t("eval.begin.opinion.title")}
               </h3>
               <p className="body-large text-muted-foreground">
@@ -253,7 +253,7 @@ const Evaluation = () => {
 
             {/* Pacientes Internacionales */}
             <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground">
+              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
                 {t("eval.begin.international.title")}
               </h3>
               <p className="body-large text-muted-foreground">
