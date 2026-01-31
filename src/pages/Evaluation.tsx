@@ -86,17 +86,31 @@ const Evaluation = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="min-h-[60vh] flex flex-col justify-center px-6 lg:px-12 pt-20">
+      {/* Hero Section - Institutional Declaration */}
+      <section className="min-h-[75vh] flex flex-col justify-center px-6 lg:px-12 pt-24 pb-16">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="space-y-8 animate-slide-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-            <p className="caption text-muted-foreground">
+          {/* Caption - minimal context */}
+          <div className="animate-slide-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
+            <p className="caption text-muted-foreground/60 mb-12">
               {t("eval.caption")}
             </p>
-            <h1 className="display-huge text-foreground max-w-5xl">
+          </div>
+          
+          {/* Headline - dominant, institutional */}
+          <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
+            <h1 className="display-huge text-foreground max-w-5xl relative">
               {t("eval.headline")}
+              {/* Subtle gold editorial line */}
+              <span 
+                className="absolute -bottom-6 left-0 w-16 h-px bg-gold-muted/40"
+                style={{ animation: 'fadeIn 1.2s ease-out 0.8s forwards', opacity: 0 }}
+              />
             </h1>
-            <p className="body-large text-muted-foreground max-w-xl pt-8">
+          </div>
+          
+          {/* Subheadline - separated, deliberate */}
+          <div className="animate-slide-up mt-20 lg:mt-28" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+            <p className="body-large text-muted-foreground/80 max-w-xl leading-relaxed">
               {t("eval.subline")}
             </p>
           </div>
@@ -229,28 +243,29 @@ const Evaluation = () => {
         variant="medium"
       />
 
-      {/* How to Begin - 4 Equal Options */}
-      <section className="py-section px-6 lg:px-12">
+      {/* Transition pause - from reflection to decision */}
+      <section className="py-20 lg:py-32 px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          {/* Editorial Quote 3 - Before grid */}
-          <div className="mb-24 text-center max-w-3xl mx-auto">
-            <div className="relative py-12">
-              <div className="absolute left-1/2 -translate-x-1/2 top-0 w-8 h-px bg-gold-muted/30" />
+          {/* Editorial Quote 3 - Reflective pause before decision */}
+          <div className="mb-32 lg:mb-44 text-center max-w-3xl mx-auto">
+            <div className="relative py-16 lg:py-24">
+              <div className="absolute left-1/2 -translate-x-1/2 top-0 w-20 h-px bg-gradient-to-r from-transparent via-gold-muted/35 to-transparent" />
               <p 
-                className="font-serif font-light text-foreground/90 text-2xl md:text-3xl lg:text-4xl leading-relaxed"
+                className="font-serif font-light text-foreground/85 text-2xl md:text-3xl lg:text-[2.5rem] leading-[1.4]"
               >
                 {language === "es" ? (
-                  <>Tu sonrisa merece <span className="text-gold-muted">atención inteligente</span>.</>
+                  <>Tu sonrisa merece <span className="text-gold-muted/80">atención inteligente</span>.</>
                 ) : (
-                  <>Your smile deserves <span className="text-gold-muted">intelligent care</span>.</>
+                  <>Your smile deserves <span className="text-gold-muted/80">intelligent care</span>.</>
                 )}
               </p>
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-8 h-px bg-gold-muted/30" />
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-20 h-px bg-gradient-to-r from-transparent via-gold-muted/35 to-transparent" />
             </div>
           </div>
 
-          <div className="mb-24">
-            <p className="caption text-muted-foreground mb-6">
+          {/* Section header - Decision point */}
+          <div className="mb-20 lg:mb-32">
+            <p className="caption text-muted-foreground/60 mb-8">
               {t("eval.begin.caption")}
             </p>
             <h2 className="display-large text-foreground">

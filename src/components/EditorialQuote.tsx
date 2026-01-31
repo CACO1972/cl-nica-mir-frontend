@@ -22,24 +22,24 @@ const EditorialQuote = ({ lines, goldWord, variant = "large" }: EditorialQuotePr
   };
 
   return (
-    <section className="py-section px-6 lg:px-12">
-      <div className="max-w-5xl mx-auto text-center">
+    <section className={`px-6 lg:px-12 ${variant === "large" ? "py-32 lg:py-48" : "py-24 lg:py-36"}`}>
+      <div className="max-w-4xl mx-auto text-center">
         <div className="relative">
-          {/* Subtle gold accent line */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-12 h-px bg-gold-muted/30" />
+          {/* Subtle gold accent line - top */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-16 h-px bg-gradient-to-r from-transparent via-gold-muted/40 to-transparent" />
           
-          <div className={`pt-12 pb-8 space-y-2 ${variant === "large" ? "space-y-4" : "space-y-2"}`}>
+          <div className={`${variant === "large" ? "py-20 space-y-6" : "py-16 space-y-4"}`}>
             {lines.map((line, index) => (
               <p 
                 key={index}
-                className={`font-serif font-light text-foreground/90 leading-relaxed ${
+                className={`font-serif font-light text-foreground/85 ${
                   variant === "large" 
-                    ? "text-2xl md:text-3xl lg:text-4xl" 
-                    : "text-xl md:text-2xl lg:text-3xl"
+                    ? "text-2xl md:text-3xl lg:text-[2.75rem] leading-[1.4]" 
+                    : "text-xl md:text-2xl lg:text-3xl leading-[1.5]"
                 }`}
                 style={{
-                  animation: 'slideUp 0.8s ease-out forwards',
-                  animationDelay: `${index * 150}ms`,
+                  animation: 'slideUp 1s ease-out forwards',
+                  animationDelay: `${index * 200}ms`,
                   opacity: 0
                 }}
               >
@@ -48,8 +48,8 @@ const EditorialQuote = ({ lines, goldWord, variant = "large" }: EditorialQuotePr
             ))}
           </div>
           
-          {/* Subtle gold accent line */}
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-12 h-px bg-gold-muted/30" />
+          {/* Subtle gold accent line - bottom */}
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-16 h-px bg-gradient-to-r from-transparent via-gold-muted/40 to-transparent" />
         </div>
       </div>
     </section>
