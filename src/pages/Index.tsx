@@ -44,8 +44,8 @@ const Index = () => {
               Odontología Predictiva
             </h1>
           </div>
-          <div className="mt-12 lg:mt-16 animate-slide-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
-            <p className="body-small text-muted-foreground tracking-widest">
+          <div className="mt-16 lg:mt-24 animate-slide-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
+            <p className="text-sm font-normal text-muted-foreground tracking-[0.2em] uppercase">
               Clarity before treatment
             </p>
           </div>
