@@ -336,13 +336,25 @@ const PreEvaluationWizard = () => {
         {/* What's included - editorial section */}
         <div className="space-y-6">
           <p className="caption text-gold-muted tracking-widest">{t("wizard.step7.includes")}</p>
-          <div className="space-y-5 pl-1">
-            {["item1", "item2", "item3"].map((item) => (
-              <div key={item} className="flex items-start gap-4">
-                <Check className="w-4 h-4 text-gold-muted mt-1 flex-shrink-0" strokeWidth={1.5} />
-                <p className="body-small text-foreground/90 leading-relaxed">
-                  {t(`wizard.step7.${item}`)}
-                </p>
+          <div className="space-y-4">
+            {["item1", "item2", "item3"].map((item, index) => (
+              <div 
+                key={item} 
+                className="group relative pl-6 py-4 pr-4 border-l-2 border-gold-muted/30 hover:border-gold-muted bg-background/30 hover:bg-background/50 transition-all duration-500 ease-out"
+                style={{ 
+                  animationDelay: `${index * 150}ms`,
+                  animation: 'fade-in 0.6s ease-out forwards',
+                  opacity: 0
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-6 h-6 rounded-full bg-gold-muted/10 flex items-center justify-center flex-shrink-0 group-hover:bg-gold-muted/20 transition-colors duration-300">
+                    <span className="text-xs text-gold-muted font-light">{index + 1}</span>
+                  </div>
+                  <p className="body-small text-foreground/80 group-hover:text-foreground leading-relaxed transition-colors duration-300">
+                    {t(`wizard.step7.${item}`)}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
