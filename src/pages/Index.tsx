@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Index = () => {
+  const { language, setLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Minimal Header */}
@@ -10,9 +15,23 @@ const Index = () => {
             <span className="font-serif text-xl tracking-tight">
               Clínica Miró
             </span>
-            <span className="caption text-muted-foreground hidden sm:block">
-              Santiago, Chile
-            </span>
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setLanguage(language === "es" ? "en" : "es")}
+                className="caption text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {language === "es" ? "EN" : "ES"}
+              </button>
+              <button
+                onClick={toggleTheme}
+                className="caption text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {theme === "light" ? "Night" : "Day"}
+              </button>
+              <span className="caption text-muted-foreground hidden sm:block">
+                {t("location")}
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -22,12 +41,12 @@ const Index = () => {
         <div className="max-w-7xl mx-auto w-full">
           <div className="animate-slide-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <h1 className="display-massive text-foreground">
-              Beyond
+              {t("hero.headline")}
             </h1>
           </div>
           <div className="mt-4 lg:mt-6 animate-slide-up" style={{ animationDelay: "0.5s", animationFillMode: "both" }}>
             <p className="body-large text-muted-foreground">
-              We see what remains unseen.
+              {t("hero.subline")}
             </p>
           </div>
         </div>
@@ -39,24 +58,21 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
             <div className="lg:sticky lg:top-32">
               <p className="caption text-muted-foreground mb-6">
-                Our Philosophy
+                {t("philosophy.caption")}
               </p>
               <h2 className="display-large text-foreground">
-                Prevention is precision.
+                {t("philosophy.headline")}
               </h2>
             </div>
             <div className="space-y-12 lg:pt-24">
               <p className="body-large text-muted-foreground">
-                Traditional dentistry waits for problems. We chose a different path. 
-                Through advanced imaging and artificial intelligence, we read the 
-                signals your smile sends before symptoms appear.
+                {t("philosophy.p1")}
               </p>
               <p className="body-large text-muted-foreground">
-                Every examination becomes a conversation between technology and 
-                human expertise. Every diagnosis, a window into your dental future.
+                {t("philosophy.p2")}
               </p>
               <p className="body-large text-foreground">
-                This is not innovation for its own sake. This is care, redefined.
+                {t("philosophy.p3")}
               </p>
             </div>
           </div>
@@ -75,32 +91,29 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <p className="caption text-muted-foreground mb-6">
-              The Approach
+              {t("approach.caption")}
             </p>
             <h2 className="display-medium text-foreground mb-16">
-              We see what remains invisible to conventional practice. 
-              Our technology maps trajectories, not just conditions.
+              {t("approach.headline")}
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-12 lg:gap-16 pt-8">
             <div className="space-y-4">
               <p className="body-small text-foreground">01</p>
               <p className="body-large text-muted-foreground">
-                Three-dimensional imaging captures the complete architecture 
-                of your oral health.
+                {t("approach.step1")}
               </p>
             </div>
             <div className="space-y-4">
               <p className="body-small text-foreground">02</p>
               <p className="body-large text-muted-foreground">
-                Predictive algorithms analyze patterns invisible to the 
-                human eye alone.
+                {t("approach.step2")}
               </p>
             </div>
             <div className="space-y-4">
               <p className="body-small text-foreground">03</p>
               <p className="body-large text-muted-foreground">
-                Personalized protocols address tomorrow's concerns today.
+                {t("approach.step3")}
               </p>
             </div>
           </div>
@@ -112,12 +125,10 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <h2 className="display-large text-foreground">
-              The future of dental health<br />
-              begins with foresight.
+              {t("vision.headline")}
             </h2>
             <p className="body-large text-muted-foreground max-w-2xl mx-auto">
-              In a world that moves fast, we take the time to look ahead. 
-              Your smile deserves nothing less than certainty.
+              {t("vision.subline")}
             </p>
           </div>
         </div>
@@ -128,13 +139,13 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-12">
             <h2 className="display-large text-foreground">
-              Ready to begin?
+              {t("cta.headline")}
             </h2>
             <Link 
               to="/evaluation"
               className="inline-block editorial-link body-small text-foreground tracking-widest"
             >
-              Begin Evaluation
+              {t("cta.button")}
             </Link>
           </div>
         </div>
@@ -147,11 +158,11 @@ const Index = () => {
             <div className="space-y-2">
               <p className="font-serif text-lg">Clínica Miró</p>
               <p className="body-large text-muted-foreground">
-                Predictive Dentistry
+                {t("footer.tagline")}
               </p>
             </div>
             <div className="text-right space-y-2">
-              <p className="caption text-muted-foreground">Santiago, Chile</p>
+              <p className="caption text-muted-foreground">{t("location")}</p>
               <p className="caption text-muted-foreground">© 2025</p>
             </div>
           </div>
