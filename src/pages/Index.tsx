@@ -37,15 +37,15 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="min-h-[100svh] flex flex-col justify-center items-center px-6 lg:px-12 bg-[hsl(0,0%,6%)]">
+      <section className="min-h-[100svh] flex flex-col justify-center items-center px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)]">
         <div className="max-w-7xl mx-auto w-full text-center">
           <div className="animate-slide-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
-            <h1 className="display-massive text-[hsl(30,10%,96%)]">
+            <h1 className="display-massive text-foreground dark:text-[hsl(30,10%,96%)]">
               Odontología Predictiva
             </h1>
           </div>
           <div className="mt-16 lg:mt-24 animate-slide-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
-            <p className="text-sm font-normal text-[hsl(0,0%,50%)] tracking-[0.2em] uppercase">
+            <p className="text-sm font-normal text-muted-foreground dark:text-[hsl(0,0%,50%)] tracking-[0.2em] uppercase">
               Clarity before treatment
             </p>
           </div>
