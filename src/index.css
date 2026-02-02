@@ -138,10 +138,22 @@
   /* Institutional headline - maximum visual authority */
   .display-institutional {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(5rem, 18vw, 16rem);
+    font-size: clamp(2.75rem, 14vw, 16rem);
     line-height: 0.95;
     font-weight: 300;
     letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 640px) {
+    .display-institutional {
+      font-size: clamp(4rem, 16vw, 16rem);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .display-institutional {
+      font-size: clamp(5rem, 18vw, 16rem);
+    }
   }
 
   .display-massive {
