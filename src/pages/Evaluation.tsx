@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import MenuOverlay from "@/components/MenuOverlay";
 import EditorialQuote from "@/components/EditorialQuote";
+import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -22,9 +23,9 @@ const Evaluation = () => {
             <div className="flex items-center justify-between h-20">
               <button 
                 onClick={() => setShowWizard(false)}
-                className="font-serif text-xl tracking-tight editorial-link"
+                className="editorial-link"
               >
-                Clínica Miró
+                <img src={logoClinicaMiro} alt="Clínica Miró" className="h-8 md:h-10 w-auto" />
               </button>
               <div className="flex items-center gap-6">
                 <button
@@ -59,8 +60,8 @@ const Evaluation = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
-            <Link to="/" className="font-serif text-xl tracking-tight editorial-link">
-              Clínica Miró
+            <Link to="/" className="editorial-link">
+              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-8 md:h-10 w-auto" />
             </Link>
             <div className="flex items-center gap-6">
               <button
@@ -337,8 +338,8 @@ const Evaluation = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div className="space-y-2">
-              <Link to="/" className="font-serif text-lg editorial-link">
-                Clínica Miró
+              <Link to="/" className="editorial-link">
+                <img src={logoClinicaMiro} alt="Clínica Miró" className="h-6 w-auto" />
               </Link>
               <p className="body-large text-muted-foreground">
                 {t("footer.tagline")}
