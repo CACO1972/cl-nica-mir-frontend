@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronDown } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
+import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
 const Index = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -19,9 +20,9 @@ const Index = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
-            <span className="font-serif text-xl tracking-tight">
-              Clínica Miró
-            </span>
+            <Link to="/">
+              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-8 md:h-10 w-auto" />
+            </Link>
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setLanguage(language === "es" ? "en" : "es")}
@@ -179,7 +180,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div className="space-y-2">
-              <p className="font-serif text-lg">Clínica Miró</p>
+              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-6 w-auto" />
               <p className="body-large text-muted-foreground">
                 {t("footer.tagline")}
               </p>
