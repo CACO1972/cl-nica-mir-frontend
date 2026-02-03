@@ -21,7 +21,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
             <Link to="/">
-              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-8 md:h-10 w-auto" />
+              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
             </Link>
             <div className="flex items-center gap-6">
               <button
@@ -180,7 +180,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div className="space-y-2">
-              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-6 w-auto" />
+              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-10 w-auto" />
               <p className="body-large text-muted-foreground">
                 {t("footer.tagline")}
               </p>
