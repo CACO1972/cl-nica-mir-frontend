@@ -38,7 +38,7 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
         isExiting ? "opacity-0 scale-105" : "opacity-100 scale-100"
       }`}
     >
-      {/* Video container */}
+      {/* Video container - responsive for all devices */}
       <div 
         className={`relative w-full h-full flex items-center justify-center transition-all duration-1000 ${
           isExiting ? "blur-sm" : ""
@@ -50,7 +50,7 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
           autoPlay
           muted
           playsInline
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-contain md:object-cover"
         />
       </div>
 
