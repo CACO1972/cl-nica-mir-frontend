@@ -1,1 +1,10 @@
 project_id = "tewkhjklgsedlooypkwo"
+
+[functions.dentalink]
+verify_jwt = false
+
+[functions.mercadopago]
+verify_jwt = false
+
+[functions.whatsapp]
+verify_jwt = false
