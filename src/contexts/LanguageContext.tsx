@@ -125,7 +125,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Wizard Step 4
     "wizard.step4.caption": "Paso 4 de 8",
     "wizard.step4.headline": "Imagen de Referencia",
-    "wizard.step4.intro": "Una fotografía de tu sonrisa nos ayuda a preparar tu evaluación. Puedes subir una imagen o tomar una selfie.",
+    "wizard.step4.intro": "Una fotografía de la zona que te preocupa nos ayuda a preparar tu evaluación. Puedes subir una imagen o tomar una selfie.",
     "wizard.step4.upload": "Subir imagen",
     "wizard.step4.camera": "Tomar selfie",
     "wizard.step4.selected": "Archivo seleccionado",
@@ -306,7 +306,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Wizard Step 4
     "wizard.step4.caption": "Step 4 of 8",
     "wizard.step4.headline": "Reference Image",
-    "wizard.step4.intro": "A photograph of your smile helps us prepare your evaluation. You can upload an image or take a selfie.",
+    "wizard.step4.intro": "A photograph of the area that concerns you helps us prepare your evaluation. You can upload an image or take a selfie.",
     "wizard.step4.upload": "Upload image",
     "wizard.step4.camera": "Take selfie",
     "wizard.step4.selected": "Selected file",
