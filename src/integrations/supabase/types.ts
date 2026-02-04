@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_types: {
+        Row: {
+          buffer_after_minutes: number
+          buffer_before_minutes: number
+          code: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          max_days_advance: number
+          max_per_day: number | null
+          min_hours_advance: number
+          name: string
+          price_clp: number | null
+          requires_professional_ids: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          buffer_after_minutes?: number
+          buffer_before_minutes?: number
+          code: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          max_days_advance?: number
+          max_per_day?: number | null
+          min_hours_advance?: number
+          name: string
+          price_clp?: number | null
+          requires_professional_ids?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          buffer_after_minutes?: number
+          buffer_before_minutes?: number
+          code?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          max_days_advance?: number
+          max_per_day?: number | null
+          min_hours_advance?: number
+          name?: string
+          price_clp?: number | null
+          requires_professional_ids?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          appointment_type_id: string | null
+          confirmation_sent: boolean | null
+          created_at: string
+          dentalink_appointment_id: string | null
+          dentalink_patient_id: string | null
+          dentalink_professional_id: string | null
+          duration_minutes: number
+          id: string
+          lead_id: string | null
+          reminder_sent: boolean | null
+          scheduled_date: string
+          scheduled_time: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          appointment_type_id?: string | null
+          confirmation_sent?: boolean | null
+          created_at?: string
+          dentalink_appointment_id?: string | null
+          dentalink_patient_id?: string | null
+          dentalink_professional_id?: string | null
+          duration_minutes: number
+          id?: string
+          lead_id?: string | null
+          reminder_sent?: boolean | null
+          scheduled_date: string
+          scheduled_time: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          appointment_type_id?: string | null
+          confirmation_sent?: boolean | null
+          created_at?: string
+          dentalink_appointment_id?: string | null
+          dentalink_patient_id?: string | null
+          dentalink_professional_id?: string | null
+          duration_minutes?: number
+          id?: string
+          lead_id?: string | null
+          reminder_sent?: boolean | null
+          scheduled_date?: string
+          scheduled_time?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_appointment_type_id_fkey"
+            columns: ["appointment_type_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funnel_leads: {
         Row: {
           created_at: string
@@ -199,6 +322,107 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "funnel_uploads_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_scheduling_preferences: {
+        Row: {
+          avoid_dates: string[] | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          notes: string | null
+          preferred_days: string[] | null
+          preferred_time_range: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          avoid_dates?: string[] | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          preferred_days?: string[] | null
+          preferred_time_range?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          avoid_dates?: string[] | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          preferred_days?: string[] | null
+          preferred_time_range?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_scheduling_preferences_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist: {
+        Row: {
+          appointment_type_id: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          lead_id: string | null
+          max_wait_days: number | null
+          offered_at: string | null
+          preferred_dates: string[]
+          preferred_time_range: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          appointment_type_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          lead_id?: string | null
+          max_wait_days?: number | null
+          offered_at?: string | null
+          preferred_dates: string[]
+          preferred_time_range?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          appointment_type_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          lead_id?: string | null
+          max_wait_days?: number | null
+          offered_at?: string | null
+          preferred_dates?: string[]
+          preferred_time_range?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_appointment_type_id_fkey"
+            columns: ["appointment_type_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "funnel_leads"
