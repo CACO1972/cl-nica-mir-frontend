@@ -2,11 +2,29 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronRight, ChevronLeft, Upload, Camera, Check, AlertCircle, Loader2 } from "lucide-react";
 import { createLead, uploadFile, triggerIAScan, createCheckout, IAScanResponse } from "@/services/funnelApi";
 import { toast } from "sonner";
-
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+// Medical condition options for checkboxes
+const MEDICAL_CONDITIONS = [
+  { id: 'diabetes', labelKey: 'wizard.step2.conditions.diabetes' },
+  { id: 'hypertension', labelKey: 'wizard.step2.conditions.hypertension' },
+  { id: 'heart', labelKey: 'wizard.step2.conditions.heart' },
+  { id: 'allergies', labelKey: 'wizard.step2.conditions.allergies' },
+  { id: 'respiratory', labelKey: 'wizard.step2.conditions.respiratory' },
+  { id: 'bleeding', labelKey: 'wizard.step2.conditions.bleeding' },
+  { id: 'none', labelKey: 'wizard.step2.conditions.none' },
+] as const;
+
+const HABIT_OPTIONS = [
+  { id: 'tobacco', labelKey: 'wizard.step2.habits.tobacco' },
+  { id: 'bruxism', labelKey: 'wizard.step2.habits.bruxism' },
+  { id: 'alcohol', labelKey: 'wizard.step2.habits.alcohol' },
+  { id: 'none', labelKey: 'wizard.step2.habits.none' },
+] as const;
 
 interface FormData {
   // Step 1 - Personal Data
@@ -16,10 +34,9 @@ interface FormData {
   country: string;
   city: string;
   // Step 2 - Medical History
-  conditions: string;
+  conditions: string[];
   medications: string;
-  tobacco: string;
-  bruxism: string;
+  habits: string[];
   // Step 3 - Key Question
   lastVisitYear: string;
   lastTreatment: string;
@@ -41,17 +58,37 @@ const PreEvaluationWizard = () => {
     phone: "",
     country: "",
     city: "",
-    conditions: "",
+    conditions: [],
     medications: "",
-    tobacco: "",
-    bruxism: "",
+    habits: [],
     lastVisitYear: "",
     lastTreatment: "",
     imageFile: null,
   });
 
-  const updateFormData = (field: keyof FormData, value: string | File | null) => {
+  const updateFormData = (field: keyof FormData, value: string | string[] | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setError(null);
+  };
+
+  const toggleArrayField = (field: 'conditions' | 'habits', id: string) => {
+    setFormData((prev) => {
+      const currentValues = prev[field];
+      const isNoneOption = id === 'none';
+      
+      if (isNoneOption) {
+        // If selecting "none", clear all others
+        return { ...prev, [field]: currentValues.includes('none') ? [] : ['none'] };
+      }
+      
+      // If selecting something else, remove "none" if present
+      const withoutNone = currentValues.filter((v) => v !== 'none');
+      
+      if (currentValues.includes(id)) {
+        return { ...prev, [field]: withoutNone.filter((v) => v !== id) };
+      }
+      return { ...prev, [field]: [...withoutNone, id] };
+    });
     setError(null);
   };
 
@@ -326,16 +363,34 @@ const PreEvaluationWizard = () => {
         <p className="caption text-muted-foreground">{t("wizard.step2.caption")}</p>
         <h2 className="display-medium text-foreground">{t("wizard.step2.headline")}</h2>
       </div>
-      <div className="space-y-8 max-w-lg">
-        <div className="space-y-3">
+      <div className="space-y-10 max-w-lg">
+        {/* Medical Conditions - Checkboxes */}
+        <div className="space-y-4">
           <label className="caption text-muted-foreground">{t("wizard.step2.conditions")}</label>
-          <Textarea
-            value={formData.conditions}
-            onChange={(e) => updateFormData("conditions", e.target.value)}
-            placeholder={t("wizard.step2.conditions.placeholder")}
-            className="bg-transparent border-border focus:border-foreground transition-colors min-h-[100px]"
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {MEDICAL_CONDITIONS.map((condition) => (
+              <label
+                key={condition.id}
+                className={`
+                  flex items-center gap-3 p-4 border cursor-pointer transition-all duration-300
+                  ${formData.conditions.includes(condition.id)
+                    ? 'border-gold-muted bg-gold-muted/5'
+                    : 'border-border hover:border-foreground/30'
+                  }
+                `}
+              >
+                <Checkbox
+                  checked={formData.conditions.includes(condition.id)}
+                  onCheckedChange={() => toggleArrayField('conditions', condition.id)}
+                  className="border-muted-foreground data-[state=checked]:bg-gold data-[state=checked]:border-gold"
+                />
+                <span className="body-small text-foreground">{t(condition.labelKey)}</span>
+              </label>
+            ))}
+          </div>
         </div>
+
+        {/* Medications - Text area */}
         <div className="space-y-3">
           <label className="caption text-muted-foreground">{t("wizard.step2.medications")}</label>
           <Textarea
@@ -345,24 +400,30 @@ const PreEvaluationWizard = () => {
             className="bg-transparent border-border focus:border-foreground transition-colors min-h-[80px]"
           />
         </div>
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <label className="caption text-muted-foreground">{t("wizard.step2.tobacco")}</label>
-            <Input
-              value={formData.tobacco}
-              onChange={(e) => updateFormData("tobacco", e.target.value)}
-              placeholder={t("wizard.step2.tobacco.placeholder")}
-              className="bg-transparent border-border focus:border-foreground transition-colors"
-            />
-          </div>
-          <div className="space-y-3">
-            <label className="caption text-muted-foreground">{t("wizard.step2.bruxism")}</label>
-            <Input
-              value={formData.bruxism}
-              onChange={(e) => updateFormData("bruxism", e.target.value)}
-              placeholder={t("wizard.step2.bruxism.placeholder")}
-              className="bg-transparent border-border focus:border-foreground transition-colors"
-            />
+
+        {/* Habits - Checkboxes */}
+        <div className="space-y-4">
+          <label className="caption text-muted-foreground">{t("wizard.step2.habits")}</label>
+          <div className="grid grid-cols-2 gap-3">
+            {HABIT_OPTIONS.map((habit) => (
+              <label
+                key={habit.id}
+                className={`
+                  flex items-center gap-3 p-4 border cursor-pointer transition-all duration-300
+                  ${formData.habits.includes(habit.id)
+                    ? 'border-gold-muted bg-gold-muted/5'
+                    : 'border-border hover:border-foreground/30'
+                  }
+                `}
+              >
+                <Checkbox
+                  checked={formData.habits.includes(habit.id)}
+                  onCheckedChange={() => toggleArrayField('habits', habit.id)}
+                  className="border-muted-foreground data-[state=checked]:bg-gold data-[state=checked]:border-gold"
+                />
+                <span className="body-small text-foreground">{t(habit.labelKey)}</span>
+              </label>
+            ))}
           </div>
         </div>
       </div>
