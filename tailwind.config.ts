@@ -73,6 +73,8 @@ export default {
         'brand-lg': 'var(--shadow-lg)',
         'brand-xl': 'var(--shadow-xl)',
         'brand-hover': 'var(--shadow-hover)',
+        'elegant': 'var(--shadow-elegant)',
+        'lift': 'var(--shadow-lift)',
       },
       fontFamily: {
         serif: ["Cormorant Garamond", "Georgia", "serif"],
@@ -82,6 +84,16 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      transitionTimingFunction: {
+        'elegant': 'var(--easing-elegant)',
+        'smooth': 'var(--easing-smooth)',
+        'bounce': 'var(--easing-bounce)',
+      },
+      transitionDuration: {
+        'fast': 'var(--duration-fast)',
+        'normal': 'var(--duration-normal)',
+        'slow': 'var(--duration-slow)',
       },
       keyframes: {
         "accordion-down": {
@@ -98,8 +110,13 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       spacing: {
-        section: "clamp(8rem, 20vh, 16rem)",
-        "section-sm": "clamp(4rem, 10vh, 8rem)",
+        section: "var(--py-section)",
+        "section-sm": "var(--py-section-sm)",
+        "section-lg": "var(--py-section-lg)",
+        "aire": "var(--space-aire)",
+        "aire-sm": "var(--space-aire-sm)",
+        "aire-lg": "var(--space-aire-lg)",
+        "aire-xl": "var(--space-aire-xl)",
       },
     },
   },

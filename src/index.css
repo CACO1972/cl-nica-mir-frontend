@@ -8,26 +8,81 @@
 
 @layer base {
   :root {
-    /* Brand tone decomposition for coherent depth */
+    color-scheme: light dark;
+    
+    /* ═══════════════════════════════════════════════════════════════
+       BRAND TONE DECOMPOSITION - Coherent Depth System
+       ═══════════════════════════════════════════════════════════════ */
     --brand-h: 38;
     --brand-s: 35%;
     --brand-l-main: 58%;
     --brand-l-hover: 65%;
     --brand-l-muted: 70%;
     
-    /* Coherent shadow system - inherits brand hue */
+    /* ─────────────────────────────────────────────────────────────────
+       FLUID SPACING SYSTEM - "Aire" Elegante
+       ───────────────────────────────────────────────────────────────── */
+    --space-aire-xs: clamp(1rem, 3vw, 2rem);
+    --space-aire-sm: clamp(2rem, 5vw, 4rem);
+    --space-aire: clamp(3rem, 8vw, 6rem);
+    --space-aire-lg: clamp(4rem, 12vw, 10rem);
+    --space-aire-xl: clamp(6rem, 15vw, 14rem);
+    
+    /* Section padding using vh for vertical "breathing" */
+    --py-section: clamp(4rem, 12vh, 8rem);
+    --py-section-sm: clamp(2rem, 6vh, 4rem);
+    --py-section-lg: clamp(6rem, 18vh, 12rem);
+    
+    /* Container constraints */
+    --container-max: 1280px;
+    --container-prose: 720px;
+    
+    /* ─────────────────────────────────────────────────────────────────
+       FLUID TYPOGRAPHY - Maximum Legibility
+       ───────────────────────────────────────────────────────────────── */
+    --fs-display-institutional: clamp(2.75rem, 14vw, 16rem);
+    --fs-display-massive: clamp(4.5rem, 16vw, 14rem);
+    --fs-display-huge: clamp(3.5rem, 12vw, 10rem);
+    --fs-display-large: clamp(2.5rem, 6vw, 5rem);
+    --fs-display-medium: clamp(1.75rem, 4vw, 3rem);
+    --fs-body-large: clamp(1rem, 1.5vw, 1.25rem);
+    --fs-body: clamp(1rem, 0.2vw + 0.9rem, 1.15rem);
+    --fs-body-small: 0.875rem;
+    --fs-caption: 0.75rem;
+    
+    /* ─────────────────────────────────────────────────────────────────
+       COHERENT SHADOW SYSTEM - Brand-inherited warmth
+       ───────────────────────────────────────────────────────────────── */
     --shadow-color: hsla(var(--brand-h), 20%, 10%, 0.08);
     --shadow-color-hover: hsla(var(--brand-h), 25%, 8%, 0.12);
     --shadow-color-strong: hsla(var(--brand-h), 20%, 5%, 0.18);
     
-    /* Shadow presets */
+    /* Shadow presets with brand warmth */
     --shadow-sm: 0 1px 2px var(--shadow-color);
     --shadow-md: 0 4px 12px var(--shadow-color), 0 2px 4px var(--shadow-color);
     --shadow-lg: 0 8px 24px var(--shadow-color), 0 4px 8px var(--shadow-color);
     --shadow-xl: 0 16px 48px var(--shadow-color-strong), 0 8px 16px var(--shadow-color);
     --shadow-hover: 0 8px 32px var(--shadow-color-hover), 0 4px 12px var(--shadow-color);
     
-    /* Minimal palette: white / soft black / warm gray */
+    /* Elegant depth shadows (refined lift effect) */
+    --shadow-elegant: 0 10px 30px -10px hsla(var(--brand-h), 15%, 10%, 0.15);
+    --shadow-lift: 0 20px 40px -15px hsla(var(--brand-h), 20%, 8%, 0.25);
+    
+    /* ─────────────────────────────────────────────────────────────────
+       GPU-OPTIMIZED EASING - Smooth performance
+       ───────────────────────────────────────────────────────────────── */
+    --easing-elegant: cubic-bezier(0.16, 1, 0.3, 1);
+    --easing-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Transition durations */
+    --duration-fast: 200ms;
+    --duration-normal: 400ms;
+    --duration-slow: 800ms;
+    
+    /* ─────────────────────────────────────────────────────────────────
+       SEMANTIC COLOR PALETTE
+       ───────────────────────────────────────────────────────────────── */
     --background: 0 0% 100%;
     --foreground: 0 0% 8%;
 
@@ -81,6 +136,10 @@
     --shadow-color: hsla(var(--brand-h), 30%, 5%, 0.25);
     --shadow-color-hover: hsla(var(--brand-h), 35%, 3%, 0.35);
     --shadow-color-strong: hsla(var(--brand-h), 30%, 2%, 0.45);
+    
+    /* Elegant depth shadows for dark mode */
+    --shadow-elegant: 0 10px 30px -10px hsla(var(--brand-h), 25%, 3%, 0.35);
+    --shadow-lift: 0 20px 40px -15px hsla(var(--brand-h), 30%, 2%, 0.5);
     
     --background: 0 0% 6%;
     --foreground: 0 0% 95%;
@@ -382,18 +441,106 @@
   .aspect-ultrawide { aspect-ratio: 21 / 9; }
 
   /* ═══════════════════════════════════════════════════════════════
-     ANIMATIONS
+     GPU-OPTIMIZED ANIMATIONS - Performance-first
      ═══════════════════════════════════════════════════════════════ */
+  
+  /* Reveal animation - GPU optimized with will-change */
+  .reveal-element {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: 
+      opacity var(--duration-slow) var(--easing-elegant), 
+      transform var(--duration-slow) var(--easing-elegant);
+    will-change: opacity, transform;
+  }
+  
+  .reveal-element.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Staggered reveal for lists/grids */
+  .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 
+      opacity var(--duration-slow) var(--easing-elegant), 
+      transform var(--duration-slow) var(--easing-elegant);
+  }
+  
+  .reveal-stagger.revealed > *:nth-child(1) { transition-delay: 0ms; }
+  .reveal-stagger.revealed > *:nth-child(2) { transition-delay: 100ms; }
+  .reveal-stagger.revealed > *:nth-child(3) { transition-delay: 200ms; }
+  .reveal-stagger.revealed > *:nth-child(4) { transition-delay: 300ms; }
+  .reveal-stagger.revealed > *:nth-child(5) { transition-delay: 400ms; }
+  .reveal-stagger.revealed > *:nth-child(6) { transition-delay: 500ms; }
+  
+  .reveal-stagger.revealed > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────
+     DYNAMIC BUTTON STATES - Elegant lift effect
+     ───────────────────────────────────────────────────────────────── */
+  .btn-dynamic {
+    transition: 
+      transform var(--duration-normal) var(--easing-elegant), 
+      box-shadow var(--duration-normal) var(--easing-elegant);
+    box-shadow: var(--shadow-elegant);
+    will-change: transform, box-shadow;
+  }
+  
+  .btn-dynamic:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lift);
+  }
+  
+  .btn-dynamic:active {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-md);
+  }
+  
+  /* ─────────────────────────────────────────────────────────────────
+     CARD HOVER STATES - Premium depth
+     ───────────────────────────────────────────────────────────────── */
+  .card-hover {
+    transition: 
+      transform var(--duration-normal) var(--easing-elegant), 
+      box-shadow var(--duration-normal) var(--easing-elegant),
+      border-color var(--duration-normal) var(--easing-smooth);
+    will-change: transform, box-shadow;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     SECTION SPACING UTILITIES - "Aire" system
+     ───────────────────────────────────────────────────────────────── */
+  .py-section { padding-top: var(--py-section); padding-bottom: var(--py-section); }
+  .py-section-sm { padding-top: var(--py-section-sm); padding-bottom: var(--py-section-sm); }
+  .py-section-lg { padding-top: var(--py-section-lg); padding-bottom: var(--py-section-lg); }
+  
+  .space-aire { margin-bottom: var(--space-aire); }
+  .space-aire-sm { margin-bottom: var(--space-aire-sm); }
+  .space-aire-lg { margin-bottom: var(--space-aire-lg); }
+
+  /* ─────────────────────────────────────────────────────────────────
+     EXISTING ANIMATIONS
+     ───────────────────────────────────────────────────────────────── */
   .animate-fade-in {
-    animation: fadeIn 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: fadeIn 1.2s var(--easing-smooth) forwards;
   }
 
   .animate-slide-up {
-    animation: slideUp 1s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: slideUp 1s var(--easing-smooth) forwards;
   }
 
   .animate-reveal {
-    animation: reveal 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: reveal 1.5s var(--easing-smooth) forwards;
   }
 
   .animate-gentle-bounce {
