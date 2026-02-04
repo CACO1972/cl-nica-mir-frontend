@@ -127,8 +127,14 @@ const translations: Record<Language, Record<string, string>> = {
     "wizard.step5.caption": "Paso 5 de 8",
     "wizard.step5.headline": "Pre-Análisis",
     "wizard.step5.analyzing": "Analizando tu información...",
+    "wizard.step5.waiting": "Preparando análisis...",
+    "wizard.step5.complete": "Análisis completado",
     "wizard.step5.message": "Nuestro sistema está procesando los datos proporcionados para orientar tu evaluación hacia el módulo más adecuado.",
     "wizard.step5.result": "Basado en tu perfil, tu caso podría beneficiarse del protocolo de evaluación integral. Confirmaremos los detalles durante tu visita presencial.",
+    "wizard.step5.riskLevel": "Nivel de riesgo",
+    "wizard.step5.riskLow": "Bajo",
+    "wizard.step5.riskModerate": "Moderado",
+    "wizard.step5.riskHigh": "Alto",
 
     // Wizard Step 6
     "wizard.step6.caption": "Paso 6 de 8",
@@ -163,6 +169,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Wizard Navigation
     "wizard.nav.back": "Volver",
     "wizard.nav.continue": "Continuar",
+    "wizard.nav.processing": "Procesando...",
+    
+    // Wizard Errors
+    "wizard.errors.required": "Por favor completa todos los campos requeridos",
+    "wizard.errors.invalidEmail": "Por favor ingresa un correo electrónico válido",
 
     // Menu
     "menu.open": "Menú",
@@ -290,8 +301,14 @@ const translations: Record<Language, Record<string, string>> = {
     "wizard.step5.caption": "Step 5 of 8",
     "wizard.step5.headline": "Pre-Analysis",
     "wizard.step5.analyzing": "Analyzing your information...",
+    "wizard.step5.waiting": "Preparing analysis...",
+    "wizard.step5.complete": "Analysis complete",
     "wizard.step5.message": "Our system is processing the provided data to guide your evaluation toward the most appropriate module.",
     "wizard.step5.result": "Based on your profile, your case could benefit from the comprehensive evaluation protocol. We will confirm the details during your in-person visit.",
+    "wizard.step5.riskLevel": "Risk level",
+    "wizard.step5.riskLow": "Low",
+    "wizard.step5.riskModerate": "Moderate",
+    "wizard.step5.riskHigh": "High",
 
     // Wizard Step 6
     "wizard.step6.caption": "Step 6 of 8",
@@ -326,6 +343,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Wizard Navigation
     "wizard.nav.back": "Back",
     "wizard.nav.continue": "Continue",
+    "wizard.nav.processing": "Processing...",
+    
+    // Wizard Errors
+    "wizard.errors.required": "Please fill in all required fields",
+    "wizard.errors.invalidEmail": "Please enter a valid email address",
 
     // Menu
     "menu.open": "Menu",

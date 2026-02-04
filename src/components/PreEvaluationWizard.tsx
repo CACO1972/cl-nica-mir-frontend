@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronRight, ChevronLeft, Upload, Camera, Check } from "lucide-react";
+import { ChevronRight, ChevronLeft, Upload, Camera, Check, AlertCircle, Loader2 } from "lucide-react";
+import { createLead, uploadFile, triggerIAScan, createCheckout, IAScanResponse } from "@/services/funnelApi";
+import { toast } from "sonner";
 
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -28,7 +30,11 @@ interface FormData {
 const PreEvaluationWizard = () => {
   const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [leadId, setLeadId] = useState<string | null>(null);
+  const [iaResult, setIaResult] = useState<IAScanResponse['data'] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -46,9 +52,176 @@ const PreEvaluationWizard = () => {
 
   const updateFormData = (field: keyof FormData, value: string | File | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setError(null);
   };
 
-  const nextStep = () => {
+  // Validate step 1 (required fields)
+  const validateStep1 = () => {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+      setError(t("wizard.errors.required"));
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError(t("wizard.errors.invalidEmail"));
+      return false;
+    }
+    return true;
+  };
+
+  // Create lead after step 3 (before image upload)
+  const handleCreateLead = async () => {
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      const response = await createLead({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        reason: `${formData.conditions} | ${formData.lastTreatment}`,
+        origin: 'pre-evaluation-wizard',
+      });
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Error al crear el lead');
+      }
+
+      setLeadId(response.data.id);
+      console.log('[Wizard] Lead created:', response.data.id);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(message);
+      toast.error(message);
+      return false;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Upload image after step 4
+  const handleUploadImage = async () => {
+    if (!leadId || !formData.imageFile) {
+      // Skip if no image - allow to continue
+      return true;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await uploadFile({
+        lead_id: leadId,
+        file_type: 'selfie',
+        file: formData.imageFile,
+      });
+
+      if (!response.success) {
+        throw new Error(response.error || 'Error al subir la imagen');
+      }
+
+      console.log('[Wizard] Image uploaded:', response.data?.upload_id);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(message);
+      toast.error(message);
+      return false;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Trigger IA scan on step 5
+  const handleIAScan = async () => {
+    if (!leadId) return false;
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await triggerIAScan(leadId);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Error en el análisis IA');
+      }
+
+      setIaResult(response.data);
+      console.log('[Wizard] IA scan complete:', response.data.ia_result.overall_risk);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(message);
+      toast.error(message);
+      return false;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Create checkout and redirect to payment
+  const handlePayment = async () => {
+    if (!leadId) {
+      setError('No se encontró el lead');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await createCheckout(leadId);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Error al crear el checkout');
+      }
+
+      console.log('[Wizard] Checkout created, redirecting...');
+      
+      // Redirect to MercadoPago
+      window.location.href = response.data.init_point;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(message);
+      toast.error(message);
+      setIsProcessing(false);
+    }
+  };
+
+  const nextStep = async () => {
+    // Validation and API calls per step
+    if (currentStep === 1 && !validateStep1()) {
+      return;
+    }
+
+    // Create lead after completing personal info + medical history + key question
+    if (currentStep === 3) {
+      const success = await handleCreateLead();
+      if (!success) return;
+    }
+
+    // Upload image after step 4 and trigger IA scan
+    if (currentStep === 4) {
+      if (formData.imageFile) {
+        const uploadSuccess = await handleUploadImage();
+        if (!uploadSuccess) return;
+        
+        // Auto-trigger IA scan only if image was uploaded
+        setCurrentStep(5);
+        const iaScanSuccess = await handleIAScan();
+        if (iaScanSuccess) {
+          // Auto-advance to results after scan
+          setTimeout(() => setCurrentStep(6), 1500);
+        }
+        return;
+      } else {
+        // No image - skip IA scan and go directly to evaluation info
+        setCurrentStep(6);
+        return;
+      }
+    }
+
     if (currentStep < 8) {
       setCurrentStep((prev) => (prev + 1) as WizardStep);
     }
@@ -57,15 +230,8 @@ const PreEvaluationWizard = () => {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as WizardStep);
+      setError(null);
     }
-  };
-
-  const handlePayment = async () => {
-    setIsProcessingPayment(true);
-    // Simulated payment processing - placeholder for real payment integration
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsProcessingPayment(false);
-    nextStep();
   };
 
   const renderStepIndicator = () => (
@@ -284,16 +450,51 @@ const PreEvaluationWizard = () => {
       <div className="max-w-lg space-y-8">
         <div className="p-8 border border-border">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-3 h-3 rounded-full bg-muted-foreground animate-pulse" />
-            <span className="body-small text-muted-foreground">{t("wizard.step5.analyzing")}</span>
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-5 h-5 text-gold-muted animate-spin" />
+                <span className="body-small text-muted-foreground">{t("wizard.step5.analyzing")}</span>
+              </>
+            ) : iaResult ? (
+              <>
+                <Check className="w-5 h-5 text-gold" />
+                <span className="body-small text-foreground">{t("wizard.step5.complete")}</span>
+              </>
+            ) : error ? (
+              <>
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                <span className="body-small text-destructive">{error}</span>
+              </>
+            ) : (
+              <>
+                <div className="w-3 h-3 rounded-full bg-muted-foreground animate-pulse" />
+                <span className="body-small text-muted-foreground">{t("wizard.step5.waiting")}</span>
+              </>
+            )}
           </div>
           <p className="body-large text-muted-foreground">
             {t("wizard.step5.message")}
           </p>
         </div>
-        <p className="body-large text-foreground">
-          {t("wizard.step5.result")}
-        </p>
+        {iaResult && (
+          <div className="space-y-4">
+            <p className="body-large text-foreground">
+              {t("wizard.step5.result")}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="caption text-muted-foreground">{t("wizard.step5.riskLevel")}:</span>
+              <span className={`caption font-medium ${
+                iaResult.ia_result.overall_risk === 'low' ? 'text-green-600' :
+                iaResult.ia_result.overall_risk === 'moderate' ? 'text-yellow-600' :
+                'text-red-600'
+              }`}>
+                {iaResult.ia_result.overall_risk === 'low' ? t("wizard.step5.riskLow") :
+                 iaResult.ia_result.overall_risk === 'moderate' ? t("wizard.step5.riskModerate") :
+                 t("wizard.step5.riskHigh")}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -377,10 +578,17 @@ const PreEvaluationWizard = () => {
           <div className="pt-4 border-t border-border">
             <button
               onClick={handlePayment}
-              disabled={isProcessingPayment}
-              className="w-full py-4 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 caption tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isProcessing}
+              className="w-full py-4 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 caption tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isProcessingPayment ? t("wizard.step7.processing") : t("wizard.step7.button")}
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t("wizard.step7.processing")}
+                </>
+              ) : (
+                t("wizard.step7.button")
+              )}
             </button>
           </div>
         </div>
@@ -447,13 +655,21 @@ const PreEvaluationWizard = () => {
         {renderStepIndicator()}
         {renderCurrentStep()}
         
+        {/* Error display */}
+        {error && currentStep !== 5 && (
+          <div className="mt-8 p-4 border border-destructive/30 bg-destructive/5 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+            <p className="body-small text-destructive">{error}</p>
+          </div>
+        )}
+        
         {/* Navigation */}
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <button
             onClick={prevStep}
-            disabled={currentStep === 1}
+            disabled={currentStep === 1 || isProcessing}
             className={`flex items-center gap-2 caption transition-colors ${
-              currentStep === 1
+              currentStep === 1 || isProcessing
                 ? "text-muted-foreground/30 cursor-not-allowed"
                 : "text-muted-foreground hover:text-foreground"
             }`}
@@ -462,13 +678,23 @@ const PreEvaluationWizard = () => {
             {t("wizard.nav.back")}
           </button>
           
-          {currentStep < 8 && (
+          {currentStep < 7 && currentStep !== 5 && (
             <button
               onClick={nextStep}
-              className="flex items-center gap-2 caption text-foreground hover:text-muted-foreground transition-colors"
+              disabled={isProcessing}
+              className="flex items-center gap-2 caption text-foreground hover:text-muted-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {t("wizard.nav.continue")}
-              <ChevronRight className="w-4 h-4" strokeWidth={1} />
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t("wizard.nav.processing")}
+                </>
+              ) : (
+                <>
+                  {t("wizard.nav.continue")}
+                  <ChevronRight className="w-4 h-4" strokeWidth={1} />
+                </>
+              )}
             </button>
           )}
         </div>
