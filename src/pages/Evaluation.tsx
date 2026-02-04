@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import MenuOverlay from "@/components/MenuOverlay";
 import EditorialQuote from "@/components/EditorialQuote";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
 const Evaluation = () => {
@@ -12,6 +13,9 @@ const Evaluation = () => {
   const { theme, toggleTheme } = useTheme();
   const [showWizard, setShowWizard] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Reveal animation for entry points
+  const entryPointsRef = useRevealOnScroll<HTMLDivElement>({ threshold: 0.15, delay: 150 });
 
   // Scroll to top on page load
   useEffect(() => {
@@ -279,10 +283,10 @@ const Evaluation = () => {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-16 lg:gap-24">
+          <div ref={entryPointsRef} className="grid md:grid-cols-2 gap-16 lg:gap-24">
             {/* Pre-Evaluación Predictiva */}
-            <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
+            <div className="space-y-6 reveal-element">
+              <h3 className="text-base md:text-lg font-medium tracking-[0.2em] uppercase text-gold-muted hover:text-gold transition-colors duration-500 cursor-default">
                 {t("eval.begin.preevaluation.title")}
               </h3>
               <p className="body-large text-muted-foreground">
@@ -297,8 +301,8 @@ const Evaluation = () => {
             </div>
 
             {/* Portal Paciente */}
-            <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
+            <div className="space-y-6 reveal-element">
+              <h3 className="text-base md:text-lg font-medium tracking-[0.2em] uppercase text-gold-muted hover:text-gold transition-colors duration-500 cursor-default">
                 {t("eval.begin.portal.title")}
               </h3>
               <p className="body-large text-muted-foreground">
@@ -310,8 +314,8 @@ const Evaluation = () => {
             </div>
 
             {/* Segunda Opinión */}
-            <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
+            <div className="space-y-6 reveal-element">
+              <h3 className="text-base md:text-lg font-medium tracking-[0.2em] uppercase text-gold-muted hover:text-gold transition-colors duration-500 cursor-default">
                 {t("eval.begin.opinion.title")}
               </h3>
               <p className="body-large text-muted-foreground">
@@ -323,8 +327,8 @@ const Evaluation = () => {
             </div>
 
             {/* Pacientes Internacionales */}
-            <div className="space-y-6">
-              <h3 className="text-sm font-medium tracking-[0.15em] uppercase text-foreground/70 hover:text-foreground transition-colors duration-300 cursor-default">
+            <div className="space-y-6 reveal-element">
+              <h3 className="text-base md:text-lg font-medium tracking-[0.2em] uppercase text-gold-muted hover:text-gold transition-colors duration-500 cursor-default">
                 {t("eval.begin.international.title")}
               </h3>
               <p className="body-large text-muted-foreground">
