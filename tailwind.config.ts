@@ -67,6 +67,13 @@ export default {
           muted: "hsl(var(--gold-muted))",
         },
       },
+      boxShadow: {
+        'brand-sm': 'var(--shadow-sm)',
+        'brand-md': 'var(--shadow-md)',
+        'brand-lg': 'var(--shadow-lg)',
+        'brand-xl': 'var(--shadow-xl)',
+        'brand-hover': 'var(--shadow-hover)',
+      },
       fontFamily: {
         serif: ["Cormorant Garamond", "Georgia", "serif"],
         sans: ["Inter", "system-ui", "sans-serif"],

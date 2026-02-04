@@ -8,6 +8,25 @@
 
 @layer base {
   :root {
+    /* Brand tone decomposition for coherent depth */
+    --brand-h: 38;
+    --brand-s: 35%;
+    --brand-l-main: 58%;
+    --brand-l-hover: 65%;
+    --brand-l-muted: 70%;
+    
+    /* Coherent shadow system - inherits brand hue */
+    --shadow-color: hsla(var(--brand-h), 20%, 10%, 0.08);
+    --shadow-color-hover: hsla(var(--brand-h), 25%, 8%, 0.12);
+    --shadow-color-strong: hsla(var(--brand-h), 20%, 5%, 0.18);
+    
+    /* Shadow presets */
+    --shadow-sm: 0 1px 2px var(--shadow-color);
+    --shadow-md: 0 4px 12px var(--shadow-color), 0 2px 4px var(--shadow-color);
+    --shadow-lg: 0 8px 24px var(--shadow-color), 0 4px 8px var(--shadow-color);
+    --shadow-xl: 0 16px 48px var(--shadow-color-strong), 0 8px 16px var(--shadow-color);
+    --shadow-hover: 0 8px 32px var(--shadow-color-hover), 0 4px 12px var(--shadow-color);
+    
     /* Minimal palette: white / soft black / warm gray */
     --background: 0 0% 100%;
     --foreground: 0 0% 8%;
@@ -22,28 +41,28 @@
     --primary: 0 0% 8%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Warm gray */
-    --secondary: 30 5% 96%;
+    /* Secondary - Warm gray with brand undertone */
+    --secondary: calc(var(--brand-h)) 5% 96%;
     --secondary-foreground: 0 0% 8%;
 
     /* Muted - Lighter warm gray */
-    --muted: 30 5% 94%;
+    --muted: calc(var(--brand-h)) 5% 94%;
     --muted-foreground: 0 0% 45%;
 
-    /* Accent - Same as primary for consistency */
-    --accent: 30 5% 96%;
+    /* Accent - Subtle brand warmth */
+    --accent: calc(var(--brand-h)) 5% 96%;
     --accent-foreground: 0 0% 8%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --border: calc(var(--brand-h)) 3% 90%;
+    --input: calc(var(--brand-h)) 3% 90%;
     --ring: 0 0% 8%;
 
-    /* Accent gold - champagne muted */
-    --gold: 38 35% 58%;
-    --gold-muted: 38 25% 70%;
+    /* Accent gold - computed from brand variables */
+    --gold: var(--brand-h) var(--brand-s) var(--brand-l-main);
+    --gold-muted: var(--brand-h) 25% var(--brand-l-muted);
 
     --radius: 0;
 
@@ -58,6 +77,11 @@
   }
 
   .dark {
+    /* Dark mode shadow system - deeper, warmer */
+    --shadow-color: hsla(var(--brand-h), 30%, 5%, 0.25);
+    --shadow-color-hover: hsla(var(--brand-h), 35%, 3%, 0.35);
+    --shadow-color-strong: hsla(var(--brand-h), 30%, 2%, 0.45);
+    
     --background: 0 0% 6%;
     --foreground: 0 0% 95%;
 
@@ -70,25 +94,25 @@
     --primary: 0 0% 95%;
     --primary-foreground: 0 0% 4%;
 
-    --secondary: 0 0% 12%;
+    --secondary: calc(var(--brand-h)) 3% 12%;
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 0 0% 15%;
+    --muted: calc(var(--brand-h)) 3% 15%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 0 0% 12%;
+    --accent: calc(var(--brand-h)) 3% 12%;
     --accent-foreground: 0 0% 95%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
+    --border: calc(var(--brand-h)) 5% 18%;
+    --input: calc(var(--brand-h)) 5% 18%;
     --ring: 0 0% 95%;
 
-    /* Accent gold - champagne muted (dark mode) */
-    --gold: 38 30% 50%;
-    --gold-muted: 38 20% 40%;
+    /* Accent gold - darker for dark mode */
+    --gold: var(--brand-h) 30% 50%;
+    --gold-muted: var(--brand-h) 20% 40%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
