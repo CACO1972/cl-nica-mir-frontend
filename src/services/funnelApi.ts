@@ -91,7 +91,20 @@ export async function createLead(data: LeadData): Promise<LeadResponse> {
       return { success: false, error: error.message };
     }
 
-    return response as LeadResponse;
+    // Map backend response to expected format
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          id: response.data.lead_id, // Backend returns lead_id, frontend expects id
+          name: data.name,
+          email: data.email,
+          status: response.data.status,
+        },
+      };
+    }
+
+    return { success: false, error: response.error || 'Unknown error' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     console.error('[FunnelAPI] Lead creation exception:', message);
@@ -145,7 +158,19 @@ export async function triggerIAScan(leadId: string): Promise<IAScanResponse> {
       return { success: false, error: error.message };
     }
 
-    return response as IAScanResponse;
+    // Map backend response to expected format
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          lead_id: response.data.lead_id,
+          ia_result: response.data.scan_result, // Backend returns scan_result, frontend expects ia_result
+          completed_at: new Date().toISOString(),
+        },
+      };
+    }
+
+    return { success: false, error: response.error || 'Unknown error' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     console.error('[FunnelAPI] IA scan exception:', message);
@@ -177,7 +202,19 @@ export async function createCheckout(
       return { success: false, error: error.message };
     }
 
-    return response as CheckoutResponse;
+    // Map backend response to expected format
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          preference_id: response.data.preference_id,
+          init_point: response.data.checkout_url, // Backend returns checkout_url
+          sandbox_init_point: response.data.sandbox_url, // Backend returns sandbox_url
+        },
+      };
+    }
+
+    return { success: false, error: response.error || 'Unknown error' };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     console.error('[FunnelAPI] Checkout exception:', message);
