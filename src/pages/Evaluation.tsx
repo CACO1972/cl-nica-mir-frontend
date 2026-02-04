@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import MenuOverlay from "@/components/MenuOverlay";
 import EditorialQuote from "@/components/EditorialQuote";
+import EvaluationSplash from "@/components/EvaluationSplash";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
@@ -13,9 +14,18 @@ const Evaluation = () => {
   const { theme, toggleTheme } = useTheme();
   const [showWizard, setShowWizard] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [contentVisible, setContentVisible] = useState(false);
   
   // Reveal animation for entry points
   const entryPointsRef = useRevealOnScroll<HTMLDivElement>({ threshold: 0.15, delay: 150 });
+
+  // Handle splash completion
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    // Trigger content entrance animation
+    setTimeout(() => setContentVisible(true), 100);
+  };
 
   // If wizard is active, show it full screen
   if (showWizard) {
@@ -57,11 +67,18 @@ const Evaluation = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
+      {/* Splash Screen */}
+      {showSplash && <EvaluationSplash onComplete={handleSplashComplete} />}
+
       {/* Menu Overlay */}
       <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Minimal Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
+      <header 
+        className={`fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm transition-all duration-1000 ease-out ${
+          contentVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="editorial-link">
@@ -92,29 +109,50 @@ const Evaluation = () => {
       </header>
 
       {/* Hero Section - Institutional Declaration */}
-      <section className="min-h-[75vh] flex flex-col justify-center px-6 lg:px-12 pt-24 pb-16">
+      <section 
+        className={`min-h-[75vh] flex flex-col justify-center px-6 lg:px-12 pt-24 pb-16 transition-all duration-1000 ease-out delay-200 ${
+          contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
         <div className="max-w-7xl mx-auto w-full">
           {/* Caption - minimal context */}
-          <div className="animate-slide-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
+          <div 
+            className={`transition-all duration-700 ease-out ${
+              contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
+            style={{ transitionDelay: contentVisible ? "400ms" : "0ms" }}
+          >
             <p className="caption text-muted-foreground/60 mb-12">
               {t("eval.caption")}
             </p>
           </div>
           
           {/* Headline - dominant, institutional */}
-          <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
+          <div 
+            className={`transition-all duration-700 ease-out ${
+              contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
+            style={{ transitionDelay: contentVisible ? "600ms" : "0ms" }}
+          >
             <h1 className="display-huge text-foreground max-w-5xl relative">
               {t("eval.headline")}
               {/* Subtle gold editorial line */}
               <span 
-                className="absolute -bottom-6 left-0 w-16 h-px bg-gold-muted/40"
-                style={{ animation: 'fadeIn 1.2s ease-out 0.8s forwards', opacity: 0 }}
+                className={`absolute -bottom-6 left-0 w-16 h-px bg-gold-muted/40 transition-all duration-1000 ease-out ${
+                  contentVisible ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"
+                }`}
+                style={{ transformOrigin: "left", transitionDelay: contentVisible ? "1000ms" : "0ms" }}
               />
             </h1>
           </div>
           
           {/* Subheadline - separated, deliberate */}
-          <div className="animate-slide-up mt-20 lg:mt-28" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+          <div 
+            className={`mt-20 lg:mt-28 transition-all duration-700 ease-out ${
+              contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
+            style={{ transitionDelay: contentVisible ? "900ms" : "0ms" }}
+          >
             <p className="body-large text-muted-foreground/80 max-w-xl leading-relaxed">
               {t("eval.subline")}
             </p>
