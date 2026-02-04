@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.whatsapp]
 verify_jwt = false
+
+[functions.funnel-lead]
+verify_jwt = false
+
+[functions.funnel-upload]
+verify_jwt = false
+
+[functions.funnel-ia-scan]
+verify_jwt = false
+
+[functions.funnel-checkout]
+verify_jwt = false
