@@ -44,3 +44,15 @@ verify_jwt = false
 
 [functions.metrics]
 verify_jwt = false
+
+[functions.regional-intake]
+verify_jwt = false
+
+[functions.regional-ia-analysis]
+verify_jwt = false
+
+[functions.regional-premium-checkout]
+verify_jwt = false
+
+[functions.regional-mini-call]
+verify_jwt = false
