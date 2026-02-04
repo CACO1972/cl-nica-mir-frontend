@@ -26,3 +26,21 @@ verify_jwt = false
 
 [functions.agenda-book]
 verify_jwt = false
+
+[functions.auth-login]
+verify_jwt = false
+
+[functions.auth-signup]
+verify_jwt = false
+
+[functions.me]
+verify_jwt = false
+
+[functions.notify]
+verify_jwt = false
+
+[functions.second-opinion]
+verify_jwt = false
+
+[functions.metrics]
+verify_jwt = false

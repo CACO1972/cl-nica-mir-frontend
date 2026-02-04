@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_category: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          lead_id: string | null
+          profile_id: string | null
+          referrer: string | null
+          session_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_category?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          lead_id?: string | null
+          profile_id?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_category?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          lead_id?: string | null
+          profile_id?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_types: {
         Row: {
           buffer_after_minutes: number
@@ -133,6 +193,66 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consents: {
+        Row: {
+          accepted: boolean
+          accepted_at: string | null
+          consent_text: string | null
+          consent_type: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          lead_id: string | null
+          profile_id: string | null
+          signature_data: string | null
+          user_agent: string | null
+          version: string
+        }
+        Insert: {
+          accepted: boolean
+          accepted_at?: string | null
+          consent_text?: string | null
+          consent_type: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          lead_id?: string | null
+          profile_id?: string | null
+          signature_data?: string | null
+          user_agent?: string | null
+          version?: string
+        }
+        Update: {
+          accepted?: boolean
+          accepted_at?: string | null
+          consent_text?: string | null
+          consent_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          lead_id?: string | null
+          profile_id?: string | null
+          signature_data?: string | null
+          user_agent?: string | null
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consents_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -329,6 +449,72 @@ export type Database = {
           },
         ]
       }
+      notifications_log: {
+        Row: {
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          external_message_id: string | null
+          id: string
+          lead_id: string | null
+          message_content: string | null
+          profile_id: string | null
+          recipient_email: string | null
+          recipient_phone: string | null
+          sent_at: string | null
+          status: string
+          template_name: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_message_id?: string | null
+          id?: string
+          lead_id?: string | null
+          message_content?: string | null
+          profile_id?: string | null
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          sent_at?: string | null
+          status?: string
+          template_name?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_message_id?: string | null
+          id?: string
+          lead_id?: string | null
+          message_content?: string | null
+          profile_id?: string | null
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          sent_at?: string | null
+          status?: string
+          template_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_log_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_scheduling_preferences: {
         Row: {
           avoid_dates: string[] | null
@@ -369,6 +555,168 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          dentalink_patient_id: string | null
+          email: string
+          email_verified: boolean | null
+          full_name: string
+          gender: string | null
+          id: string
+          is_active: boolean | null
+          phone: string | null
+          phone_verified: boolean | null
+          region: string | null
+          rut: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          dentalink_patient_id?: string | null
+          email: string
+          email_verified?: boolean | null
+          full_name: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          phone_verified?: boolean | null
+          region?: string | null
+          rut?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          dentalink_patient_id?: string | null
+          email?: string
+          email_verified?: boolean | null
+          full_name?: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          phone_verified?: boolean | null
+          region?: string | null
+          rut?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      second_opinions: {
+        Row: {
+          budget_document_path: string | null
+          converted_to_evaluation: boolean | null
+          created_at: string
+          current_diagnosis: string | null
+          email: string
+          external_budget_amount: number | null
+          external_clinic_name: string | null
+          flow_type: string
+          has_rx: boolean | null
+          ia_completed_at: string | null
+          ia_report: Json | null
+          id: string
+          lead_id: string | null
+          name: string
+          payment_id: string | null
+          payment_status: string | null
+          phone: string
+          profile_id: string | null
+          reason: string
+          rx_storage_paths: string[] | null
+          specialist_id: string | null
+          status: string
+          updated_at: string
+          videocall_completed: boolean | null
+          videocall_scheduled_at: string | null
+          videocall_url: string | null
+        }
+        Insert: {
+          budget_document_path?: string | null
+          converted_to_evaluation?: boolean | null
+          created_at?: string
+          current_diagnosis?: string | null
+          email: string
+          external_budget_amount?: number | null
+          external_clinic_name?: string | null
+          flow_type?: string
+          has_rx?: boolean | null
+          ia_completed_at?: string | null
+          ia_report?: Json | null
+          id?: string
+          lead_id?: string | null
+          name: string
+          payment_id?: string | null
+          payment_status?: string | null
+          phone: string
+          profile_id?: string | null
+          reason: string
+          rx_storage_paths?: string[] | null
+          specialist_id?: string | null
+          status?: string
+          updated_at?: string
+          videocall_completed?: boolean | null
+          videocall_scheduled_at?: string | null
+          videocall_url?: string | null
+        }
+        Update: {
+          budget_document_path?: string | null
+          converted_to_evaluation?: boolean | null
+          created_at?: string
+          current_diagnosis?: string | null
+          email?: string
+          external_budget_amount?: number | null
+          external_clinic_name?: string | null
+          flow_type?: string
+          has_rx?: boolean | null
+          ia_completed_at?: string | null
+          ia_report?: Json | null
+          id?: string
+          lead_id?: string | null
+          name?: string
+          payment_id?: string | null
+          payment_status?: string | null
+          phone?: string
+          profile_id?: string | null
+          reason?: string
+          rx_storage_paths?: string[] | null
+          specialist_id?: string | null
+          status?: string
+          updated_at?: string
+          videocall_completed?: boolean | null
+          videocall_scheduled_at?: string | null
+          videocall_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "second_opinions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "second_opinions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
