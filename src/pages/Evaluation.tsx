@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -24,6 +24,21 @@ const Evaluation = () => {
   
   // Reveal animation for entry points
   const entryPointsRef = useRevealOnScroll<HTMLDivElement>({ threshold: 0.15, delay: 150 });
+
+  // Hidden keyboard shortcut to reset splash (Ctrl+Shift+R)
+  const handleResetSplash = useCallback((e: KeyboardEvent) => {
+    if (e.ctrlKey && e.shiftKey && e.key === "R") {
+      e.preventDefault();
+      sessionStorage.removeItem(SPLASH_SEEN_KEY);
+      setShowSplash(true);
+      setContentVisible(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleResetSplash);
+    return () => window.removeEventListener("keydown", handleResetSplash);
+  }, [handleResetSplash]);
 
   // Handle splash completion
   const handleSplashComplete = () => {
