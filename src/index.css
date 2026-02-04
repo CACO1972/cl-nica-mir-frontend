@@ -240,6 +240,150 @@
 }
 
 @layer utilities {
+  /* ═══════════════════════════════════════════════════════════════
+     ELEGANT GRID SYSTEM - Responsive, Fluid, Premium
+     ═══════════════════════════════════════════════════════════════ */
+  
+  /* Base Elegant Grid - Auto-fit with fluid gap */
+  .elegant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(1.5rem, 5vw, 4rem);
+    align-items: start;
+  }
+
+  /* Compact version for tighter layouts */
+  .elegant-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: clamp(1rem, 3vw, 2rem);
+    align-items: start;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     BENTO LAYOUT - Modular, Dashboard-style
+     ───────────────────────────────────────────────────────────────── */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+    gap: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .bento-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(150px, auto);
+    gap: clamp(1rem, 2.5vw, 2rem);
+  }
+
+  /* Bento span utilities */
+  .bento-wide { grid-column: span 2; }
+  .bento-tall { grid-row: span 2; }
+  .bento-featured { 
+    grid-column: span 2; 
+    grid-row: span 2; 
+  }
+
+  @media (max-width: 768px) {
+    .bento-grid { grid-template-columns: repeat(2, 1fr); }
+    .bento-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .bento-wide { grid-column: span 2; }
+    .bento-featured { grid-column: span 2; grid-row: span 1; }
+  }
+
+  @media (max-width: 480px) {
+    .bento-grid, .bento-grid-3 { grid-template-columns: 1fr; }
+    .bento-wide, .bento-featured { grid-column: span 1; grid-row: span 1; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     EDITORIAL LAYOUT - Magazine-style asymmetric
+     ───────────────────────────────────────────────────────────────── */
+  .editorial-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+
+  .editorial-grid-wide {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+
+  /* Editorial centered content column */
+  .editorial-center {
+    grid-column: 2 / 3;
+  }
+
+  /* Editorial sidebar */
+  .editorial-sidebar {
+    position: sticky;
+    top: 6rem;
+  }
+
+  @media (max-width: 1024px) {
+    .editorial-grid { grid-template-columns: 1fr 3fr; }
+    .editorial-grid-wide { grid-template-columns: 1fr; }
+    .editorial-center { grid-column: auto; }
+  }
+
+  @media (max-width: 768px) {
+    .editorial-grid { grid-template-columns: 1fr; }
+    .editorial-sidebar { position: static; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     MASONRY LAYOUT - Dense, visual, gallery-style
+     ───────────────────────────────────────────────────────────────── */
+  .masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-auto-flow: dense;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  .masonry-grid-tight {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-flow: dense;
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+  }
+
+  /* Masonry item variations */
+  .masonry-wide { grid-column: span 2; }
+  .masonry-tall { grid-row: span 2; }
+
+  @media (max-width: 640px) {
+    .masonry-grid { grid-template-columns: repeat(2, 1fr); }
+    .masonry-wide { grid-column: span 1; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     FLUID GAP UTILITIES
+     ───────────────────────────────────────────────────────────────── */
+  .gap-fluid-xs { gap: clamp(0.5rem, 1vw, 0.75rem); }
+  .gap-fluid-sm { gap: clamp(0.75rem, 2vw, 1.25rem); }
+  .gap-fluid { gap: clamp(1rem, 3vw, 2rem); }
+  .gap-fluid-md { gap: clamp(1.5rem, 4vw, 3rem); }
+  .gap-fluid-lg { gap: clamp(2rem, 5vw, 4rem); }
+  .gap-fluid-xl { gap: clamp(3rem, 8vw, 6rem); }
+
+  /* ─────────────────────────────────────────────────────────────────
+     ASPECT RATIO UTILITIES (for grid items)
+     ───────────────────────────────────────────────────────────────── */
+  .aspect-bento { aspect-ratio: 4 / 3; }
+  .aspect-card { aspect-ratio: 3 / 2; }
+  .aspect-portrait { aspect-ratio: 3 / 4; }
+  .aspect-wide { aspect-ratio: 16 / 9; }
+  .aspect-ultrawide { aspect-ratio: 21 / 9; }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ANIMATIONS
+     ═══════════════════════════════════════════════════════════════ */
   .animate-fade-in {
     animation: fadeIn 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
   }
