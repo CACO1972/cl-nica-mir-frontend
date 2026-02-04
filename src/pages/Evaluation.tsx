@@ -9,19 +9,25 @@ import EvaluationSplash from "@/components/EvaluationSplash";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
+const SPLASH_SEEN_KEY = "evaluation_splash_seen";
+
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [showWizard, setShowWizard] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
-  const [contentVisible, setContentVisible] = useState(false);
+  
+  // Check if splash was already seen this session
+  const splashAlreadySeen = sessionStorage.getItem(SPLASH_SEEN_KEY) === "true";
+  const [showSplash, setShowSplash] = useState(!splashAlreadySeen);
+  const [contentVisible, setContentVisible] = useState(splashAlreadySeen);
   
   // Reveal animation for entry points
   const entryPointsRef = useRevealOnScroll<HTMLDivElement>({ threshold: 0.15, delay: 150 });
 
   // Handle splash completion
   const handleSplashComplete = () => {
+    sessionStorage.setItem(SPLASH_SEEN_KEY, "true");
     setShowSplash(false);
     // Trigger content entrance animation
     setTimeout(() => setContentVisible(true), 100);
