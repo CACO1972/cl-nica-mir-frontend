@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronDown } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
+import ServicesBento from "@/components/ServicesBento";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
 const Index = () => {
@@ -143,6 +144,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Services Bento Grid */}
+      <ServicesBento />
 
       {/* Vision Section */}
       <section className="py-section px-6 lg:px-12 bg-secondary">
