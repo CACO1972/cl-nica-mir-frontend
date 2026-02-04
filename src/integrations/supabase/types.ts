@@ -14,7 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      funnel_leads: {
+        Row: {
+          created_at: string
+          dentalink_appointment_id: string | null
+          dentalink_patient_id: string | null
+          email: string
+          ia_scan_completed_at: string | null
+          ia_scan_result: Json | null
+          id: string
+          name: string
+          origin: string | null
+          phone: string
+          reason: string | null
+          rut: string | null
+          scheduled_at: string | null
+          scheduling_preferences: Json | null
+          status: Database["public"]["Enums"]["funnel_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dentalink_appointment_id?: string | null
+          dentalink_patient_id?: string | null
+          email: string
+          ia_scan_completed_at?: string | null
+          ia_scan_result?: Json | null
+          id?: string
+          name: string
+          origin?: string | null
+          phone: string
+          reason?: string | null
+          rut?: string | null
+          scheduled_at?: string | null
+          scheduling_preferences?: Json | null
+          status?: Database["public"]["Enums"]["funnel_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dentalink_appointment_id?: string | null
+          dentalink_patient_id?: string | null
+          email?: string
+          ia_scan_completed_at?: string | null
+          ia_scan_result?: Json | null
+          id?: string
+          name?: string
+          origin?: string | null
+          phone?: string
+          reason?: string | null
+          rut?: string | null
+          scheduled_at?: string | null
+          scheduling_preferences?: Json | null
+          status?: Database["public"]["Enums"]["funnel_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      funnel_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          description: string
+          id: string
+          lead_id: string
+          mercadopago_payment_id: string | null
+          mercadopago_preference_id: string | null
+          mercadopago_response: Json | null
+          mercadopago_status: string | null
+          paid_at: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          lead_id: string
+          mercadopago_payment_id?: string | null
+          mercadopago_preference_id?: string | null
+          mercadopago_response?: Json | null
+          mercadopago_status?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          lead_id?: string
+          mercadopago_payment_id?: string | null
+          mercadopago_preference_id?: string | null
+          mercadopago_response?: Json | null
+          mercadopago_status?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_payments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_status_history: {
+        Row: {
+          changed_at: string
+          from_status: Database["public"]["Enums"]["funnel_status"] | null
+          id: string
+          lead_id: string
+          metadata: Json | null
+          to_status: Database["public"]["Enums"]["funnel_status"]
+        }
+        Insert: {
+          changed_at?: string
+          from_status?: Database["public"]["Enums"]["funnel_status"] | null
+          id?: string
+          lead_id: string
+          metadata?: Json | null
+          to_status: Database["public"]["Enums"]["funnel_status"]
+        }
+        Update: {
+          changed_at?: string
+          from_status?: Database["public"]["Enums"]["funnel_status"] | null
+          id?: string
+          lead_id?: string
+          metadata?: Json | null
+          to_status?: Database["public"]["Enums"]["funnel_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_status_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_uploads: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          id: string
+          lead_id: string
+          metadata: Json | null
+          mime_type: string | null
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          lead_id: string
+          metadata?: Json | null
+          mime_type?: string | null
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          lead_id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_uploads_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +214,18 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      funnel_status:
+        | "LEAD"
+        | "IA_DONE"
+        | "CHECKOUT_CREATED"
+        | "PAID"
+        | "SCHEDULED"
+      payment_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +352,21 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      funnel_status: [
+        "LEAD",
+        "IA_DONE",
+        "CHECKOUT_CREATED",
+        "PAID",
+        "SCHEDULED",
+      ],
+      payment_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled",
+        "refunded",
+      ],
+    },
   },
 } as const
