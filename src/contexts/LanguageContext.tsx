@@ -189,6 +189,63 @@ const translations: Record<Language, Record<string, string>> = {
     "menu.portal": "Portal Paciente",
     "menu.opinion": "Segunda Opinión",
     "menu.international": "Pacientes Internacionales",
+
+    // Second Opinion Page
+    "opinion.hero.caption": "Segunda Opinión",
+    "opinion.hero.headline": "Una mirada fresca antes de decidir.",
+    "opinion.hero.subline": "Si ya tienes un diagnóstico o presupuesto, podemos analizarlo con nuestra perspectiva predictiva.",
+    
+    "opinion.what.caption": "Qué Es",
+    "opinion.what.headline": "Claridad antes de comprometerte.",
+    "opinion.what.p1": "Has recibido un diagnóstico o presupuesto de otra clínica. Antes de tomar una decisión importante, quieres estar seguro de que entiendes todas tus opciones.",
+    "opinion.what.p2": "Nuestra Segunda Opinión analiza tu caso con tecnología predictiva, comparando tratamientos propuestos con alternativas que quizás no te han presentado.",
+    "opinion.what.p3": "No es cuestión de desconfiar. Es cuestión de decidir con información completa.",
+    
+    "opinion.options.caption": "Modalidades",
+    "opinion.options.headline": "Elige tu nivel de profundidad.",
+    "opinion.options.ia.title": "Análisis IA",
+    "opinion.options.ia.desc": "Informe automático generado por inteligencia artificial basado en tu diagnóstico y presupuesto actual. Recibes hallazgos clave, comparaciones y recomendaciones.",
+    "opinion.options.ia.price": "Gratis",
+    "opinion.options.specialist.title": "IA + Especialista",
+    "opinion.options.specialist.desc": "Informe IA más videollamada de 20 minutos con un especialista para resolver todas tus dudas y recibir orientación personalizada.",
+    "opinion.options.specialist.price": "$19.000 CLP",
+    
+    "opinion.cta.headline": "¿Listo para una segunda mirada?",
+    "opinion.cta.subline": "Completa el formulario con los detalles de tu caso y recibirás un análisis objetivo de tus opciones.",
+    "opinion.cta.button": "Solicitar segunda opinión",
+
+    // Second Opinion Wizard Steps
+    "opinion.step1.caption": "Paso 1 de 3",
+    "opinion.step1.headline": "Tus datos de contacto",
+    
+    "opinion.step2.caption": "Paso 2 de 3",
+    "opinion.step2.headline": "Cuéntanos tu situación",
+    "opinion.step2.reason": "¿Por qué buscas una segunda opinión?",
+    "opinion.step2.reasonPlaceholder": "Describe brevemente tu situación dental y qué te preocupa...",
+    "opinion.step2.diagnosis": "Diagnóstico que te dieron (opcional)",
+    "opinion.step2.diagnosisPlaceholder": "Describe el diagnóstico o tratamiento propuesto...",
+    "opinion.step2.clinicName": "Clínica de origen",
+    "opinion.step2.budgetAmount": "Monto del presupuesto (CLP)",
+    
+    "opinion.step3.caption": "Paso 3 de 3",
+    "opinion.step3.headline": "¿Cómo quieres recibir tu análisis?",
+    "opinion.step3.iaOnly.title": "Solo Análisis IA",
+    "opinion.step3.iaOnly.desc": "Informe automático con hallazgos, comparaciones y recomendaciones basadas en tu caso.",
+    "opinion.step3.iaOnly.price": "Gratis",
+    "opinion.step3.specialist.title": "Análisis IA + Videollamada",
+    "opinion.step3.specialist.desc": "Informe IA más 20 minutos con un especialista para resolver dudas y recibir orientación.",
+    "opinion.step3.specialist.price": "$19.000 CLP",
+    
+    "opinion.step4.headline": "Analizando tu caso...",
+    "opinion.step4.message": "Nuestra inteligencia artificial está procesando la información para generar tu informe personalizado.",
+    
+    "opinion.step5.caption": "Tu Informe IA",
+    "opinion.step5.headline": "Análisis de Segunda Opinión",
+    "opinion.step5.findings": "Hallazgos Clave",
+    "opinion.step5.recommendations": "Recomendaciones",
+    "opinion.step5.savings": "Ahorro potencial estimado",
+    "opinion.step5.ctaSpecialist": "Agendar videollamada con especialista",
+    "opinion.step5.ctaPremium": "Agendar Evaluación Presencial Premium",
   },
   en: {
     // Header
@@ -370,6 +427,63 @@ const translations: Record<Language, Record<string, string>> = {
     "menu.portal": "Patient Portal",
     "menu.opinion": "Second Opinion",
     "menu.international": "International Patients",
+
+    // Second Opinion Page
+    "opinion.hero.caption": "Second Opinion",
+    "opinion.hero.headline": "A fresh look before deciding.",
+    "opinion.hero.subline": "If you already have a diagnosis or quote, we can analyze it with our predictive perspective.",
+    
+    "opinion.what.caption": "What It Is",
+    "opinion.what.headline": "Clarity before you commit.",
+    "opinion.what.p1": "You've received a diagnosis or quote from another clinic. Before making an important decision, you want to be sure you understand all your options.",
+    "opinion.what.p2": "Our Second Opinion analyzes your case with predictive technology, comparing proposed treatments with alternatives you may not have been presented.",
+    "opinion.what.p3": "It's not about distrust. It's about deciding with complete information.",
+    
+    "opinion.options.caption": "Options",
+    "opinion.options.headline": "Choose your depth level.",
+    "opinion.options.ia.title": "AI Analysis",
+    "opinion.options.ia.desc": "Automated report generated by artificial intelligence based on your current diagnosis and quote. You receive key findings, comparisons and recommendations.",
+    "opinion.options.ia.price": "Free",
+    "opinion.options.specialist.title": "AI + Specialist",
+    "opinion.options.specialist.desc": "AI report plus 20-minute video call with a specialist to resolve all your questions and receive personalized guidance.",
+    "opinion.options.specialist.price": "$19,000 CLP",
+    
+    "opinion.cta.headline": "Ready for a second look?",
+    "opinion.cta.subline": "Complete the form with details of your case and receive an objective analysis of your options.",
+    "opinion.cta.button": "Request second opinion",
+
+    // Second Opinion Wizard Steps
+    "opinion.step1.caption": "Step 1 of 3",
+    "opinion.step1.headline": "Your contact details",
+    
+    "opinion.step2.caption": "Step 2 of 3",
+    "opinion.step2.headline": "Tell us your situation",
+    "opinion.step2.reason": "Why are you seeking a second opinion?",
+    "opinion.step2.reasonPlaceholder": "Briefly describe your dental situation and what concerns you...",
+    "opinion.step2.diagnosis": "Diagnosis you received (optional)",
+    "opinion.step2.diagnosisPlaceholder": "Describe the diagnosis or proposed treatment...",
+    "opinion.step2.clinicName": "Original clinic",
+    "opinion.step2.budgetAmount": "Quote amount (CLP)",
+    
+    "opinion.step3.caption": "Step 3 of 3",
+    "opinion.step3.headline": "How would you like to receive your analysis?",
+    "opinion.step3.iaOnly.title": "AI Analysis Only",
+    "opinion.step3.iaOnly.desc": "Automated report with findings, comparisons and recommendations based on your case.",
+    "opinion.step3.iaOnly.price": "Free",
+    "opinion.step3.specialist.title": "AI Analysis + Video Call",
+    "opinion.step3.specialist.desc": "AI report plus 20 minutes with a specialist to resolve questions and receive guidance.",
+    "opinion.step3.specialist.price": "$19,000 CLP",
+    
+    "opinion.step4.headline": "Analyzing your case...",
+    "opinion.step4.message": "Our artificial intelligence is processing the information to generate your personalized report.",
+    
+    "opinion.step5.caption": "Your AI Report",
+    "opinion.step5.headline": "Second Opinion Analysis",
+    "opinion.step5.findings": "Key Findings",
+    "opinion.step5.recommendations": "Recommendations",
+    "opinion.step5.savings": "Estimated potential savings",
+    "opinion.step5.ctaSpecialist": "Schedule video call with specialist",
+    "opinion.step5.ctaPremium": "Schedule Premium In-Person Evaluation",
   },
 };
 

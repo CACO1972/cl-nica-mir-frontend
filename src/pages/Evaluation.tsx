@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
@@ -14,6 +14,7 @@ const SPLASH_SEEN_KEY = "evaluation_splash_seen";
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [showWizard, setShowWizard] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   
@@ -375,7 +376,10 @@ const Evaluation = () => {
               <p className="body-large text-muted-foreground">
                 {t("eval.begin.opinion.desc")}
               </p>
-              <button className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest">
+              <button 
+                onClick={() => navigate("/segunda-opinion")}
+                className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest"
+              >
                 {t("eval.begin.opinion.cta")}
               </button>
             </div>
