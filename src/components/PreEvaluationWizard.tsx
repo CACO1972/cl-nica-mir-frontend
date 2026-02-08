@@ -632,9 +632,10 @@ const PreEvaluationWizard = () => {
 
         {/* Price and CTA - editorial card */}
         <div className="border border-border p-8 space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="display-small text-foreground">{t("wizard.step7.price")}</p>
             <p className="body-small text-muted-foreground">{t("wizard.step7.priceNote")}</p>
+            <p className="body-small text-gold-muted">{t("wizard.step7.priceNote2")}</p>
           </div>
           <div className="pt-4 border-t border-border">
             <button
