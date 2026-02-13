@@ -37,7 +37,7 @@ async function syncToDentalink(data: RegionalIntakeRequest): Promise<string | nu
       },
       body: JSON.stringify({
         nombre: data.name.split(' ')[0],
-        apellido: data.name.split(' ').slice(1).join(' ') || '-',
+        apellidos: data.name.split(' ').slice(1).join(' ') || '-',
         email: data.email,
         telefono: data.phone,
         notas: `[REGIONAL] País: ${data.country}${data.city ? `, Ciudad: ${data.city}` : ''}. ${data.notes || ''}`,
