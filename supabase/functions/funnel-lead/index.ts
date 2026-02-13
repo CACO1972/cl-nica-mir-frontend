@@ -16,16 +16,71 @@ interface LeadRequest {
   origin?: string;
 }
 
-async function syncToDentalink(lead: LeadRequest): Promise<string | null> {
+/**
+ * Search for existing patient in Dentalink by email or RUT
+ */
+async function findExistingDentalinkPatient(email: string, rut?: string): Promise<string | null> {
   const apiKey = Deno.env.get('DENTALINK_API_KEY');
-  
   if (!apiKey) {
-    console.log('[Funnel Lead] DENTALINK_API_KEY not configured, skipping sync');
+    console.log('[Funnel Lead] DENTALINK_API_KEY not configured, skipping search');
     return null;
   }
 
   try {
-    // Create or update patient in Dentalink
+    // Search by email first
+    const emailResponse = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(email)}`, {
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (emailResponse.ok) {
+      const data = await emailResponse.json();
+      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        const patientId = data.data[0].id?.toString();
+        console.log(`[Funnel Lead] Found existing Dentalink patient by email: ${patientId}`);
+        return patientId;
+      }
+    }
+
+    // If not found by email and RUT is provided, search by RUT
+    if (rut) {
+      const rutResponse = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(rut)}`, {
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (rutResponse.ok) {
+        const data = await rutResponse.json();
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+          const patientId = data.data[0].id?.toString();
+          console.log(`[Funnel Lead] Found existing Dentalink patient by RUT: ${patientId}`);
+          return patientId;
+        }
+      }
+    }
+
+    console.log('[Funnel Lead] No existing Dentalink patient found');
+    return null;
+  } catch (error) {
+    console.error('[Funnel Lead] Dentalink search failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Create a new patient in Dentalink
+ */
+async function createDentalinkPatient(lead: LeadRequest): Promise<string | null> {
+  const apiKey = Deno.env.get('DENTALINK_API_KEY');
+  if (!apiKey) {
+    return null;
+  }
+
+  try {
     const response = await fetch(`${DENTALINK_API_URL}/pacientes`, {
       method: 'POST',
       headers: {
@@ -44,21 +99,34 @@ async function syncToDentalink(lead: LeadRequest): Promise<string | null> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Funnel Lead] Dentalink error: ${response.status} - ${errorText}`);
+      console.error(`[Funnel Lead] Dentalink create error: ${response.status} - ${errorText}`);
       return null;
     }
 
     const data = await response.json();
-    console.log(`[Funnel Lead] Dentalink patient created/updated: ${data.id}`);
+    console.log(`[Funnel Lead] Dentalink patient created: ${data.id}`);
     return data.id?.toString() || null;
   } catch (error) {
-    console.error('[Funnel Lead] Dentalink sync failed:', error);
+    console.error('[Funnel Lead] Dentalink create failed:', error);
     return null;
   }
 }
 
+/**
+ * Sync lead to Dentalink: first search for existing patient, then create if not found
+ */
+async function syncToDentalink(lead: LeadRequest): Promise<string | null> {
+  // 1. Search for existing patient
+  const existingId = await findExistingDentalinkPatient(lead.email, lead.rut);
+  if (existingId) {
+    return existingId;
+  }
+
+  // 2. Create new patient if not found
+  return await createDentalinkPatient(lead);
+}
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -97,7 +165,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Sync to Dentalink first
+    // Sync to Dentalink (search existing first, then create if needed)
     const dentalinkPatientId = await syncToDentalink(body);
 
     // Create lead in Supabase
@@ -124,15 +192,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[Funnel Lead] Lead created: ${lead.id}`);
+    console.log(`[Funnel Lead] Lead created: ${lead.id}, dentalink: ${dentalinkPatientId || 'none'}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         data: {
           lead_id: lead.id,
           status: lead.status,
           dentalink_synced: !!dentalinkPatientId,
+          dentalink_patient_id: dentalinkPatientId,
+          is_existing_patient: !!(dentalinkPatientId && await findExistingDentalinkPatient(body.email, body.rut)),
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
