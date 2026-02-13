@@ -89,7 +89,7 @@ async function createDentalinkPatient(lead: LeadRequest): Promise<string | null>
       },
       body: JSON.stringify({
         nombre: lead.name.split(' ')[0],
-        apellido: lead.name.split(' ').slice(1).join(' ') || '-',
+        apellidos: lead.name.split(' ').slice(1).join(' ') || '-',
         email: lead.email,
         telefono: lead.phone,
         rut: lead.rut || null,
