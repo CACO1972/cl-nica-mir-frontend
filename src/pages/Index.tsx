@@ -54,7 +54,7 @@ const Index = () => {
           {/* Primary headline - maximum visual authority */}
           <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
             <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block leading-[0.95]">
-              Odontología Predictiva
+              La odontología del futuro, hoy.
               {/* Subtle gold underline accent */}
               <span 
                 className="absolute -bottom-2 sm:-bottom-4 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-gold-muted/50 to-transparent"
@@ -65,8 +65,11 @@ const Index = () => {
           
           {/* Subheadline - clearly separated, deliberate reading */}
           <div className="mt-12 sm:mt-16 lg:mt-32 animate-slide-up" style={{ animationDelay: "0.8s", animationFillMode: "both" }}>
-            <p className="text-xs sm:text-sm font-light text-muted-foreground/70 dark:text-[hsl(0,0%,45%)] tracking-[0.2em] sm:tracking-[0.25em] uppercase">
-              Clarity before treatment
+            <p className="text-sm sm:text-base md:text-lg font-light text-muted-foreground/80 dark:text-[hsl(0,0%,55%)] tracking-[0.05em] sm:tracking-[0.08em] max-w-2xl mx-auto leading-relaxed">
+              Aplicamos IA para diagnósticos y tratamientos más precisos, seguros y previsibles. Entiende tu salud dental como nunca antes y llévate un informe detallado de 5 páginas para decidir en familia.
+            </p>
+            <p className="mt-6 sm:mt-8 text-xs sm:text-sm font-light text-gold-muted/70 tracking-[0.15em] sm:tracking-[0.2em] italic">
+              En Miró te entendemos: sabemos lo que necesitas para recuperar tu sonrisa.
             </p>
           </div>
         </div>
