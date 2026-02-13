@@ -298,6 +298,45 @@ const Portal = () => {
   );
 };
 
+/* ─── Helpers ─── */
+const STATUS_LABELS: Record<string, string> = {
+  LEAD: "Ingresado",
+  IA_DONE: "Análisis IA listo",
+  CHECKOUT_CREATED: "Pago pendiente",
+  PAID: "Pagado",
+  SCHEDULED: "Agendado",
+  pending: "Pendiente",
+  approved: "Aprobado",
+  rejected: "Rechazado",
+  cancelled: "Cancelado",
+  refunded: "Reembolsado",
+  scheduled: "Agendada",
+  completed: "Completada",
+  confirmed: "Confirmada",
+  cancelled_appointment: "Cancelada",
+};
+
+function statusLabel(raw: string): string {
+  return STATUS_LABELS[raw] || raw;
+}
+
+function statusColor(raw: string): string {
+  switch (raw) {
+    case "PAID": case "approved": case "completed": case "confirmed":
+      return "bg-green-500/10 text-green-600";
+    case "CHECKOUT_CREATED": case "pending":
+      return "bg-yellow-500/10 text-yellow-600";
+    case "rejected": case "cancelled": case "cancelled_appointment":
+      return "bg-destructive/10 text-destructive";
+    case "SCHEDULED": case "scheduled":
+      return "bg-blue-500/10 text-blue-600";
+    case "IA_DONE":
+      return "bg-primary/10 text-primary";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
 /* ─── Dashboard Step ─── */
 function DashboardStep({ data }: { data: PatientData }) {
   return (
@@ -342,12 +381,8 @@ function DashboardStep({ data }: { data: PatientData }) {
                     <p className="text-foreground font-medium">{apt.type_name}</p>
                     <p className="text-muted-foreground">{apt.date} · {apt.time}</p>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    apt.status === "scheduled" ? "bg-primary/10 text-primary" :
-                    apt.status === "completed" ? "bg-green-500/10 text-green-600" :
-                    "bg-muted text-muted-foreground"
-                  }`}>
-                    {apt.status}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(apt.status)}`}>
+                    {statusLabel(apt.status)}
                   </span>
                 </li>
               ))}
@@ -369,12 +404,8 @@ function DashboardStep({ data }: { data: PatientData }) {
                   <span className="text-foreground font-medium">
                     ${pay.amount.toLocaleString("es-CL")} {pay.currency}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    pay.status === "approved" ? "bg-green-500/10 text-green-600" :
-                    pay.status === "pending" ? "bg-yellow-500/10 text-yellow-600" :
-                    "bg-muted text-muted-foreground"
-                  }`}>
-                    {pay.status}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(pay.status)}`}>
+                    {statusLabel(pay.status)}
                   </span>
                 </li>
               ))}
@@ -396,8 +427,8 @@ function DashboardStep({ data }: { data: PatientData }) {
                   <span className="text-muted-foreground">
                     {new Date(f.created_at).toLocaleDateString("es-CL")}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                    {f.status}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(f.status)}`}>
+                    {statusLabel(f.status)}
                   </span>
                 </li>
               ))}
