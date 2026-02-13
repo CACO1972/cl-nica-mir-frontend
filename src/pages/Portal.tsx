@@ -77,7 +77,11 @@ const Portal = () => {
   const [patientData, setPatientData] = useState<PatientData | null>(null);
 
   useEffect(() => {
+    // Safety timeout — never hang on "Verificando sesión..."
+    const timeout = setTimeout(() => setCheckingSession(false), 4000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      clearTimeout(timeout);
       if (session?.user) {
         await fetchPatientData(session.access_token);
       } else {
@@ -88,13 +92,20 @@ const Portal = () => {
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
       if (session?.user) {
         fetchPatientData(session.access_token);
       }
       setCheckingSession(false);
+    }).catch(() => {
+      clearTimeout(timeout);
+      setCheckingSession(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function fetchPatientData(token: string) {
