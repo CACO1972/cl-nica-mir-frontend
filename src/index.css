@@ -102,7 +102,7 @@
 
     /* Muted - Lighter warm gray */
     --muted: calc(var(--brand-h)) 5% 94%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 35%;
 
     /* Accent - Subtle brand warmth */
     --accent: calc(var(--brand-h)) 5% 96%;
@@ -157,7 +157,7 @@
     --secondary-foreground: 0 0% 90%;
 
     --muted: calc(var(--brand-h)) 3% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted-foreground: 0 0% 72%;
 
     --accent: calc(var(--brand-h)) 3% 12%;
     --accent-foreground: 0 0% 95%;
