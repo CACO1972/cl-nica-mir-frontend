@@ -71,10 +71,10 @@ const Index = () => {
           
           {/* Subheadline - clearly separated, deliberate reading */}
           <div className="mt-12 sm:mt-16 lg:mt-32 animate-slide-up" style={{ animationDelay: "0.8s", animationFillMode: "both" }}>
-            <p className="text-sm sm:text-base md:text-lg font-light text-muted-foreground dark:text-[hsl(0,0%,70%)] tracking-[0.05em] sm:tracking-[0.08em] max-w-2xl mx-auto leading-relaxed text-center">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-[hsl(0,0%,70%)] tracking-[0.02em] max-w-2xl mx-auto leading-relaxed text-center" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>
               Aplicamos IA para diagnósticos y tratamientos más precisos, seguros y previsibles. Entiende tu salud dental como nunca antes y llévate un informe detallado de 5 páginas para decidir en familia.
             </p>
-            <p className="mt-8 sm:mt-12 text-xl sm:text-2xl md:text-3xl font-serif font-light text-gold tracking-[0.05em] sm:tracking-[0.08em] italic text-center leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-10 sm:mt-14 text-lg sm:text-xl md:text-2xl text-gold tracking-[0.02em] text-center leading-snug max-w-xl mx-auto" style={{ fontFamily: "'Lora', serif", fontWeight: 400, fontStyle: 'italic' }}>
               En Miró te entendemos: sabemos lo que necesitas para recuperar tu sonrisa.
             </p>
           </div>
