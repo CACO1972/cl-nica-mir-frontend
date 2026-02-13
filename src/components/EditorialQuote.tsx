@@ -32,7 +32,7 @@ const EditorialQuote = ({ lines, goldWord, variant = "large" }: EditorialQuotePr
             {lines.map((line, index) => (
               <p 
                 key={index}
-                className={`font-serif font-light text-foreground/85 ${
+                className={`font-serif font-light text-gold italic ${
                   variant === "large" 
                     ? "text-xl sm:text-2xl md:text-3xl lg:text-[2.75rem] leading-[1.35] sm:leading-[1.4]" 
                     : "text-lg sm:text-xl md:text-2xl lg:text-3xl leading-[1.4] sm:leading-[1.5]"
