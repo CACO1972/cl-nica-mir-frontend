@@ -74,7 +74,7 @@ const Index = () => {
             <p className="text-sm sm:text-base md:text-lg font-light text-muted-foreground dark:text-[hsl(0,0%,70%)] tracking-[0.05em] sm:tracking-[0.08em] max-w-2xl mx-auto leading-relaxed text-center">
               Aplicamos IA para diagnósticos y tratamientos más precisos, seguros y previsibles. Entiende tu salud dental como nunca antes y llévate un informe detallado de 5 páginas para decidir en familia.
             </p>
-            <p className="mt-8 sm:mt-12 text-base sm:text-lg md:text-xl font-serif font-light text-gold tracking-[0.05em] sm:tracking-[0.08em] italic text-center leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-8 sm:mt-12 text-xl sm:text-2xl md:text-3xl font-serif font-light text-gold tracking-[0.05em] sm:tracking-[0.08em] italic text-center leading-relaxed max-w-2xl mx-auto">
               En Miró te entendemos: sabemos lo que necesitas para recuperar tu sonrisa.
             </p>
           </div>
