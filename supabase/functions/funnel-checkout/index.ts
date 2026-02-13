@@ -175,8 +175,59 @@ Deno.serve(async (req) => {
           console.log(`[Funnel Checkout] Lead ${leadId} marked as PAID`);
         }
 
-        // TODO: Send WhatsApp confirmation
-        // TODO: Create base appointment in Dentalink
+        // Create patient in Dentalink + provision auth user
+        try {
+          const dentalinkRes = await fetch(
+            `${supabaseUrl}/functions/v1/dentalink-create-patient`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseKey}`,
+              },
+              body: JSON.stringify({ lead_id: leadId }),
+            }
+          );
+          const dentalinkData = await dentalinkRes.json();
+          if (dentalinkData.success) {
+            console.log(`[Funnel Checkout] Dentalink patient created: ${dentalinkData.data.dentalink_patient_id}`);
+          } else {
+            console.error('[Funnel Checkout] Dentalink creation failed:', dentalinkData.error);
+          }
+        } catch (dentalinkErr) {
+          console.error('[Funnel Checkout] Dentalink call error:', dentalinkErr);
+        }
+
+        // Send WhatsApp confirmation
+        try {
+          const { data: leadData } = await supabase
+            .from('funnel_leads')
+            .select('name, phone')
+            .eq('id', leadId)
+            .single();
+
+          if (leadData?.phone) {
+            await fetch(
+              `${supabaseUrl}/functions/v1/notify`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${supabaseKey}`,
+                },
+                body: JSON.stringify({
+                  channel: 'whatsapp',
+                  phone: leadData.phone,
+                  template: 'payment_confirmed',
+                  name: leadData.name,
+                }),
+              }
+            );
+            console.log('[Funnel Checkout] WhatsApp notification sent');
+          }
+        } catch (notifyErr) {
+          console.error('[Funnel Checkout] Notify error:', notifyErr);
+        }
       }
 
       return new Response(
