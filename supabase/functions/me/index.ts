@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const DENTALINK_API_URL = "https://api.dentalink.healthatom.com/api/v1";
+
 interface ProfileResponse {
   id: string;
   user_id: string;
@@ -14,7 +16,6 @@ interface ProfileResponse {
   rut: string | null;
   dentalink_patient_id: string | null;
   created_at: string;
-  // Datos asociados
   appointments: Array<{
     id: string;
     date: string;
@@ -35,6 +36,66 @@ interface ProfileResponse {
     created_at: string;
     ia_scan_result: object | null;
   }>;
+  dentalink_patient: object | null;
+}
+
+/**
+ * Normaliza RUT al formato sin puntos y con guión: 12345678-9
+ */
+function normalizeRut(rut: string): string {
+  // Remove dots, spaces, dashes
+  const cleaned = rut.replace(/[.\s-]/g, '').toUpperCase();
+  if (cleaned.length < 2) return cleaned;
+  const body = cleaned.slice(0, -1);
+  const dv = cleaned.slice(-1);
+  return `${body}-${dv}`;
+}
+
+async function dentalinkRequest(endpoint: string) {
+  const apiKey = Deno.env.get('DENTALINK_API_KEY');
+  if (!apiKey) throw new Error('DENTALINK_API_KEY not configured');
+
+  const response = await fetch(`${DENTALINK_API_URL}${endpoint}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Token ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Dentalink] Error: ${response.status} - ${errorText}`);
+    throw new Error(`Dentalink API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Busca paciente en Dentalink por RUT normalizado
+ */
+async function findDentalinkPatientByRut(rut: string): Promise<{ id: string; data: object } | null> {
+  try {
+    const normalizedRut = normalizeRut(rut);
+    console.log(`[Me] Searching Dentalink patient by RUT: ${normalizedRut}`);
+
+    const result = await dentalinkRequest(`/pacientes?q=${encodeURIComponent(normalizedRut)}`);
+
+    const patients = result?.data || result?.results || [];
+    if (Array.isArray(patients) && patients.length > 0) {
+      const patient = patients[0];
+      const patientId = String(patient.id_paciente || patient.id);
+      console.log(`[Me] Found Dentalink patient: ${patientId}`);
+      return { id: patientId, data: patient };
+    }
+
+    console.log(`[Me] No Dentalink patient found for RUT: ${normalizedRut}`);
+    return null;
+  } catch (error) {
+    console.error(`[Me] Dentalink lookup error:`, error instanceof Error ? error.message : error);
+    return null;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -43,7 +104,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verificar autenticación
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -56,7 +116,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Valida el token
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
@@ -83,6 +142,32 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Profile not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Si tiene RUT pero no dentalink_patient_id, buscar y vincular
+    let dentalinkPatient: object | null = null;
+
+    if (profile.rut && !profile.dentalink_patient_id) {
+      const found = await findDentalinkPatientByRut(profile.rut);
+      if (found) {
+        // Vincula el paciente en el perfil
+        await supabase
+          .from('profiles')
+          .update({ dentalink_patient_id: found.id })
+          .eq('id', profile.id);
+
+        profile.dentalink_patient_id = found.id;
+        dentalinkPatient = found.data;
+        console.log(`[Me] Linked Dentalink patient ${found.id} to profile ${profile.id}`);
+      }
+    } else if (profile.dentalink_patient_id) {
+      // Ya vinculado, traer datos actualizados
+      try {
+        const result = await dentalinkRequest(`/pacientes/${profile.dentalink_patient_id}`);
+        dentalinkPatient = result?.data || result;
+      } catch (e) {
+        console.error('[Me] Error fetching linked Dentalink patient:', e);
+      }
     }
 
     // Obtiene citas
@@ -149,9 +234,10 @@ Deno.serve(async (req) => {
         created_at: f.created_at,
         ia_scan_result: f.ia_scan_result,
       })),
+      dentalink_patient: dentalinkPatient,
     };
 
-    console.log(`[Me] Response ready for ${profile.email}`);
+    console.log(`[Me] Response ready for ${profile.email} (dentalink: ${profile.dentalink_patient_id || 'not linked'})`);
 
     return new Response(
       JSON.stringify({ success: true, data: response }),
