@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, LogOut, Calendar, CreditCard, FileText, User, Shield } from "lucide-react";
+import { ArrowLeft, LogOut, Calendar, CreditCard, FileText, User, Shield, Stethoscope, FolderOpen, ExternalLink } from "lucide-react";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+const WHATSAPP_URL = "https://wa.me/56912345678"; // TODO: reemplazar con número real
+const AGENDA_ONLINE_URL = "https://agenda.dentalink.healthatom.com/clinica-miro"; // TODO: reemplazar con URL real
 
 interface PatientData {
   id: string;
@@ -36,6 +39,8 @@ interface PatientData {
     created_at: string;
   }>;
   dentalink_patient: Record<string, unknown> | null;
+  dentalink_treatments: Array<Record<string, unknown>>;
+  dentalink_files: Array<Record<string, unknown>>;
 }
 
 function formatRutInput(value: string): string {
@@ -184,13 +189,31 @@ const Portal = () => {
             <img src={logoClinicaMiro} alt="Clínica Miró" className="h-8 w-auto" />
           </Link>
           {step === "dashboard" && (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm tracking-widest uppercase"
-            >
-              <LogOut className="w-4 h-4" />
-              Salir
-            </button>
+            <div className="flex items-center gap-4">
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
+              >
+                WhatsApp
+              </a>
+              <a
+                href={AGENDA_ONLINE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
+              >
+                Cambiar hora
+              </a>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm tracking-widest uppercase"
+              >
+                <LogOut className="w-4 h-4" />
+                Salir
+              </button>
+            </div>
           )}
         </div>
       </header>
@@ -457,6 +480,76 @@ function DashboardStep({ data }: { data: PatientData }) {
             </div>
           </section>
         )}
+
+        {/* Tratamientos */}
+        {data.dentalink_treatments && data.dentalink_treatments.length > 0 && (
+          <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <Stethoscope className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Tratamientos</h2>
+            </div>
+            <ul className="space-y-3">
+              {data.dentalink_treatments.slice(0, 10).map((t, i) => (
+                <li key={i} className="flex justify-between items-center text-sm">
+                  <div>
+                    <p className="text-foreground font-medium">
+                      {String((t as Record<string, unknown>).nombre || (t as Record<string, unknown>).tratamiento || `Tratamiento ${i + 1}`)}
+                    </p>
+                    {(t as Record<string, unknown>).fecha && (
+                      <p className="text-muted-foreground text-xs">{String((t as Record<string, unknown>).fecha)}</p>
+                    )}
+                  </div>
+                  {(t as Record<string, unknown>).estado && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      {String((t as Record<string, unknown>).estado)}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Archivos clínicos */}
+        {data.dentalink_files && data.dentalink_files.length > 0 && (
+          <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <FolderOpen className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Archivos Clínicos</h2>
+            </div>
+            <ul className="space-y-3">
+              {data.dentalink_files.slice(0, 10).map((f, i) => (
+                <li key={i} className="text-sm text-foreground">
+                  {String((f as Record<string, unknown>).nombre || (f as Record<string, unknown>).archivo || `Archivo ${i + 1}`)}
+                  {(f as Record<string, unknown>).fecha && (
+                    <span className="text-muted-foreground ml-2 text-xs">{String((f as Record<string, unknown>).fecha)}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground mt-4">* En fase 2 se generan links temporales on-demand.</p>
+          </section>
+        )}
+
+        {/* Acción rápida */}
+        <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
+          <div className="flex items-center gap-2 mb-3">
+            <ExternalLink className="w-5 h-5 text-primary" />
+            <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Acción rápida</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Si quieres cambiar tu hora, usa la Agenda Online oficial.
+          </p>
+          <a
+            href={AGENDA_ONLINE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Cambiar hora / Agendar
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </section>
       </div>
     </motion.div>
   );
