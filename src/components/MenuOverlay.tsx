@@ -47,6 +47,7 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
 
   const menuItems = [
     { label: t("menu.evaluation"), href: "/evaluation" },
+    { label: "Evaluación Guiada IA", href: "/evaluation?wizard=1" },
     { label: t("menu.portal"), href: "/portal" },
     { label: t("menu.opinion"), href: "/segunda-opinion" },
     { label: t("menu.international"), href: "/internacional" },

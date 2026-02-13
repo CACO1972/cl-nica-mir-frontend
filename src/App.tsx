@@ -9,6 +9,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Evaluation from "./pages/Evaluation";
 import SecondOpinion from "./pages/SecondOpinion";
+import Portal from "./pages/Portal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/segunda-opinion" element={<SecondOpinion />} />
+              <Route path="/portal" element={<Portal />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
