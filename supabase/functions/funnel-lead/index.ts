@@ -17,7 +17,20 @@ interface LeadRequest {
 }
 
 /**
- * Search for existing patient in Dentalink by email or RUT
+ * Normalize RUT to format without dots and with hyphen (e.g. 12345678-9)
+ */
+function normalizeRut(rut: string): string {
+  // Remove dots, spaces, and ensure hyphen before verifier digit
+  let clean = rut.replace(/\./g, '').replace(/\s/g, '').toUpperCase();
+  // If no hyphen, add one before last char
+  if (!clean.includes('-') && clean.length > 1) {
+    clean = clean.slice(0, -1) + '-' + clean.slice(-1);
+  }
+  return clean;
+}
+
+/**
+ * Search for existing patient in Dentalink by RUT (primary) or email (fallback)
  */
 async function findExistingDentalinkPatient(email: string, rut?: string): Promise<string | null> {
   const apiKey = Deno.env.get('DENTALINK_API_KEY');
@@ -27,7 +40,30 @@ async function findExistingDentalinkPatient(email: string, rut?: string): Promis
   }
 
   try {
-    // Search by email first
+    // Search by RUT first (primary identifier)
+    if (rut) {
+      const normalizedRut = normalizeRut(rut);
+      console.log(`[Funnel Lead] Searching Dentalink by RUT: ${normalizedRut}`);
+      
+      const rutResponse = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(normalizedRut)}`, {
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (rutResponse.ok) {
+        const data = await rutResponse.json();
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+          const patient = data.data[0];
+          const patientId = (patient.id_paciente || patient.id)?.toString();
+          console.log(`[Funnel Lead] Found existing Dentalink patient by RUT: ${patientId}`);
+          return patientId;
+        }
+      }
+    }
+
+    // Fallback: search by email
     const emailResponse = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(email)}`, {
       headers: {
         'Authorization': `Token ${apiKey}`,
@@ -38,28 +74,10 @@ async function findExistingDentalinkPatient(email: string, rut?: string): Promis
     if (emailResponse.ok) {
       const data = await emailResponse.json();
       if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-        const patientId = data.data[0].id?.toString();
+        const patient = data.data[0];
+        const patientId = (patient.id_paciente || patient.id)?.toString();
         console.log(`[Funnel Lead] Found existing Dentalink patient by email: ${patientId}`);
         return patientId;
-      }
-    }
-
-    // If not found by email and RUT is provided, search by RUT
-    if (rut) {
-      const rutResponse = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(rut)}`, {
-        headers: {
-          'Authorization': `Token ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (rutResponse.ok) {
-        const data = await rutResponse.json();
-        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-          const patientId = data.data[0].id?.toString();
-          console.log(`[Funnel Lead] Found existing Dentalink patient by RUT: ${patientId}`);
-          return patientId;
-        }
       }
     }
 
@@ -92,7 +110,7 @@ async function createDentalinkPatient(lead: LeadRequest): Promise<string | null>
         apellidos: lead.name.split(' ').slice(1).join(' ') || '-',
         email: lead.email,
         telefono: lead.phone,
-        rut: lead.rut || null,
+        rut: lead.rut ? normalizeRut(lead.rut) : null,
         notas: lead.reason || '',
       }),
     });
@@ -104,8 +122,9 @@ async function createDentalinkPatient(lead: LeadRequest): Promise<string | null>
     }
 
     const data = await response.json();
-    console.log(`[Funnel Lead] Dentalink patient created: ${data.id}`);
-    return data.id?.toString() || null;
+    const patientId = (data.id_paciente || data.id)?.toString() || null;
+    console.log(`[Funnel Lead] Dentalink patient created: ${patientId}`, JSON.stringify(data));
+    return patientId;
   } catch (error) {
     console.error('[Funnel Lead] Dentalink create failed:', error);
     return null;
