@@ -487,12 +487,19 @@ const PreEvaluationWizard = () => {
             onChange={(e) => updateFormData("imageFile", e.target.files?.[0] || null)}
           />
         </label>
-        <button className="flex-1 flex flex-col items-center justify-center gap-4 p-8 border border-dashed border-border hover:border-foreground/50 transition-colors group">
+        <label className="flex-1 flex flex-col items-center justify-center gap-4 p-8 border border-dashed border-border hover:border-foreground/50 transition-colors cursor-pointer group">
           <Camera className="w-8 h-8 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1} />
           <span className="caption text-muted-foreground group-hover:text-foreground transition-colors">
             {t("wizard.step4.camera")}
           </span>
-        </button>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => updateFormData("imageFile", e.target.files?.[0] || null)}
+          />
+        </label>
       </div>
       {formData.imageFile && (
         <p className="body-small text-foreground">
