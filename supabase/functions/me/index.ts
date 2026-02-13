@@ -37,6 +37,8 @@ interface ProfileResponse {
     ia_scan_result: object | null;
   }>;
   dentalink_patient: object | null;
+  dentalink_treatments: Array<object>;
+  dentalink_files: Array<object>;
 }
 
 /**
@@ -170,6 +172,32 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Fetch tratamientos y archivos from Dentalink
+    let dentalinkTreatments: object[] = [];
+    let dentalinkFiles: object[] = [];
+    const patientId = profile.dentalink_patient_id;
+
+    if (patientId) {
+      const [treatResult, filesResult] = await Promise.allSettled([
+        dentalinkRequest(`/pacientes/${patientId}/tratamientos`),
+        dentalinkRequest(`/pacientes/${patientId}/archivos`),
+      ]);
+
+      if (treatResult.status === 'fulfilled') {
+        const raw = treatResult.value;
+        dentalinkTreatments = raw?.data || raw?.results || [];
+      } else {
+        console.error('[Me] Treatments fetch error:', treatResult.reason);
+      }
+
+      if (filesResult.status === 'fulfilled') {
+        const raw = filesResult.value;
+        dentalinkFiles = raw?.data || raw?.results || [];
+      } else {
+        console.error('[Me] Files fetch error:', filesResult.reason);
+      }
+    }
+
     // Obtiene citas
     const { data: appointments } = await supabase
       .from('appointments')
@@ -235,6 +263,8 @@ Deno.serve(async (req) => {
         ia_scan_result: f.ia_scan_result,
       })),
       dentalink_patient: dentalinkPatient,
+      dentalink_treatments: dentalinkTreatments,
+      dentalink_files: dentalinkFiles,
     };
 
     console.log(`[Me] Response ready for ${profile.email} (dentalink: ${profile.dentalink_patient_id || 'not linked'})`);
