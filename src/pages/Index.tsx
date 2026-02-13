@@ -25,6 +25,12 @@ const Index = () => {
               <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
             </Link>
             <div className="flex items-center gap-6">
+              <Link
+                to="/portal"
+                className="caption text-gold-muted hover:text-gold transition-colors duration-300 tracking-widest"
+              >
+                Portal Paciente
+              </Link>
               <button
                 onClick={() => setLanguage(language === "es" ? "en" : "es")}
                 className="caption text-muted-foreground hover:text-foreground transition-colors"
