@@ -39,7 +39,8 @@ async function dentalinkSearchByRut(rut: string): Promise<Record<string, unknown
   }
 
   try {
-    const response = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(rut)}`, {
+    const query = JSON.stringify({ rut: { eq: rut } });
+    const response = await fetch(`${DENTALINK_API_URL}/pacientes?q=${encodeURIComponent(query)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Token ${apiKey}`,
