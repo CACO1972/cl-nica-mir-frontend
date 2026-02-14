@@ -10,6 +10,10 @@ export interface SecondOpinionData {
   external_budget_amount?: number;
   external_clinic_name?: string;
   flow_type: 'ia_only' | 'ia_plus_specialist';
+  // Image upload
+  image_data?: string;
+  image_name?: string;
+  image_mime?: string;
 }
 
 export interface CreateResponse {
@@ -54,9 +58,6 @@ export interface SpecialistCheckoutResponse {
   error?: string;
 }
 
-/**
- * Create a new second opinion request
- */
 export async function createSecondOpinion(data: SecondOpinionData): Promise<CreateResponse> {
   try {
     const { data: response, error } = await supabase.functions.invoke('second-opinion', {
@@ -70,6 +71,9 @@ export async function createSecondOpinion(data: SecondOpinionData): Promise<Crea
         external_budget_amount: data.external_budget_amount,
         external_clinic_name: data.external_clinic_name,
         flow_type: data.flow_type,
+        image_data: data.image_data,
+        image_name: data.image_name,
+        image_mime: data.image_mime,
       },
     });
 
@@ -97,9 +101,6 @@ export async function createSecondOpinion(data: SecondOpinionData): Promise<Crea
   }
 }
 
-/**
- * Request IA analysis report for a second opinion
- */
 export async function requestIAReport(secondOpinionId: string): Promise<IAReportResponse> {
   try {
     const { data: response, error } = await supabase.functions.invoke('second-opinion', {
@@ -132,9 +133,6 @@ export async function requestIAReport(secondOpinionId: string): Promise<IAReport
   }
 }
 
-/**
- * Create checkout for specialist consultation
- */
 export async function createSpecialistCheckout(secondOpinionId: string): Promise<SpecialistCheckoutResponse> {
   try {
     const { data: response, error } = await supabase.functions.invoke('second-opinion', {

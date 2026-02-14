@@ -68,11 +68,27 @@ export interface CheckoutResponse {
   error?: string;
 }
 
+export interface AgendaOption {
+  id: string;
+  rank: number;
+  date: string;
+  time: string;
+  end_time: string;
+  professional_name: string;
+  professional_id: string;
+  formatted_date: string;
+  formatted_time: string;
+}
+
+export interface BookingResult {
+  success: boolean;
+  appointment_id?: string;
+  confirmation_message?: string;
+  error?: string;
+}
+
 // API Functions
 
-/**
- * Create a new lead in the funnel
- */
 export async function createLead(data: LeadData): Promise<LeadResponse> {
   try {
     const { data: response, error } = await supabase.functions.invoke('funnel-lead', {
@@ -91,12 +107,11 @@ export async function createLead(data: LeadData): Promise<LeadResponse> {
       return { success: false, error: error.message };
     }
 
-    // Map backend response to expected format
     if (response.success && response.data) {
       return {
         success: true,
         data: {
-          id: response.data.lead_id, // Backend returns lead_id, frontend expects id
+          id: response.data.lead_id,
           name: data.name,
           email: data.email,
           status: response.data.status,
@@ -112,12 +127,8 @@ export async function createLead(data: LeadData): Promise<LeadResponse> {
   }
 }
 
-/**
- * Upload a file for a lead
- */
 export async function uploadFile(data: UploadData): Promise<UploadResponse> {
   try {
-    // Convert file to base64
     const base64Data = await fileToBase64(data.file);
 
     const { data: response, error } = await supabase.functions.invoke('funnel-upload', {
@@ -144,9 +155,6 @@ export async function uploadFile(data: UploadData): Promise<UploadResponse> {
   }
 }
 
-/**
- * Trigger IA scan for a lead
- */
 export async function triggerIAScan(leadId: string): Promise<IAScanResponse> {
   try {
     const { data: response, error } = await supabase.functions.invoke('funnel-ia-scan', {
@@ -158,13 +166,12 @@ export async function triggerIAScan(leadId: string): Promise<IAScanResponse> {
       return { success: false, error: error.message };
     }
 
-    // Map backend response to expected format
     if (response.success && response.data) {
       return {
         success: true,
         data: {
           lead_id: response.data.lead_id,
-          ia_result: response.data.scan_result, // Backend returns scan_result, frontend expects ia_result
+          ia_result: response.data.scan_result,
           completed_at: new Date().toISOString(),
         },
       };
@@ -178,9 +185,6 @@ export async function triggerIAScan(leadId: string): Promise<IAScanResponse> {
   }
 }
 
-/**
- * Create checkout preference for payment
- */
 export async function createCheckout(
   leadId: string,
   urls?: { success?: string; failure?: string; pending?: string }
@@ -202,14 +206,13 @@ export async function createCheckout(
       return { success: false, error: error.message };
     }
 
-    // Map backend response to expected format
     if (response.success && response.data) {
       return {
         success: true,
         data: {
           preference_id: response.data.preference_id,
-          init_point: response.data.checkout_url, // Backend returns checkout_url
-          sandbox_init_point: response.data.sandbox_url, // Backend returns sandbox_url
+          init_point: response.data.checkout_url,
+          sandbox_init_point: response.data.sandbox_url,
         },
       };
     }
@@ -218,6 +221,74 @@ export async function createCheckout(
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     console.error('[FunnelAPI] Checkout exception:', message);
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Fetch agenda options from the smart scheduling endpoint
+ */
+export async function fetchAgendaOptions(params: {
+  appointment_type: string;
+  lead_id?: string;
+  preferred_days?: string[];
+  preferred_time_range?: 'morning' | 'afternoon' | 'evening' | 'any';
+  num_options?: number;
+}): Promise<AgendaOption[]> {
+  try {
+    const { data: response, error } = await supabase.functions.invoke('agenda-options', {
+      body: params,
+    });
+
+    if (error) {
+      console.error('[FunnelAPI] Agenda options error:', error);
+      return [];
+    }
+
+    if (response.success && response.data?.options) {
+      return response.data.options as AgendaOption[];
+    }
+
+    return [];
+  } catch (err) {
+    console.error('[FunnelAPI] Agenda options exception:', err);
+    return [];
+  }
+}
+
+/**
+ * Book an appointment slot
+ */
+export async function bookAppointment(params: {
+  lead_id: string;
+  appointment_type: string;
+  date: string;
+  time: string;
+  professional_id?: string;
+  notes?: string;
+}): Promise<BookingResult> {
+  try {
+    const { data: response, error } = await supabase.functions.invoke('agenda-book', {
+      body: params,
+    });
+
+    if (error) {
+      console.error('[FunnelAPI] Booking error:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (response.success && response.data) {
+      return {
+        success: true,
+        appointment_id: response.data.appointment_id,
+        confirmation_message: response.data.confirmation_message,
+      };
+    }
+
+    return { success: false, error: response.error || 'Error al agendar' };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error desconocido';
+    console.error('[FunnelAPI] Booking exception:', message);
     return { success: false, error: message };
   }
 }
