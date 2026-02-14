@@ -1,16 +1,40 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, LogOut, Calendar, CreditCard, FileText, User, Shield, Stethoscope, FolderOpen, ExternalLink } from "lucide-react";
-import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
+import { Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PortalHeader, EvaluacionesTab, PagosTab, CitasTab } from "@/components/portal";
 
-const WHATSAPP_URL = "https://wa.me/56912345678"; // TODO: reemplazar con número real
-const AGENDA_ONLINE_URL = "https://agenda.dentalink.healthatom.com/clinica-miro"; // TODO: reemplazar con URL real
+/* ─── RUT helpers ─── */
+function formatRutInput(value: string): string {
+  const cleaned = value.replace(/[^0-9kK]/g, "").toUpperCase();
+  if (cleaned.length <= 1) return cleaned;
+  const body = cleaned.slice(0, -1);
+  const dv = cleaned.slice(-1);
+  return `${body}-${dv}`;
+}
 
+function isValidRUT(rut: string): boolean {
+  const cleaned = rut.replace(/[^0-9kK]/g, "").toUpperCase();
+  if (cleaned.length < 8 || cleaned.length > 9) return false;
+  const body = cleaned.slice(0, -1);
+  const dv = cleaned.slice(-1);
+  let sum = 0;
+  let multiplier = 2;
+  for (let i = body.length - 1; i >= 0; i--) {
+    sum += parseInt(body[i]) * multiplier;
+    multiplier = multiplier === 7 ? 2 : multiplier + 1;
+  }
+  const expected = 11 - (sum % 11);
+  const calculated = expected === 11 ? "0" : expected === 10 ? "K" : expected.toString();
+  return dv === calculated;
+}
+
+/* ─── Data interfaces for me endpoint ─── */
 interface PatientData {
   id: string;
   full_name: string;
@@ -43,28 +67,53 @@ interface PatientData {
   dentalink_files: Array<Record<string, unknown>>;
 }
 
-function formatRutInput(value: string): string {
-  const cleaned = value.replace(/[^0-9kK]/g, "").toUpperCase();
-  if (cleaned.length <= 1) return cleaned;
-  const body = cleaned.slice(0, -1);
-  const dv = cleaned.slice(-1);
-  return `${body}-${dv}`;
+/* ─── Map me response → tab interfaces ─── */
+function mapToEvaluaciones(data: PatientData) {
+  return data.funnel_history.map((f) => ({
+    id: f.id,
+    nombre: data.full_name,
+    email: data.email,
+    tipo_ruta: "evaluacion",
+    ruta_sugerida: null as string | null,
+    estado_evaluacion: mapFunnelStatus(f.status),
+    resumen_ia: null as string | null,
+    payment_status: f.status === "PAID" ? "approved" : f.status === "CHECKOUT_CREATED" ? "pending" : "",
+    created_at: f.created_at,
+    cita_agendada_at: f.status === "SCHEDULED" ? f.created_at : null,
+  }));
 }
 
-function isValidRUT(rut: string): boolean {
-  const cleaned = rut.replace(/[^0-9kK]/g, "").toUpperCase();
-  if (cleaned.length < 8 || cleaned.length > 9) return false;
-  const body = cleaned.slice(0, -1);
-  const dv = cleaned.slice(-1);
-  let sum = 0;
-  let multiplier = 2;
-  for (let i = body.length - 1; i >= 0; i--) {
-    sum += parseInt(body[i]) * multiplier;
-    multiplier = multiplier === 7 ? 2 : multiplier + 1;
-  }
-  const expected = 11 - (sum % 11);
-  const calculated = expected === 11 ? "0" : expected === 10 ? "K" : expected.toString();
-  return dv === calculated;
+function mapFunnelStatus(status: string): string {
+  const map: Record<string, string> = {
+    LEAD: "iniciada",
+    IA_DONE: "ia_analizada",
+    CHECKOUT_CREATED: "pago_pendiente",
+    PAID: "pago_completado",
+    SCHEDULED: "cita_agendada",
+  };
+  return map[status] || status;
+}
+
+function mapToCitas(data: PatientData) {
+  return data.appointments.map((apt) => ({
+    id: apt.id,
+    cita_agendada_at: `${apt.date}T${apt.time}`,
+    ia_ruta_sugerida: null as string | null,
+    stage: apt.status === "scheduled" || apt.status === "confirmed" ? "SCHEDULED" : apt.status === "completed" ? "COMPLETED" : apt.status,
+    nombre: apt.type_name,
+  }));
+}
+
+function mapToPagos(data: PatientData) {
+  return data.payments.map((pay) => ({
+    id: pay.id,
+    payment_status: pay.status,
+    monto_pagado: pay.amount,
+    paid_at: pay.status === "approved" ? pay.created_at : null,
+    checkout_url: null as string | null,
+    ia_ruta_sugerida: null as string | null,
+    created_at: pay.created_at,
+  }));
 }
 
 const Portal = () => {
@@ -77,7 +126,6 @@ const Portal = () => {
   const [patientData, setPatientData] = useState<PatientData | null>(null);
 
   useEffect(() => {
-    // Safety timeout — never hang on "Verificando sesión..."
     const timeout = setTimeout(() => setCheckingSession(false), 4000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -125,19 +173,16 @@ const Portal = () => {
   async function handleRutLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-
     if (!isValidRUT(rut)) {
       setError("RUT inválido. Verifica el formato.");
       return;
     }
-
     setLoading(true);
     try {
       const formattedRut = formatRutInput(rut);
       const res = await supabase.functions.invoke("auth-rut-login", {
         body: { rut: formattedRut },
       });
-
       if (res.data?.error) {
         setError(res.data.error);
       } else if (res.data?.success) {
@@ -170,20 +215,13 @@ const Portal = () => {
     }
   }
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    setStep("login");
-    setPatientData(null);
-    setRut("");
-  }
-
   if (checkingSession) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
           animate={{ opacity: [0.3, 1, 0.3] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="text-muted-foreground body-large"
+          className="text-muted-foreground text-lg"
         >
           Verificando sesión...
         </motion.div>
@@ -193,43 +231,9 @@ const Portal = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border/30">
-        <div className="max-w-[var(--container-max)] mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-            <img src={logoClinicaMiro} alt="Clínica Miró" className="h-8 w-auto" />
-          </Link>
-          {step === "dashboard" && (
-            <div className="flex items-center gap-4">
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
-              >
-                WhatsApp
-              </a>
-              <a
-                href={AGENDA_ONLINE_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
-              >
-                Cambiar hora
-              </a>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm tracking-widest uppercase"
-              >
-                <LogOut className="w-4 h-4" />
-                Salir
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
+      {step === "dashboard" && <PortalHeader />}
 
-      <main className="pt-24 pb-16 px-6">
+      <main className={step === "dashboard" ? "pt-4 pb-16 px-4" : "pt-24 pb-16 px-6"}>
         <AnimatePresence mode="wait">
           {step === "login" && (
             <motion.div
@@ -244,13 +248,12 @@ const Portal = () => {
                 <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-7 h-7 text-primary" />
                 </div>
-                <h1 className="display-medium text-foreground mb-3">Portal Paciente</h1>
-                <p className="body-large text-muted-foreground">
+                <h1 className="text-3xl font-serif text-foreground mb-3">Portal Paciente</h1>
+                <p className="text-lg text-muted-foreground">
                   Accede a tu ficha clínica
                 </p>
               </div>
 
-              {/* RUT Login */}
               <form onSubmit={handleRutLogin} className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2 tracking-wide uppercase">
@@ -279,14 +282,12 @@ const Portal = () => {
                 </Button>
               </form>
 
-              {/* Divider */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex-1 h-px bg-border/50" />
                 <span className="text-xs text-muted-foreground tracking-widest uppercase">o</span>
                 <div className="flex-1 h-px bg-border/50" />
               </div>
 
-              {/* Google Login */}
               <Button
                 type="button"
                 variant="outline"
@@ -324,246 +325,45 @@ const Portal = () => {
           )}
 
           {step === "dashboard" && patientData && (
-            <DashboardStep key="dashboard" data={patientData} />
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="container mx-auto max-w-4xl"
+            >
+              <div className="mb-6">
+                <h1 className="text-2xl font-serif text-foreground">
+                  Hola, {patientData.full_name.split(" ")[0]}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {patientData.email}
+                  {patientData.rut && <span className="ml-2 font-mono">· {patientData.rut}</span>}
+                </p>
+              </div>
+
+              <Tabs defaultValue="citas" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="citas">Citas</TabsTrigger>
+                  <TabsTrigger value="evaluaciones">Evaluaciones</TabsTrigger>
+                  <TabsTrigger value="pagos">Pagos</TabsTrigger>
+                </TabsList>
+                <TabsContent value="citas" className="mt-6">
+                  <CitasTab citas={mapToCitas(patientData)} isLoading={false} />
+                </TabsContent>
+                <TabsContent value="evaluaciones" className="mt-6">
+                  <EvaluacionesTab evaluaciones={mapToEvaluaciones(patientData)} isLoading={false} />
+                </TabsContent>
+                <TabsContent value="pagos" className="mt-6">
+                  <PagosTab pagos={mapToPagos(patientData)} isLoading={false} />
+                </TabsContent>
+              </Tabs>
+            </motion.div>
           )}
         </AnimatePresence>
       </main>
     </div>
   );
 };
-
-/* ─── Helpers ─── */
-const STATUS_LABELS: Record<string, string> = {
-  LEAD: "Ingresado",
-  IA_DONE: "Análisis IA listo",
-  CHECKOUT_CREATED: "Pago pendiente",
-  PAID: "Pagado",
-  SCHEDULED: "Agendado",
-  pending: "Pendiente",
-  approved: "Aprobado",
-  rejected: "Rechazado",
-  cancelled: "Cancelado",
-  refunded: "Reembolsado",
-  scheduled: "Agendada",
-  completed: "Completada",
-  confirmed: "Confirmada",
-  cancelled_appointment: "Cancelada",
-};
-
-function statusLabel(raw: string): string {
-  return STATUS_LABELS[raw] || raw;
-}
-
-function statusColor(raw: string): string {
-  switch (raw) {
-    case "PAID": case "approved": case "completed": case "confirmed":
-      return "bg-green-500/10 text-green-600";
-    case "CHECKOUT_CREATED": case "pending":
-      return "bg-yellow-500/10 text-yellow-600";
-    case "rejected": case "cancelled": case "cancelled_appointment":
-      return "bg-destructive/10 text-destructive";
-    case "SCHEDULED": case "scheduled":
-      return "bg-blue-500/10 text-blue-600";
-    case "IA_DONE":
-      return "bg-primary/10 text-primary";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
-/* ─── Dashboard Step ─── */
-function DashboardStep({ data }: { data: PatientData }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="max-w-3xl mx-auto"
-    >
-      <div className="mb-10">
-        <div className="flex items-center gap-4 mb-2">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">{data.full_name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {data.rut && <span className="font-mono">{data.rut}</span>}
-              {data.dentalink_patient_id && (
-                <span className="ml-3 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  Ficha Dentalink vinculada
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <section className="bg-muted/20 rounded-2xl p-6 border border-border/30">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Citas</h2>
-          </div>
-          {data.appointments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin citas registradas.</p>
-          ) : (
-            <ul className="space-y-3">
-              {data.appointments.map((apt) => (
-                <li key={apt.id} className="flex justify-between items-start text-sm">
-                  <div>
-                    <p className="text-foreground font-medium">{apt.type_name}</p>
-                    <p className="text-muted-foreground">{apt.date} · {apt.time}</p>
-                  </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(apt.status)}`}>
-                    {statusLabel(apt.status)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="bg-muted/20 rounded-2xl p-6 border border-border/30">
-          <div className="flex items-center gap-2 mb-4">
-            <CreditCard className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Pagos</h2>
-          </div>
-          {data.payments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin pagos registrados.</p>
-          ) : (
-            <ul className="space-y-3">
-              {data.payments.map((pay) => (
-                <li key={pay.id} className="flex justify-between items-center text-sm">
-                  <span className="text-foreground font-medium">
-                    ${pay.amount.toLocaleString("es-CL")} {pay.currency}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(pay.status)}`}>
-                    {statusLabel(pay.status)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Evaluaciones</h2>
-          </div>
-          {data.funnel_history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin evaluaciones registradas.</p>
-          ) : (
-            <ul className="space-y-3">
-              {data.funnel_history.map((f) => (
-                <li key={f.id} className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">
-                    {new Date(f.created_at).toLocaleDateString("es-CL")}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(f.status)}`}>
-                    {statusLabel(f.status)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {data.dentalink_patient && (
-          <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Ficha Clínica Dentalink</h2>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              {Object.entries(data.dentalink_patient)
-                .filter(([key]) => !key.startsWith("id") && key !== "id_paciente")
-                .slice(0, 12)
-                .map(([key, value]) => (
-                  <div key={key}>
-                    <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">
-                      {key.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-foreground">{String(value || "—")}</p>
-                  </div>
-                ))}
-            </div>
-          </section>
-        )}
-
-        {/* Tratamientos */}
-        {data.dentalink_treatments && data.dentalink_treatments.length > 0 && (
-          <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <Stethoscope className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Tratamientos</h2>
-            </div>
-            <ul className="space-y-3">
-              {data.dentalink_treatments.slice(0, 10).map((t, i) => (
-                <li key={i} className="flex justify-between items-center text-sm">
-                  <div>
-                    <p className="text-foreground font-medium">
-                      {String((t as Record<string, unknown>).nombre || (t as Record<string, unknown>).tratamiento || `Tratamiento ${i + 1}`)}
-                    </p>
-                    {(t as Record<string, unknown>).fecha && (
-                      <p className="text-muted-foreground text-xs">{String((t as Record<string, unknown>).fecha)}</p>
-                    )}
-                  </div>
-                  {(t as Record<string, unknown>).estado && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      {String((t as Record<string, unknown>).estado)}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Archivos clínicos */}
-        {data.dentalink_files && data.dentalink_files.length > 0 && (
-          <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <FolderOpen className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Archivos Clínicos</h2>
-            </div>
-            <ul className="space-y-3">
-              {data.dentalink_files.slice(0, 10).map((f, i) => (
-                <li key={i} className="text-sm text-foreground">
-                  {String((f as Record<string, unknown>).nombre || (f as Record<string, unknown>).archivo || `Archivo ${i + 1}`)}
-                  {(f as Record<string, unknown>).fecha && (
-                    <span className="text-muted-foreground ml-2 text-xs">{String((f as Record<string, unknown>).fecha)}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-muted-foreground mt-4">* En fase 2 se generan links temporales on-demand.</p>
-          </section>
-        )}
-
-        {/* Acción rápida */}
-        <section className="bg-muted/20 rounded-2xl p-6 border border-border/30 md:col-span-2">
-          <div className="flex items-center gap-2 mb-3">
-            <ExternalLink className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-foreground tracking-wide uppercase text-sm">Acción rápida</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Si quieres cambiar tu hora, usa la Agenda Online oficial.
-          </p>
-          <a
-            href={AGENDA_ONLINE_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Cambiar hora / Agendar
-            <ExternalLink className="w-4 h-4" />
-          </a>
-        </section>
-      </div>
-    </motion.div>
-  );
-}
 
 export default Portal;
