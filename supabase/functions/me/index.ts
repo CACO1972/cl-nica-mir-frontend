@@ -82,7 +82,8 @@ async function findDentalinkPatientByRut(rut: string): Promise<{ id: string; dat
     const normalizedRut = normalizeRut(rut);
     console.log(`[Me] Searching Dentalink patient by RUT: ${normalizedRut}`);
 
-    const result = await dentalinkRequest(`/pacientes?q=${encodeURIComponent(normalizedRut)}`);
+    const query = JSON.stringify({ rut: { eq: normalizedRut } });
+    const result = await dentalinkRequest(`/pacientes?q=${encodeURIComponent(query)}`);
 
     const patients = result?.data || result?.results || [];
     if (Array.isArray(patients) && patients.length > 0) {
