@@ -48,7 +48,7 @@ function determineClinicalRoute(iaResult: IAScanResponse['data']): string {
   return 'aesthetic';
 }
 
-const WHATSAPP_NUMBER = '56912345678'; // Clínica Miró WhatsApp
+const WHATSAPP_NUMBER = '56922511034'; // Clínica Miró WhatsApp
 
 interface FormData {
   // Step 1 - Personal Data

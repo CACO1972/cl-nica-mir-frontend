@@ -357,7 +357,7 @@ const Portal = () => {
 
               <p className="text-xs text-muted-foreground text-center mt-8">
                 ¿No tienes cuenta? Completa tu{" "}
-                <Link to="/evaluacion" className="text-primary hover:underline">
+                <Link to="/evaluation" className="text-primary hover:underline">
                   evaluación
                 </Link>{" "}
                 para crear tu ficha.
