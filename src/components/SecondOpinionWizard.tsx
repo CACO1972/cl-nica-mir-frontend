@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, ChevronRight, Loader2, FileText, Video, CheckCircle, AlertTriangle, Shield } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, FileText, Video, CheckCircle, AlertTriangle, Shield, Upload, Camera } from "lucide-react";
 import { createSecondOpinion, requestIAReport, createSpecialistCheckout, type IAReport } from "@/services/secondOpinionApi";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +20,7 @@ interface FormData {
   external_budget_amount: string;
   external_clinic_name: string;
   flow_type: FlowType;
+  imageFile: File | null;
 }
 
 const SecondOpinionWizard = () => {
@@ -39,9 +40,10 @@ const SecondOpinionWizard = () => {
     external_budget_amount: "",
     external_clinic_name: "",
     flow_type: "ia_only",
+    imageFile: null,
   });
 
-  const updateField = useCallback((field: keyof FormData, value: string | FlowType) => {
+  const updateField = useCallback((field: keyof FormData, value: string | FlowType | File | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -53,9 +55,24 @@ const SecondOpinionWizard = () => {
     return formData.reason.trim().length >= 10;
   };
 
+  // Convert file to base64 for sending to edge function
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleCreateSecondOpinion = async () => {
     setIsLoading(true);
     try {
+      let imageData: string | undefined;
+      if (formData.imageFile) {
+        imageData = await fileToBase64(formData.imageFile);
+      }
+
       const response = await createSecondOpinion({
         name: formData.name,
         email: formData.email,
@@ -65,11 +82,14 @@ const SecondOpinionWizard = () => {
         external_budget_amount: formData.external_budget_amount ? parseFloat(formData.external_budget_amount) : undefined,
         external_clinic_name: formData.external_clinic_name || undefined,
         flow_type: formData.flow_type,
+        image_data: imageData,
+        image_name: formData.imageFile?.name,
+        image_mime: formData.imageFile?.type,
       });
 
       if (response.success && response.data) {
         setSecondOpinionId(response.data.id);
-        setStep(4); // Go to IA analysis
+        setStep(5); // Go to IA analysis
         await handleRequestIAReport(response.data.id);
       } else {
         toast({
@@ -95,7 +115,7 @@ const SecondOpinionWizard = () => {
       const response = await requestIAReport(id);
       if (response.success && response.data) {
         setIaReport(response.data.ia_report);
-        setStep(5); // Show results
+        setStep(6); // Show results
       } else {
         toast({
           title: "Error",
@@ -121,7 +141,6 @@ const SecondOpinionWizard = () => {
     try {
       const response = await createSpecialistCheckout(secondOpinionId);
       if (response.success && response.data) {
-        // Redirect to payment
         window.location.href = response.data.checkout_url;
       } else {
         toast({
@@ -143,20 +162,14 @@ const SecondOpinionWizard = () => {
 
   const nextStep = () => {
     if (step === 1 && !validateStep1()) {
-      toast({
-        title: t("wizard.errors.required"),
-        variant: "destructive",
-      });
+      toast({ title: t("wizard.errors.required"), variant: "destructive" });
       return;
     }
     if (step === 2 && !validateStep2()) {
-      toast({
-        title: t("wizard.errors.required"),
-        variant: "destructive",
-      });
+      toast({ title: t("wizard.errors.required"), variant: "destructive" });
       return;
     }
-    if (step === 3) {
+    if (step === 4) {
       handleCreateSecondOpinion();
       return;
     }
@@ -164,7 +177,7 @@ const SecondOpinionWizard = () => {
   };
 
   const prevStep = () => {
-    if (step > 1 && step < 4) setStep(s => s - 1);
+    if (step > 1 && step < 5) setStep(s => s - 1);
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -323,10 +336,69 @@ const SecondOpinionWizard = () => {
             </motion.div>
           )}
 
-          {/* Step 3: Choose Flow Type */}
+          {/* Step 3: Image Upload (NEW) */}
           {step === 3 && (
             <motion.div
               key="step3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-12"
+            >
+              <div>
+                <p className="caption text-muted-foreground mb-4">
+                  Paso 3 de 4
+                </p>
+                <h2 className="display-medium text-foreground">
+                  Imagen de la zona afectada
+                </h2>
+              </div>
+
+              <p className="body-large text-muted-foreground">
+                Si tienes una radiografía o foto de la zona que te preocupa, súbela aquí para un análisis más preciso. Es opcional pero mejora significativamente el informe.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-6">
+                <label className="flex-1 flex flex-col items-center justify-center gap-4 p-10 border-2 border-dashed border-border hover:border-gold-muted/50 transition-colors cursor-pointer group rounded-xl">
+                  <Upload className="w-8 h-8 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1} />
+                  <span className="body-small text-muted-foreground group-hover:text-foreground transition-colors text-center">
+                    Subir imagen o radiografía
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => updateField("imageFile", e.target.files?.[0] || null)}
+                  />
+                </label>
+                <label className="flex-1 flex flex-col items-center justify-center gap-4 p-10 border-2 border-dashed border-border hover:border-gold-muted/50 transition-colors cursor-pointer group rounded-xl">
+                  <Camera className="w-8 h-8 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1} />
+                  <span className="body-small text-muted-foreground group-hover:text-foreground transition-colors text-center">
+                    Tomar foto
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => updateField("imageFile", e.target.files?.[0] || null)}
+                  />
+                </label>
+              </div>
+
+              {formData.imageFile && (
+                <div className="flex items-center gap-3 p-4 bg-gold-muted/10 rounded-lg border border-gold-muted/30">
+                  <CheckCircle className="w-5 h-5 text-gold flex-shrink-0" />
+                  <span className="body-small text-foreground">{formData.imageFile.name}</span>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Step 4: Choose Flow Type (was step 3) */}
+          {step === 4 && (
+            <motion.div
+              key="step4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -342,7 +414,6 @@ const SecondOpinionWizard = () => {
               </div>
 
               <div className="space-y-6">
-                {/* IA Only Option */}
                 <button
                   onClick={() => updateField("flow_type", "ia_only")}
                   className={`w-full p-8 rounded-xl border-2 transition-all duration-300 text-left ${
@@ -373,7 +444,6 @@ const SecondOpinionWizard = () => {
                   </div>
                 </button>
 
-                {/* IA + Specialist Option */}
                 <button
                   onClick={() => updateField("flow_type", "ia_plus_specialist")}
                   className={`w-full p-8 rounded-xl border-2 transition-all duration-300 text-left ${
@@ -407,10 +477,10 @@ const SecondOpinionWizard = () => {
             </motion.div>
           )}
 
-          {/* Step 4: Processing */}
-          {step === 4 && (
+          {/* Step 5: Processing */}
+          {step === 5 && (
             <motion.div
-              key="step4"
+              key="step5"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -424,16 +494,19 @@ const SecondOpinionWizard = () => {
                   {t("opinion.step4.headline")}
                 </h2>
                 <p className="body-large text-muted-foreground">
-                  {t("opinion.step4.message")}
+                  {formData.imageFile 
+                    ? "Analizando tu imagen y datos clínicos con IA..."
+                    : t("opinion.step4.message")
+                  }
                 </p>
               </div>
             </motion.div>
           )}
 
-          {/* Step 5: IA Report Results */}
-          {step === 5 && iaReport && (
+          {/* Step 6: IA Report Results */}
+          {step === 6 && iaReport && (
             <motion.div
-              key="step5"
+              key="step6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -539,7 +612,7 @@ const SecondOpinionWizard = () => {
         </AnimatePresence>
 
         {/* Navigation */}
-        {step <= 3 && (
+        {step <= 4 && (
           <div className="flex justify-between items-center mt-16 pt-8 border-t border-border">
             <button
               onClick={prevStep}
@@ -566,7 +639,7 @@ const SecondOpinionWizard = () => {
                 </>
               ) : (
                 <>
-                  {t("wizard.nav.continue")}
+                  {step === 3 ? "Omitir o continuar" : t("wizard.nav.continue")}
                   <ChevronRight className="w-4 h-4" />
                 </>
               )}

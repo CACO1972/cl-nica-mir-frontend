@@ -61,6 +61,7 @@ interface PatientData {
     id: string;
     status: string;
     created_at: string;
+    ia_scan_result?: Record<string, unknown> | null;
   }>;
   dentalink_patient: Record<string, unknown> | null;
   dentalink_treatments: Array<Record<string, unknown>>;
@@ -69,18 +70,44 @@ interface PatientData {
 
 /* ─── Map me response → tab interfaces ─── */
 function mapToEvaluaciones(data: PatientData) {
-  return data.funnel_history.map((f) => ({
-    id: f.id,
-    nombre: data.full_name,
-    email: data.email,
-    tipo_ruta: "evaluacion",
-    ruta_sugerida: null as string | null,
-    estado_evaluacion: mapFunnelStatus(f.status),
-    resumen_ia: null as string | null,
-    payment_status: f.status === "PAID" ? "approved" : f.status === "CHECKOUT_CREATED" ? "pending" : "",
-    created_at: f.created_at,
-    cita_agendada_at: f.status === "SCHEDULED" ? f.created_at : null,
-  }));
+  return data.funnel_history.map((f) => {
+    // Extract clinical route from IA result if available
+    const iaResult = f.ia_scan_result as Record<string, unknown> | null;
+    let rutaSugerida: string | null = null;
+    let resumenIa: string | null = null;
+    
+    if (iaResult) {
+      // Determine route from IA findings
+      const boneLoss = iaResult.bone_loss_risk as Record<string, unknown> | undefined;
+      const periodontal = iaResult.periodontal_risk as Record<string, unknown> | undefined;
+      const caries = iaResult.caries_risk as Record<string, unknown> | undefined;
+      const alignment = iaResult.alignment as Record<string, unknown> | undefined;
+      
+      if (boneLoss?.level === 'high') rutaSugerida = 'implantes';
+      else if (periodontal?.level === 'high') rutaSugerida = 'caries';
+      else if (caries?.level === 'high') rutaSugerida = 'caries';
+      else if (alignment?.level === 'high' || alignment?.level === 'moderate') rutaSugerida = 'ortodoncia';
+      else rutaSugerida = 'estetica';
+
+      // Build summary
+      const overallRisk = iaResult.overall_risk as string;
+      const treatments = iaResult.suggested_treatments as string[] | undefined;
+      resumenIa = `Riesgo general: ${overallRisk || 'N/A'}${treatments?.length ? `. Tratamientos sugeridos: ${treatments.join(', ')}` : ''}`;
+    }
+
+    return {
+      id: f.id,
+      nombre: data.full_name,
+      email: data.email,
+      tipo_ruta: "evaluacion",
+      ruta_sugerida: rutaSugerida,
+      estado_evaluacion: mapFunnelStatus(f.status),
+      resumen_ia: resumenIa,
+      payment_status: f.status === "PAID" ? "approved" : f.status === "CHECKOUT_CREATED" ? "pending" : "",
+      created_at: f.created_at,
+      cita_agendada_at: f.status === "SCHEDULED" ? f.created_at : null,
+    };
+  });
 }
 
 function mapFunnelStatus(status: string): string {
@@ -95,13 +122,27 @@ function mapFunnelStatus(status: string): string {
 }
 
 function mapToCitas(data: PatientData) {
-  return data.appointments.map((apt) => ({
+  // Combine appointments from Supabase + Dentalink treatments
+  const supabaseCitas = data.appointments.map((apt) => ({
     id: apt.id,
     cita_agendada_at: `${apt.date}T${apt.time}`,
     ia_ruta_sugerida: null as string | null,
     stage: apt.status === "scheduled" || apt.status === "confirmed" ? "SCHEDULED" : apt.status === "completed" ? "COMPLETED" : apt.status,
     nombre: apt.type_name,
   }));
+
+  // Also add from funnel_history where status is PAID (pending to schedule)
+  const pendientes = data.funnel_history
+    .filter(f => f.status === 'PAID')
+    .map(f => ({
+      id: f.id,
+      cita_agendada_at: null as string | null,
+      ia_ruta_sugerida: null as string | null,
+      stage: 'PAID',
+      nombre: 'Evaluación Premium',
+    }));
+
+  return [...supabaseCitas, ...pendientes];
 }
 
 function mapToPagos(data: PatientData) {
@@ -339,8 +380,54 @@ const Portal = () => {
                 <p className="text-sm text-muted-foreground">
                   {patientData.email}
                   {patientData.rut && <span className="ml-2 font-mono">· {patientData.rut}</span>}
+                  {patientData.dentalink_patient_id && (
+                    <span className="ml-2 text-gold-muted">· Dentalink vinculado</span>
+                  )}
                 </p>
               </div>
+
+              {/* Dentalink treatments summary */}
+              {patientData.dentalink_treatments.length > 0 && (
+                <div className="mb-6 p-4 border border-gold-muted/20 bg-gold-muted/5 rounded-lg">
+                  <p className="caption text-gold-muted tracking-widest mb-2">TRATAMIENTOS EN CURSO (DENTALINK)</p>
+                  <div className="space-y-2">
+                    {patientData.dentalink_treatments.slice(0, 3).map((tto, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-foreground">
+                          {(tto as Record<string, string>).nombre || (tto as Record<string, string>).name || `Tratamiento ${i + 1}`}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {(tto as Record<string, string>).estado || (tto as Record<string, string>).status || ''}
+                        </span>
+                      </div>
+                    ))}
+                    {patientData.dentalink_treatments.length > 3 && (
+                      <p className="text-xs text-muted-foreground">
+                        +{patientData.dentalink_treatments.length - 3} más
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Dentalink files */}
+              {patientData.dentalink_files.length > 0 && (
+                <div className="mb-6 p-4 border border-border rounded-lg">
+                  <p className="caption text-muted-foreground tracking-widest mb-2">ARCHIVOS CLÍNICOS</p>
+                  <div className="flex flex-wrap gap-2">
+                    {patientData.dentalink_files.slice(0, 5).map((file, i) => (
+                      <span key={i} className="text-xs px-3 py-1 bg-secondary rounded-full text-muted-foreground">
+                        {(file as Record<string, string>).nombre || (file as Record<string, string>).name || `Archivo ${i + 1}`}
+                      </span>
+                    ))}
+                    {patientData.dentalink_files.length > 5 && (
+                      <span className="text-xs px-3 py-1 bg-secondary rounded-full text-muted-foreground">
+                        +{patientData.dentalink_files.length - 5}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <Tabs defaultValue="citas" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">

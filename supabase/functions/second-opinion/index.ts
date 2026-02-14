@@ -7,7 +7,6 @@ const corsHeaders = {
 
 interface SecondOpinionRequest {
   action: 'create' | 'ia_report' | 'specialist_checkout';
-  // For create
   name?: string;
   email?: string;
   phone?: string;
@@ -16,8 +15,11 @@ interface SecondOpinionRequest {
   external_budget_amount?: number;
   external_clinic_name?: string;
   flow_type?: 'ia_only' | 'ia_plus_specialist';
-  // For ia_report and specialist_checkout
   second_opinion_id?: string;
+  // Image upload support
+  image_data?: string; // base64
+  image_name?: string;
+  image_mime?: string;
 }
 
 interface IAReport {
@@ -31,13 +33,111 @@ interface IAReport {
   disclaimer: string;
 }
 
-function generateMockIAReport(
+const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+async function generateIAReport(
+  reason: string,
+  diagnosis: string | null,
+  externalAmount: number | null,
+  clinicName: string | null,
+  imageBase64: string | null,
+): Promise<IAReport> {
+  const apiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!apiKey) {
+    console.error('[Second Opinion] LOVABLE_API_KEY not configured');
+    return generateFallbackReport(diagnosis, externalAmount);
+  }
+
+  try {
+    const systemPrompt = `Eres un asistente clínico dental especializado en segundas opiniones. Analiza el caso y genera un informe estructurado.
+
+INSTRUCCIONES:
+- Evalúa el motivo de consulta, diagnóstico previo y presupuesto externo
+- Si hay imagen, analiza signos visibles (caries, inflamación gingival, pérdida ósea, alineación)
+- Determina urgencia: low, moderate, high
+- Sugiere hallazgos clave y recomendaciones
+- Si hay presupuesto externo, estima un ahorro potencial (10-25%)
+- Siempre recomienda la Evaluación Presencial Premium
+
+Responde SOLO con JSON válido con esta estructura:
+{
+  "assessment": "Resumen del análisis en 2-3 oraciones",
+  "key_findings": ["hallazgo 1", "hallazgo 2", ...],
+  "recommendations": ["recomendación 1", ...],
+  "comparison_notes": "Notas sobre presupuesto externo si aplica",
+  "estimated_savings": number o null,
+  "urgency": "low" | "moderate" | "high",
+  "cta_evaluation_premium": true,
+  "disclaimer": "Este informe es orientativo y no constituye un diagnóstico clínico."
+}`;
+
+    const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
+      {
+        type: "text",
+        text: `Motivo: ${reason}\nDiagnóstico previo: ${diagnosis || 'No proporcionado'}\nClínica externa: ${clinicName || 'No proporcionada'}\nPresupuesto externo: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP` : 'No proporcionado'}`,
+      },
+    ];
+
+    if (imageBase64) {
+      userContent.push({
+        type: "image_url",
+        image_url: { url: imageBase64 },
+      });
+    }
+
+    const response = await fetch(AI_GATEWAY_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent },
+        ],
+        temperature: 0.3,
+        max_tokens: 1500,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('[Second Opinion] AI gateway error:', response.status);
+      return generateFallbackReport(diagnosis, externalAmount);
+    }
+
+    const aiData = await response.json();
+    const rawText = aiData.choices?.[0]?.message?.content || '';
+    
+    // Parse JSON from response (handle markdown code blocks)
+    const jsonMatch = rawText.match(/```json\s*([\s\S]*?)```/) || rawText.match(/\{[\s\S]*\}/);
+    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : rawText;
+    
+    const parsed = JSON.parse(jsonStr);
+    
+    return {
+      assessment: parsed.assessment || 'Análisis completado.',
+      key_findings: parsed.key_findings || [],
+      recommendations: parsed.recommendations || [],
+      comparison_notes: parsed.comparison_notes,
+      estimated_savings: parsed.estimated_savings,
+      urgency: parsed.urgency || 'moderate',
+      cta_evaluation_premium: parsed.cta_evaluation_premium !== false,
+      disclaimer: parsed.disclaimer || 'Este informe es orientativo y no constituye un diagnóstico clínico.',
+    };
+  } catch (error) {
+    console.error('[Second Opinion] AI analysis error:', error);
+    return generateFallbackReport(diagnosis, externalAmount);
+  }
+}
+
+function generateFallbackReport(
   diagnosis: string | null,
   externalAmount: number | null
 ): IAReport {
   const findings: string[] = [];
   const recommendations: string[] = [];
-  let assessment = 'Basado en la información proporcionada, hemos analizado su caso.';
 
   if (diagnosis) {
     findings.push(`Diagnóstico reportado: ${diagnosis}`);
@@ -51,7 +151,6 @@ function generateMockIAReport(
     const potentialSavings = Math.round(externalAmount * 0.15);
     findings.push(`Presupuesto externo: $${externalAmount.toLocaleString('es-CL')} CLP`);
     recommendations.push(`Potencial ahorro estimado: $${potentialSavings.toLocaleString('es-CL')} CLP`);
-    recommendations.push('Comparamos opciones de tratamiento con tecnología de última generación');
   }
 
   recommendations.push('Evaluación Presencial Premium para diagnóstico definitivo con IA en vivo');
@@ -59,10 +158,10 @@ function generateMockIAReport(
   recommendations.push('Plan de tratamiento personalizado con financiamiento flexible');
 
   return {
-    assessment,
+    assessment: 'Basado en la información proporcionada, hemos analizado su caso.',
     key_findings: findings,
     recommendations,
-    comparison_notes: externalAmount 
+    comparison_notes: externalAmount
       ? 'Su presupuesto externo ha sido analizado. En la Evaluación Premium le mostraremos alternativas con tecnología IA.'
       : undefined,
     estimated_savings: externalAmount ? Math.round(externalAmount * 0.15) : undefined,
@@ -72,7 +171,7 @@ function generateMockIAReport(
   };
 }
 
-const SPECIALIST_PRICE = 19000; // CLP
+const SPECIALIST_PRICE = 19000;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -96,6 +195,30 @@ Deno.serve(async (req) => {
           );
         }
 
+        // Store image if provided
+        let rxStoragePaths: string[] = [];
+        if (body.image_data && body.image_name) {
+          try {
+            const base64 = body.image_data.includes(',') ? body.image_data.split(',')[1] : body.image_data;
+            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+            const filePath = `second-opinion/${Date.now()}_${body.image_name}`;
+            
+            const { error: uploadError } = await supabase.storage
+              .from('intake-files')
+              .upload(filePath, bytes, {
+                contentType: body.image_mime || 'image/jpeg',
+              });
+
+            if (!uploadError) {
+              rxStoragePaths.push(filePath);
+            } else {
+              console.error('[Second Opinion] Image upload error:', uploadError);
+            }
+          } catch (e) {
+            console.error('[Second Opinion] Image processing error:', e);
+          }
+        }
+
         const { data: opinion, error } = await supabase
           .from('second_opinions')
           .insert({
@@ -108,6 +231,7 @@ Deno.serve(async (req) => {
             external_clinic_name: body.external_clinic_name?.trim(),
             flow_type: body.flow_type || 'ia_only',
             status: 'pending',
+            rx_storage_paths: rxStoragePaths.length > 0 ? rxStoragePaths : null,
           })
           .select()
           .single();
@@ -117,13 +241,13 @@ Deno.serve(async (req) => {
           throw error;
         }
 
-        // Track event
         await supabase.from('analytics_events').insert({
           event_type: 'second_opinion_created',
           event_category: 'second_opinion',
           event_data: {
             flow_type: body.flow_type || 'ia_only',
             has_external_budget: !!body.external_budget_amount,
+            has_image: rxStoragePaths.length > 0,
           },
         });
 
@@ -163,22 +287,38 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Update status
         await supabase
           .from('second_opinions')
           .update({ status: 'ia_processing' })
           .eq('id', body.second_opinion_id);
 
-        // Simulate processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Get image data if available
+        let imageBase64: string | null = null;
+        if (opinion.rx_storage_paths && Array.isArray(opinion.rx_storage_paths) && opinion.rx_storage_paths.length > 0) {
+          try {
+            const { data: fileData } = await supabase.storage
+              .from('intake-files')
+              .download(opinion.rx_storage_paths[0]);
+            
+            if (fileData) {
+              const buffer = await fileData.arrayBuffer();
+              const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+              imageBase64 = `data:image/jpeg;base64,${base64}`;
+            }
+          } catch (e) {
+            console.error('[Second Opinion] Image download error:', e);
+          }
+        }
 
-        // Generate mock IA report
-        const iaReport = generateMockIAReport(
+        // Generate real IA report
+        const iaReport = await generateIAReport(
+          opinion.reason,
           opinion.current_diagnosis,
-          opinion.external_budget_amount
+          opinion.external_budget_amount,
+          opinion.external_clinic_name,
+          imageBase64,
         );
 
-        // Save report
         const { error: updateError } = await supabase
           .from('second_opinions')
           .update({
@@ -193,7 +333,6 @@ Deno.serve(async (req) => {
           throw updateError;
         }
 
-        // Track event
         await supabase.from('analytics_events').insert({
           event_type: 'second_opinion_ia_done',
           event_category: 'second_opinion',
@@ -238,7 +377,6 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Create MercadoPago preference
         const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
         if (!accessToken) {
           return new Response(
@@ -288,7 +426,6 @@ Deno.serve(async (req) => {
 
         const mpPreference = await mpResponse.json();
 
-        // Update second opinion
         await supabase
           .from('second_opinions')
           .update({

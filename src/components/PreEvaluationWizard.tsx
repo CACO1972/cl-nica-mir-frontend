@@ -3,8 +3,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronRight, ChevronLeft, Upload, Camera, Check, AlertCircle, Loader2 } from "lucide-react";
-import { createLead, uploadFile, triggerIAScan, createCheckout, IAScanResponse } from "@/services/funnelApi";
+import { ChevronRight, ChevronLeft, Upload, Camera, Check, AlertCircle, Loader2, Calendar, MessageCircle } from "lucide-react";
+import { createLead, uploadFile, triggerIAScan, createCheckout, IAScanResponse, fetchAgendaOptions, bookAppointment, AgendaOption } from "@/services/funnelApi";
 import { toast } from "sonner";
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -26,6 +26,30 @@ const HABIT_OPTIONS = [
   { id: 'none', labelKey: 'wizard.step2.habits.none' },
 ] as const;
 
+// Clinical route mapping from IA results
+const CLINICAL_ROUTES: Record<string, { label: string; icon: string; description: string }> = {
+  implant: { label: 'Implant One', icon: '🦷', description: 'Ruta de rehabilitación con implantes dentales' },
+  zero_caries: { label: 'Zero Caries', icon: '🛡️', description: 'Protocolo preventivo y restaurador de caries' },
+  ortho: { label: 'OrtoPro', icon: '✨', description: 'Corrección de alineación y mordida' },
+  aesthetic: { label: 'Estética Dental', icon: '💎', description: 'Diseño de sonrisa y estética avanzada' },
+  periodontal: { label: 'Salud Periodontal', icon: '🩺', description: 'Tratamiento de encías y soporte óseo' },
+  general: { label: 'Evaluación General', icon: '📋', description: 'Evaluación integral de salud oral' },
+};
+
+function determineClinicalRoute(iaResult: IAScanResponse['data']): string {
+  if (!iaResult) return 'general';
+  const r = iaResult.ia_result;
+  // Priority: bone_loss → periodontal, high caries → zero_caries, alignment → ortho, else aesthetic or general
+  if (r.bone_loss_risk?.level === 'high') return 'implant';
+  if (r.periodontal_risk?.level === 'high') return 'periodontal';
+  if (r.caries_risk?.level === 'high') return 'zero_caries';
+  if (r.alignment?.level === 'high' || r.alignment?.level === 'moderate') return 'ortho';
+  if (r.caries_risk?.level === 'moderate' || r.periodontal_risk?.level === 'moderate') return 'zero_caries';
+  return 'aesthetic';
+}
+
+const WHATSAPP_NUMBER = '56912345678'; // Clínica Miró WhatsApp
+
 interface FormData {
   // Step 1 - Personal Data
   name: string;
@@ -44,13 +68,21 @@ interface FormData {
   imageFile: File | null;
 }
 
-const PreEvaluationWizard = () => {
+interface PreEvaluationWizardProps {
+  origin?: string;
+}
+
+const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluationWizardProps) => {
   const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [leadId, setLeadId] = useState<string | null>(null);
   const [iaResult, setIaResult] = useState<IAScanResponse['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [agendaOptions, setAgendaOptions] = useState<AgendaOption[]>([]);
+  const [loadingAgenda, setLoadingAgenda] = useState(false);
+  const [bookingSlot, setBookingSlot] = useState<string | null>(null);
+  const [booked, setBooked] = useState(false);
   
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -77,11 +109,9 @@ const PreEvaluationWizard = () => {
       const isNoneOption = id === 'none';
       
       if (isNoneOption) {
-        // If selecting "none", clear all others
         return { ...prev, [field]: currentValues.includes('none') ? [] : ['none'] };
       }
       
-      // If selecting something else, remove "none" if present
       const withoutNone = currentValues.filter((v) => v !== 'none');
       
       if (currentValues.includes(id)) {
@@ -92,7 +122,6 @@ const PreEvaluationWizard = () => {
     setError(null);
   };
 
-  // Validate step 1 (required fields)
   const validateStep1 = () => {
     if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
       setError(t("wizard.errors.required"));
@@ -106,7 +135,6 @@ const PreEvaluationWizard = () => {
     return true;
   };
 
-  // Create lead after step 3 (before image upload)
   const handleCreateLead = async () => {
     setIsProcessing(true);
     setError(null);
@@ -117,7 +145,7 @@ const PreEvaluationWizard = () => {
         email: formData.email,
         phone: formData.phone,
         reason: `${formData.conditions} | ${formData.lastTreatment}`,
-        origin: 'pre-evaluation-wizard',
+        origin,
       });
 
       if (!response.success || !response.data) {
@@ -137,12 +165,8 @@ const PreEvaluationWizard = () => {
     }
   };
 
-  // Upload image after step 4
   const handleUploadImage = async () => {
-    if (!leadId || !formData.imageFile) {
-      // Skip if no image - allow to continue
-      return true;
-    }
+    if (!leadId || !formData.imageFile) return true;
 
     setIsProcessing(true);
     setError(null);
@@ -170,7 +194,6 @@ const PreEvaluationWizard = () => {
     }
   };
 
-  // Trigger IA scan on step 5
   const handleIAScan = async () => {
     if (!leadId) return false;
 
@@ -197,7 +220,6 @@ const PreEvaluationWizard = () => {
     }
   };
 
-  // Create checkout and redirect to payment
   const handlePayment = async () => {
     if (!leadId) {
       setError('No se encontró el lead');
@@ -215,8 +237,6 @@ const PreEvaluationWizard = () => {
       }
 
       console.log('[Wizard] Checkout created, redirecting...');
-      
-      // Redirect to MercadoPago
       window.location.href = response.data.init_point;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
@@ -226,34 +246,79 @@ const PreEvaluationWizard = () => {
     }
   };
 
-  const nextStep = async () => {
-    // Validation and API calls per step
-    if (currentStep === 1 && !validateStep1()) {
-      return;
+  const handleLoadAgenda = async () => {
+    if (!leadId) return;
+    setLoadingAgenda(true);
+    try {
+      const clinicalRoute = determineClinicalRoute(iaResult);
+      const options = await fetchAgendaOptions({
+        appointment_type: 'evaluation_premium',
+        lead_id: leadId,
+        preferred_time_range: 'any',
+        num_options: 5,
+      });
+      setAgendaOptions(options);
+    } catch (err) {
+      console.error('[Wizard] Agenda fetch error:', err);
+      toast.error('No se pudieron cargar los horarios disponibles');
+    } finally {
+      setLoadingAgenda(false);
     }
+  };
 
-    // Create lead after completing personal info + medical history + key question
+  const handleBookSlot = async (option: AgendaOption) => {
+    if (!leadId) return;
+    setBookingSlot(option.id);
+    try {
+      const result = await bookAppointment({
+        lead_id: leadId,
+        appointment_type: 'evaluation_premium',
+        date: option.date,
+        time: option.time,
+        professional_id: option.professional_id,
+      });
+      if (result.success) {
+        setBooked(true);
+        toast.success(result.confirmation_message || '¡Cita agendada con éxito!');
+      } else {
+        toast.error(result.error || 'Error al agendar');
+      }
+    } catch (err) {
+      toast.error('Error de conexión al agendar');
+    } finally {
+      setBookingSlot(null);
+    }
+  };
+
+  const handleWhatsApp = () => {
+    const clinicalRoute = iaResult ? determineClinicalRoute(iaResult) : 'general';
+    const routeLabel = CLINICAL_ROUTES[clinicalRoute]?.label || 'Evaluación';
+    const message = encodeURIComponent(
+      `Hola, soy ${formData.name}. Acabo de completar mi pre-evaluación online (ruta: ${routeLabel}) y me gustaría agendar mi Evaluación Presencial Premium.`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+  };
+
+  const nextStep = async () => {
+    if (currentStep === 1 && !validateStep1()) return;
+
     if (currentStep === 3) {
       const success = await handleCreateLead();
       if (!success) return;
     }
 
-    // Upload image after step 4 and trigger IA scan
     if (currentStep === 4) {
       if (formData.imageFile) {
         const uploadSuccess = await handleUploadImage();
         if (!uploadSuccess) return;
         
-        // Auto-trigger IA scan only if image was uploaded
         setCurrentStep(5);
         const iaScanSuccess = await handleIAScan();
         if (iaScanSuccess) {
-          // Auto-advance to results after scan
           setTimeout(() => setCurrentStep(6), 1500);
         }
         return;
       } else {
-        // No image - skip IA scan and go directly to evaluation info
         setCurrentStep(6);
         return;
       }
@@ -273,7 +338,6 @@ const PreEvaluationWizard = () => {
 
   const renderStepIndicator = () => (
     <div className="relative mb-16">
-      {/* Minimal back arrow - upper left, editorial style */}
       {currentStep > 1 && (
         <button
           onClick={prevStep}
@@ -284,7 +348,6 @@ const PreEvaluationWizard = () => {
         </button>
       )}
       
-      {/* Step dots - centered */}
       <div className="flex items-center justify-center gap-2">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
           <div
@@ -364,7 +427,6 @@ const PreEvaluationWizard = () => {
         <h2 className="display-medium text-foreground">{t("wizard.step2.headline")}</h2>
       </div>
       <div className="space-y-10 max-w-lg">
-        {/* Medical Conditions - Checkboxes */}
         <div className="space-y-4">
           <label className="caption text-muted-foreground">{t("wizard.step2.conditions")}</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -390,7 +452,6 @@ const PreEvaluationWizard = () => {
           </div>
         </div>
 
-        {/* Medications - Text area */}
         <div className="space-y-3">
           <label className="caption text-muted-foreground">{t("wizard.step2.medications")}</label>
           <Textarea
@@ -401,7 +462,6 @@ const PreEvaluationWizard = () => {
           />
         </div>
 
-        {/* Habits - Checkboxes */}
         <div className="space-y-4">
           <label className="caption text-muted-foreground">{t("wizard.step2.habits")}</label>
           <div className="grid grid-cols-2 gap-3">
@@ -567,29 +627,87 @@ const PreEvaluationWizard = () => {
     </div>
   );
 
-  const renderStep6 = () => (
-    <div className="space-y-12 animate-fade-in">
-      <div className="space-y-4">
-        <p className="caption text-muted-foreground">{t("wizard.step6.caption")}</p>
-        <h2 className="display-medium text-foreground">{t("wizard.step6.headline")}</h2>
+  const renderStep6 = () => {
+    const clinicalRoute = iaResult ? determineClinicalRoute(iaResult) : 'general';
+    const route = CLINICAL_ROUTES[clinicalRoute];
+    const hasIA = !!iaResult;
+
+    return (
+      <div className="space-y-12 animate-fade-in">
+        <div className="space-y-4">
+          <p className="caption text-muted-foreground">{t("wizard.step6.caption")}</p>
+          <h2 className="display-medium text-foreground">{t("wizard.step6.headline")}</h2>
+        </div>
+        <div className="max-w-lg space-y-8">
+          {/* Clinical Route Card */}
+          {hasIA && route && (
+            <div className="p-6 border border-gold-muted/30 bg-gold-muted/5 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{route.icon}</span>
+                <div>
+                  <p className="caption text-gold-muted tracking-widest">RUTA CLÍNICA SUGERIDA</p>
+                  <p className="text-lg font-medium text-foreground">{route.label}</p>
+                </div>
+              </div>
+              <p className="body-small text-muted-foreground">{route.description}</p>
+            </div>
+          )}
+
+          {/* IA Findings Detail */}
+          {hasIA && iaResult && (
+            <div className="space-y-4">
+              <p className="caption text-muted-foreground tracking-widest">HALLAZGOS DETALLADOS</p>
+              <div className="grid gap-3">
+                {[
+                  { key: 'caries_risk', label: 'Caries' },
+                  { key: 'periodontal_risk', label: 'Periodontal' },
+                  { key: 'bone_loss_risk', label: 'Pérdida ósea' },
+                  { key: 'alignment', label: 'Alineación' },
+                ].map(({ key, label }) => {
+                  const risk = (iaResult.ia_result as unknown as Record<string, { level: string; findings: string[] }>)[key];
+                  if (!risk) return null;
+                  return (
+                    <div key={key} className="p-4 border border-border space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="body-small text-foreground font-medium">{label}</span>
+                        <span className={`caption font-medium ${
+                          risk.level === 'low' ? 'text-green-600' :
+                          risk.level === 'moderate' ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {risk.level === 'low' ? 'Bajo' : risk.level === 'moderate' ? 'Moderado' : 'Alto'}
+                        </span>
+                      </div>
+                      {risk.findings?.length > 0 && (
+                        <ul className="space-y-1">
+                          {risk.findings.map((f: string, i: number) => (
+                            <li key={i} className="text-xs text-muted-foreground">• {f}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <p className="body-large text-muted-foreground">
+            {t("wizard.step6.p1")}
+          </p>
+          <p className="body-large text-muted-foreground">
+            {t("wizard.step6.p2")}
+          </p>
+          <p className="body-large text-foreground">
+            {t("wizard.step6.p3")}
+          </p>
+        </div>
       </div>
-      <div className="max-w-lg space-y-8">
-        <p className="body-large text-muted-foreground">
-          {t("wizard.step6.p1")}
-        </p>
-        <p className="body-large text-muted-foreground">
-          {t("wizard.step6.p2")}
-        </p>
-        <p className="body-large text-foreground">
-          {t("wizard.step6.p3")}
-        </p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderStep7 = () => (
     <div className="space-y-12 animate-fade-in">
-      {/* Header */}
       <div className="space-y-4">
         <p className="caption text-muted-foreground">{t("wizard.step7.caption")}</p>
         <h2 className="display-medium text-foreground">{t("wizard.step7.headline")}</h2>
@@ -597,12 +715,10 @@ const PreEvaluationWizard = () => {
       </div>
       
       <div className="max-w-xl space-y-12">
-        {/* Brief intro */}
         <p className="body-large text-muted-foreground leading-relaxed">
           {t("wizard.step7.intro")}
         </p>
         
-        {/* What's included - editorial section */}
         <div className="space-y-6">
           <p className="caption text-gold-muted tracking-widest">{t("wizard.step7.includes")}</p>
           <div className="space-y-4">
@@ -629,7 +745,6 @@ const PreEvaluationWizard = () => {
           </div>
         </div>
 
-        {/* Experience section */}
         <div className="space-y-4">
           <p className="caption text-gold-muted tracking-widest">{t("wizard.step7.experience")}</p>
           <p className="body-small text-muted-foreground leading-relaxed pl-1">
@@ -637,7 +752,6 @@ const PreEvaluationWizard = () => {
           </p>
         </div>
 
-        {/* Price and CTA - editorial card */}
         <div className="border border-border p-8 space-y-6">
           <div className="space-y-3">
             <p className="display-small text-foreground">{t("wizard.step7.price")}</p>
@@ -681,40 +795,101 @@ const PreEvaluationWizard = () => {
             {t("wizard.step8.intro")}
           </p>
         </div>
-        
-        {/* Scheduling options */}
-        <div className="flex flex-col sm:flex-row gap-6 pt-4">
-          <button className="flex-1 py-4 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 caption tracking-widest">
-            {t("wizard.step8.schedule")}
-          </button>
-          <button className="flex-1 py-4 border border-border text-foreground hover:border-foreground transition-colors duration-300 caption tracking-widest">
-            {t("wizard.step8.whatsapp")}
-          </button>
-        </div>
+
+        {/* Clinical route reminder */}
+        {iaResult && (
+          <div className="p-4 border border-gold-muted/30 bg-gold-muted/5">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{CLINICAL_ROUTES[determineClinicalRoute(iaResult)]?.icon}</span>
+              <div>
+                <p className="caption text-gold-muted">Ruta clínica</p>
+                <p className="body-small text-foreground font-medium">
+                  {CLINICAL_ROUTES[determineClinicalRoute(iaResult)]?.label}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Agenda section */}
+        {!booked ? (
+          <div className="space-y-6">
+            {agendaOptions.length === 0 && !loadingAgenda && (
+              <button
+                onClick={handleLoadAgenda}
+                className="w-full py-4 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 caption tracking-widest flex items-center justify-center gap-3"
+              >
+                <Calendar className="w-4 h-4" />
+                {t("wizard.step8.schedule")}
+              </button>
+            )}
+
+            {loadingAgenda && (
+              <div className="flex items-center justify-center gap-3 py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-gold-muted" />
+                <span className="body-small text-muted-foreground">Cargando horarios disponibles...</span>
+              </div>
+            )}
+
+            {agendaOptions.length > 0 && (
+              <div className="space-y-4">
+                <p className="caption text-muted-foreground tracking-widest">HORARIOS DISPONIBLES</p>
+                {agendaOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleBookSlot(option)}
+                    disabled={!!bookingSlot}
+                    className="w-full p-4 border border-border hover:border-gold-muted text-left transition-all duration-300 flex items-center justify-between group disabled:opacity-50"
+                  >
+                    <div>
+                      <p className="body-small text-foreground font-medium">{option.formatted_date}</p>
+                      <p className="caption text-muted-foreground">{option.formatted_time} · {option.professional_name}</p>
+                    </div>
+                    {bookingSlot === option.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-gold" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-6 border border-gold/30 bg-gold/5 space-y-3">
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-gold" />
+              <p className="body-small text-foreground font-medium">¡Cita agendada con éxito!</p>
+            </div>
+            <p className="caption text-muted-foreground">
+              Recibirás un recordatorio antes de tu cita. Recuerda llegar 10 minutos antes.
+            </p>
+          </div>
+        )}
+
+        {/* WhatsApp button */}
+        <button
+          onClick={handleWhatsApp}
+          className="w-full py-4 border border-border text-foreground hover:border-foreground transition-colors duration-300 caption tracking-widest flex items-center justify-center gap-3"
+        >
+          <MessageCircle className="w-4 h-4" />
+          {t("wizard.step8.whatsapp")}
+        </button>
       </div>
     </div>
   );
 
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case 1:
-        return renderStep1();
-      case 2:
-        return renderStep2();
-      case 3:
-        return renderStep3();
-      case 4:
-        return renderStep4();
-      case 5:
-        return renderStep5();
-      case 6:
-        return renderStep6();
-      case 7:
-        return renderStep7();
-      case 8:
-        return renderStep8();
-      default:
-        return null;
+      case 1: return renderStep1();
+      case 2: return renderStep2();
+      case 3: return renderStep3();
+      case 4: return renderStep4();
+      case 5: return renderStep5();
+      case 6: return renderStep6();
+      case 7: return renderStep7();
+      case 8: return renderStep8();
+      default: return null;
     }
   };
 
@@ -724,7 +899,6 @@ const PreEvaluationWizard = () => {
         {renderStepIndicator()}
         {renderCurrentStep()}
         
-        {/* Error display */}
         {error && currentStep !== 5 && (
           <div className="mt-8 p-4 border border-destructive/30 bg-destructive/5 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
@@ -732,7 +906,6 @@ const PreEvaluationWizard = () => {
           </div>
         )}
         
-        {/* Navigation */}
         <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
           <button
             onClick={prevStep}

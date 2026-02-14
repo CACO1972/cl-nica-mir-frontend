@@ -9,6 +9,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Evaluation from "./pages/Evaluation";
 import SecondOpinion from "./pages/SecondOpinion";
+import Regional from "./pages/Regional";
 import Portal from "./pages/Portal";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/segunda-opinion" element={<SecondOpinion />} />
+              <Route path="/regional" element={<Regional />} />
               <Route path="/portal" element={<Portal />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

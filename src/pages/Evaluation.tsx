@@ -363,7 +363,10 @@ const Evaluation = () => {
               <p className="body-large text-muted-foreground">
                 {t("eval.begin.portal.desc")}
               </p>
-              <button className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest">
+              <button 
+                onClick={() => navigate("/portal")}
+                className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest"
+              >
                 {t("eval.begin.portal.cta")}
               </button>
             </div>
@@ -392,7 +395,10 @@ const Evaluation = () => {
               <p className="body-large text-muted-foreground">
                 {t("eval.begin.international.desc")}
               </p>
-              <button className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest">
+              <button 
+                onClick={() => navigate("/regional")}
+                className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest"
+              >
                 {t("eval.begin.international.cta")}
               </button>
             </div>
