@@ -48,7 +48,7 @@ const services = [
 
 const translations: Record<string, Record<string, string>> = {
   es: {
-    "services.caption": "Nuestros Servicios",
+    "services.caption": "Miró",
     "services.headline": "Excelencia en cada detalle",
     "services.diagnostic.title": "Diagnóstico Avanzado",
     "services.diagnostic.desc": "Tomografía 3D, escáner intraoral y análisis predictivo para un diagnóstico preciso antes de cualquier intervención.",
@@ -64,7 +64,7 @@ const translations: Record<string, Record<string, string>> = {
     "services.care.desc": "Acompañamiento completo desde la primera consulta hasta el seguimiento post-tratamiento. Tu bienestar es nuestra prioridad."
   },
   en: {
-    "services.caption": "Our Services",
+    "services.caption": "Miró",
     "services.headline": "Excellence in every detail",
     "services.diagnostic.title": "Advanced Diagnostics",
     "services.diagnostic.desc": "3D tomography, intraoral scanner and predictive analysis for precise diagnosis before any intervention.",
@@ -116,7 +116,24 @@ const ServicesBento = () => {
             const Icon = service.icon;
             const isFeatured = service.size === "featured";
 
-            return;
+            return (
+              <div
+                key={service.id}
+                className={`bento-card group ${getSizeClasses(service.size)}`}
+              >
+                <div className={`flex flex-col justify-between h-full ${isFeatured ? 'p-8 lg:p-12' : 'p-6 lg:p-8'}`}>
+                  <Icon className={`${isFeatured ? 'w-8 h-8' : 'w-6 h-6'} text-gold-muted mb-4`} strokeWidth={1.5} />
+                  <div>
+                    <h3 className={`${isFeatured ? 'text-2xl lg:text-3xl' : 'text-lg lg:text-xl'} font-medium text-foreground mb-2`}>
+                      {t(service.titleKey)}
+                    </h3>
+                    <p className={`${isFeatured ? 'body-large' : 'body-small'} text-muted-foreground`}>
+                      {t(service.descKey)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
 
 
 
