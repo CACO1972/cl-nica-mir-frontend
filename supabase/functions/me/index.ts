@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
     // Obtiene pagos
     const { data: payments } = await supabase
       .from('funnel_payments')
-      .select('id, amount, currency, status, created_at, lead_id')
+      .select('id, amount, currency, status, created_at, lead_id, mercadopago_preference_id, description, paid_at')
       .in('lead_id', (funnelHistory || []).map(f => f.id))
       .order('created_at', { ascending: false })
       .limit(10);
@@ -283,6 +283,11 @@ Deno.serve(async (req) => {
         currency: pay.currency,
         status: pay.status,
         created_at: pay.created_at,
+        description: pay.description,
+        paid_at: pay.paid_at,
+        checkout_url: pay.mercadopago_preference_id && pay.status === 'pending'
+          ? `https://www.mercadopago.cl/checkout/v1/redirect?pref_id=${pay.mercadopago_preference_id}`
+          : null,
       })),
       funnel_history: (funnelHistory || []).map(f => ({
         id: f.id,
