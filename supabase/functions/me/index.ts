@@ -49,6 +49,7 @@ interface ProfileResponse {
   dentalink_treatments: Array<object>;
   dentalink_files: Array<object>;
   dentalink_citas: Array<object>;
+  dentalink_pagos: Array<object>;
 }
 
 /**
@@ -183,22 +184,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fetch tratamientos y archivos from Dentalink
+    // Fetch tratamientos, archivos, citas y pagos from Dentalink
     let dentalinkTreatments: object[] = [];
     let dentalinkFiles: object[] = [];
     let dentalinkCitas: object[] = [];
+    let dentalinkPagos: object[] = [];
     const patientId = profile.dentalink_patient_id;
 
     if (patientId) {
-      const [treatResult, filesResult, citasResult] = await Promise.allSettled([
+      const [treatResult, filesResult, citasResult, pagosResult] = await Promise.allSettled([
         dentalinkRequest(`/pacientes/${patientId}/tratamientos`),
         dentalinkRequest(`/pacientes/${patientId}/archivos`),
         dentalinkRequest(`/pacientes/${patientId}/citas`),
+        dentalinkRequest(`/pacientes/${patientId}/pagos`),
       ]);
 
       if (treatResult.status === 'fulfilled') {
         const raw = treatResult.value;
         dentalinkTreatments = raw?.data || raw?.results || [];
+        console.log(`[Me] Treatments raw sample:`, JSON.stringify(dentalinkTreatments.slice(0, 1)));
       } else {
         console.error('[Me] Treatments fetch error:', treatResult.reason);
       }
@@ -206,6 +210,7 @@ Deno.serve(async (req) => {
       if (filesResult.status === 'fulfilled') {
         const raw = filesResult.value;
         dentalinkFiles = raw?.data || raw?.results || [];
+        console.log(`[Me] Files count: ${dentalinkFiles.length}`);
       } else {
         console.error('[Me] Files fetch error:', filesResult.reason);
       }
@@ -213,8 +218,17 @@ Deno.serve(async (req) => {
       if (citasResult.status === 'fulfilled') {
         const raw = citasResult.value;
         dentalinkCitas = raw?.data || raw?.results || [];
+        console.log(`[Me] Citas raw sample:`, JSON.stringify(dentalinkCitas.slice(0, 1)));
       } else {
         console.error('[Me] Dentalink citas fetch error:', citasResult.reason);
+      }
+
+      if (pagosResult.status === 'fulfilled') {
+        const raw = pagosResult.value;
+        dentalinkPagos = raw?.data || raw?.results || [];
+        console.log(`[Me] Pagos count: ${dentalinkPagos.length}, sample:`, JSON.stringify(dentalinkPagos.slice(0, 1)));
+      } else {
+        console.error('[Me] Pagos fetch error:', pagosResult.reason);
       }
     }
 
@@ -308,6 +322,7 @@ Deno.serve(async (req) => {
       dentalink_treatments: dentalinkTreatments,
       dentalink_files: dentalinkFiles,
       dentalink_citas: dentalinkCitas,
+      dentalink_pagos: dentalinkPagos,
     };
 
     console.log(`[Me] Response ready for ${profile.email} (dentalink: ${profile.dentalink_patient_id || 'not linked'})`);
