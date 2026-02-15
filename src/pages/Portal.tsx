@@ -167,31 +167,47 @@ const Portal = () => {
   const [patientData, setPatientData] = useState<PatientData | null>(null);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setCheckingSession(false), 4000);
+    let isMounted = true;
+    const timeout = setTimeout(() => {
+      if (isMounted) setCheckingSession(false);
+    }, 4000);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      clearTimeout(timeout);
-      if (session?.user) {
-        await fetchPatientData(session.access_token);
-      } else {
-        setStep("login");
-        setPatientData(null);
+    // Listener for ongoing auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!isMounted) return;
+        if (session?.user) {
+          fetchPatientData(session.access_token).finally(() => {
+            if (isMounted) setCheckingSession(false);
+          });
+        } else {
+          setStep("login");
+          setPatientData(null);
+          setCheckingSession(false);
+        }
       }
-      setCheckingSession(false);
-    });
+    );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      clearTimeout(timeout);
-      if (session?.user) {
-        fetchPatientData(session.access_token);
+    // Initial session check
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        if (session?.user) {
+          await fetchPatientData(session.access_token);
+        }
+      } catch (err) {
+        console.error("Session init error:", err);
+      } finally {
+        clearTimeout(timeout);
+        if (isMounted) setCheckingSession(false);
       }
-      setCheckingSession(false);
-    }).catch(() => {
-      clearTimeout(timeout);
-      setCheckingSession(false);
-    });
+    };
+
+    initializeAuth();
 
     return () => {
+      isMounted = false;
       clearTimeout(timeout);
       subscription.unsubscribe();
     };
