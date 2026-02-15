@@ -80,6 +80,7 @@ interface PatientData {
   dentalink_treatments: Array<Record<string, unknown>>;
   dentalink_files: Array<Record<string, unknown>>;
   dentalink_citas: Array<Record<string, unknown>>;
+  dentalink_pagos: Array<Record<string, unknown>>;
 }
 
 /* ─── Map me response → tab interfaces ─── */
@@ -187,7 +188,8 @@ function mapToCitas(data: PatientData) {
 }
 
 function mapToPagos(data: PatientData) {
-  return data.payments.map((pay) => ({
+  // Funnel payments (from Supabase)
+  const funnelPagos = data.payments.map((pay) => ({
     id: pay.id,
     payment_status: pay.status,
     monto_pagado: pay.amount,
@@ -195,7 +197,27 @@ function mapToPagos(data: PatientData) {
     checkout_url: pay.checkout_url || null,
     ia_ruta_sugerida: null as string | null,
     created_at: pay.created_at,
+    concepto: pay.description || 'Evaluación',
+    medio_pago: null as string | null,
   }));
+
+  // Dentalink payments
+  const dentalinkPagos = (data.dentalink_pagos || []).map((p, i) => {
+    const pago = p as Record<string, any>;
+    return {
+      id: `dentalink-pago-${pago.id || i}`,
+      payment_status: 'approved' as string,
+      monto_pagado: pago.monto_pago || 0,
+      paid_at: pago.fecha_recepcion || pago.fecha_creacion || null,
+      checkout_url: null as string | null,
+      ia_ruta_sugerida: null as string | null,
+      created_at: pago.fecha_creacion || pago.fecha_recepcion || '',
+      concepto: `Pago clínico – ${pago.nombre_sucursal || 'Clínica Miró'}`,
+      medio_pago: pago.medio_pago || null,
+    };
+  });
+
+  return [...funnelPagos, ...dentalinkPagos];
 }
 
 function mapToPlanesTratamiento(data: PatientData) {
