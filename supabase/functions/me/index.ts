@@ -191,9 +191,9 @@ Deno.serve(async (req) => {
 
     if (patientId) {
       const [treatResult, filesResult, citasResult] = await Promise.allSettled([
-        dentalinkRequest(`/pacientes/${patientId}/tratamientos`),
-        dentalinkRequest(`/pacientes/${patientId}/archivos`),
-        dentalinkRequest(`/citas?q=${encodeURIComponent(JSON.stringify({ id_paciente: { eq: patientId } }))}`),
+        dentalinkRequest(`/pacientes/${patientId}/presupuestos`),
+        dentalinkRequest(`/pacientes/${patientId}/documentos`).catch(() => ({ data: [] })),
+        dentalinkRequest(`/pacientes/${patientId}/citas`),
       ]);
 
       if (treatResult.status === 'fulfilled') {
