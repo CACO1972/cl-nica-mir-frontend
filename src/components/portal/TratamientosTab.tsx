@@ -1,182 +1,189 @@
 import { motion } from 'framer-motion';
-import { Stethoscope, CheckCircle2, Clock, AlertCircle, Activity } from 'lucide-react';
+import { ClipboardList, CheckCircle2, Clock, AlertCircle, Activity, User, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 
-interface Tratamiento {
+interface PlanTratamiento {
+  id: string | number;
   nombre: string;
   estado: string;
-  fecha_inicio?: string;
-  fecha_fin?: string;
-  profesional?: string;
-  descripcion?: string;
-  piezas?: string;
+  progreso: number;
+  estado_financiero: string | null;
+  profesional: string | null;
+  especialidad: string | null;
+  ultima_cita: string | null;
+  fecha_inicio: string | null;
+  descripcion: string | null;
+  presupuesto_total: number | null;
 }
 
 interface TratamientosTabProps {
-  tratamientos: Tratamiento[];
+  tratamientos: PlanTratamiento[];
   isLoading: boolean;
 }
 
 const getEstadoConfig = (estado: string) => {
-  const lower = estado.toLowerCase();
+  const lower = (estado || '').toLowerCase();
+  if (lower.includes('ejecuci') || lower.includes('curso') || lower.includes('activ') || lower.includes('progress'))
+    return { label: 'En ejecución', color: 'text-green-600', bg: 'bg-green-500/10 border-green-500/20' };
   if (lower.includes('complet') || lower.includes('termin') || lower.includes('finaliz'))
-    return { label: 'Completado', variant: 'secondary' as const, icon: <CheckCircle2 className="h-3 w-3" /> };
-  if (lower.includes('curso') || lower.includes('activ') || lower.includes('progress'))
-    return { label: 'En curso', variant: 'default' as const, icon: <Activity className="h-3 w-3" /> };
-  if (lower.includes('pend') || lower.includes('planific'))
-    return { label: 'Planificado', variant: 'outline' as const, icon: <Clock className="h-3 w-3" /> };
-  if (lower.includes('cancel'))
-    return { label: 'Cancelado', variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> };
-  return { label: estado || 'Sin estado', variant: 'outline' as const, icon: <Clock className="h-3 w-3" /> };
+    return { label: 'Completado', color: 'text-muted-foreground', bg: '' };
+  if (lower.includes('pend') || lower.includes('planific') || lower.includes('diagnos') || lower.includes('presupuest'))
+    return { label: 'Diagnóstico', color: 'text-blue-600', bg: 'bg-blue-500/5 border-blue-500/20' };
+  if (lower.includes('cancel') || lower.includes('anulad'))
+    return { label: 'Cancelado', color: 'text-destructive', bg: '' };
+  return { label: estado || 'Otro', color: 'text-muted-foreground', bg: '' };
+};
+
+const formatCurrency = (amount: number | null) => {
+  if (!amount) return null;
+  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(amount);
 };
 
 const TratamientosTab = ({ tratamientos, isLoading }: TratamientosTabProps) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-16 w-full" />
-            </CardContent>
-          </Card>
+        {[1, 2].map((i) => (
+          <Skeleton key={i} className="h-40" />
         ))}
       </div>
     );
   }
 
-  if (tratamientos.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6 text-center py-12">
-          <Stethoscope className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">Sin tratamientos</h3>
-          <p className="text-muted-foreground">
-            Aún no tienes tratamientos registrados en tu ficha clínica
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const enCurso = tratamientos.filter(t => {
+  const enEjecucion = tratamientos.filter(t => {
     const lower = (t.estado || '').toLowerCase();
-    return lower.includes('curso') || lower.includes('activ') || lower.includes('progress');
+    return lower.includes('ejecuci') || lower.includes('curso') || lower.includes('activ');
   });
-  const otros = tratamientos.filter(t => !enCurso.includes(t));
+  const otros = tratamientos.filter(t => !enEjecucion.includes(t));
 
   return (
     <div className="space-y-6">
-      {enCurso.length > 0 && (
-        <div>
-          <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase mb-3">En curso</p>
-          <div className="space-y-3">
-            {enCurso.map((tto, index) => {
-              const config = getEstadoConfig(tto.estado);
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <Card className="border-primary/20 bg-primary/5">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-primary" />
-                            {tto.nombre}
-                          </CardTitle>
-                          {tto.profesional && (
-                            <CardDescription className="mt-1">
-                              Dr. {tto.profesional}
-                            </CardDescription>
-                          )}
-                        </div>
-                        <Badge variant={config.variant} className="flex items-center gap-1">
-                          {config.icon}
-                          {config.label}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      {tto.descripcion && (
-                        <p className="text-sm text-muted-foreground">{tto.descripcion}</p>
-                      )}
-                      {tto.piezas && (
-                        <p className="text-xs text-muted-foreground mt-1">Piezas: {tto.piezas}</p>
-                      )}
-                      <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                        {tto.fecha_inicio && (
-                          <span>Inicio: {new Date(tto.fecha_inicio).toLocaleDateString('es-CL')}</span>
-                        )}
-                        {tto.fecha_fin && (
-                          <span>Fin est.: {new Date(tto.fecha_fin).toLocaleDateString('es-CL')}</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5 text-gold" />
+            Planes de tratamiento
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {tratamientos.length === 0 ? (
+            <div className="text-center py-8">
+              <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No hay planes de tratamiento registrados</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* En ejecución */}
+              {enEjecucion.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium text-green-600 mb-3">En ejecución</h3>
+                  <div className="space-y-3">
+                    {enEjecucion.map((plan, index) => (
+                      <PlanCard key={plan.id} plan={plan} index={index} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {enEjecucion.length === 0 && (
+                <div>
+                  <h3 className="text-lg font-medium text-green-600 mb-3">En ejecución</h3>
+                  <p className="text-sm text-muted-foreground italic">
+                    El paciente no cuenta con tratamientos en ejecución
+                  </p>
+                </div>
+              )}
 
-      {otros.length > 0 && (
-        <div>
-          {enCurso.length > 0 && (
-            <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase mb-3">Historial</p>
+              {/* Otros */}
+              {otros.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="text-lg font-medium text-muted-foreground">Otros</h3>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  <div className="space-y-3">
+                    {otros.map((plan, index) => (
+                      <PlanCard key={plan.id} plan={plan} index={index} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
-          <div className="space-y-3">
-            {otros.map((tto, index) => {
-              const config = getEstadoConfig(tto.estado);
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-base">{tto.nombre}</CardTitle>
-                        <Badge variant={config.variant} className="flex items-center gap-1">
-                          {config.icon}
-                          {config.label}
-                        </Badge>
-                      </div>
-                      {tto.profesional && (
-                        <CardDescription>Dr. {tto.profesional}</CardDescription>
-                      )}
-                    </CardHeader>
-                    {(tto.descripcion || tto.piezas) && (
-                      <CardContent className="pt-0">
-                        {tto.descripcion && (
-                          <p className="text-sm text-muted-foreground">{tto.descripcion}</p>
-                        )}
-                        {tto.piezas && (
-                          <p className="text-xs text-muted-foreground mt-1">Piezas: {tto.piezas}</p>
-                        )}
-                      </CardContent>
-                    )}
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
+function PlanCard({ plan, index }: { plan: PlanTratamiento; index: number }) {
+  const config = getEstadoConfig(plan.estado);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      className={`rounded-lg border p-4 ${config.bg}`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <h4 className="font-medium text-foreground">
+          #{plan.id}: {plan.nombre}
+        </h4>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+        {plan.profesional && (
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Profesional</p>
+            <p className="font-medium flex items-center gap-1 mt-0.5">
+              <User className="h-3 w-3" />
+              {plan.profesional}
+            </p>
+            {plan.especialidad && (
+              <p className="text-xs text-muted-foreground">({plan.especialidad})</p>
+            )}
+          </div>
+        )}
+
+        {plan.ultima_cita && (
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Última cita</p>
+            <p className="font-medium flex items-center gap-1 mt-0.5">
+              <Calendar className="h-3 w-3" />
+              {new Date(plan.ultima_cita).toLocaleDateString('es-CL')}
+            </p>
+          </div>
+        )}
+
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Progreso</p>
+          <div className="flex items-center gap-2 mt-1">
+            <Progress value={plan.progreso} className="h-2 flex-1" />
+            <span className="text-xs font-mono">{plan.progreso}%</span>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Estado financiero</p>
+          <p className={`font-medium mt-0.5 ${config.color}`}>
+            {plan.estado_financiero || config.label}
+          </p>
+        </div>
+      </div>
+
+      {plan.presupuesto_total && (
+        <p className="text-xs text-muted-foreground mt-2">
+          Presupuesto: {formatCurrency(plan.presupuesto_total)}
+        </p>
+      )}
+      {!plan.presupuesto_total && (
+        <p className="text-xs text-muted-foreground mt-2 italic">Presupuesto vacío</p>
+      )}
+    </motion.div>
+  );
+}
 
 export default TratamientosTab;

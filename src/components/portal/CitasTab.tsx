@@ -11,6 +11,9 @@ interface Cita {
   ia_ruta_sugerida: string | null;
   stage: string;
   nombre: string;
+  profesional?: string | null;
+  sucursal?: string | null;
+  duracion?: number | null;
 }
 
 interface CitasTabProps {
@@ -134,11 +137,19 @@ const CitasTab = ({ citas, isLoading }: CitasTabProps) => {
                             : 'Por confirmar'
                           }
                         </span>
+                        {cita.duracion && (
+                          <span className="text-xs">{cita.duracion} min</span>
+                        )}
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
-                          Clínica Miró
+                          {cita.sucursal || 'Clínica Miró'}
                         </span>
                       </div>
+                      {cita.profesional && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Dr. {cita.profesional}
+                        </p>
+                      )}
                     </div>
                     <Badge variant="default" className="bg-gold/20 text-gold border-gold/30">
                       Confirmada
