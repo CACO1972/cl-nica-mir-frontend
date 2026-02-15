@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
@@ -10,6 +11,7 @@ import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 const Regional = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [showWizard, setShowWizard] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -19,9 +21,14 @@ const Regional = () => {
         <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 lg:px-12">
             <div className="flex items-center justify-between h-20">
-              <button onClick={() => setShowWizard(false)} className="editorial-link">
-                <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
-              </button>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowWizard(false)} className="text-muted-foreground hover:text-gold transition-colors">
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <button onClick={() => setShowWizard(false)} className="editorial-link">
+                  <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
+                </button>
+              </div>
               <div className="flex items-center gap-6">
                 <button onClick={() => setLanguage(language === "es" ? "en" : "es")} className="caption text-muted-foreground hover:text-foreground transition-colors">
                   {language === "es" ? "EN" : "ES"}
@@ -47,9 +54,14 @@ const Regional = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
-            <Link to="/" className="editorial-link">
-              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-gold transition-colors">
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <Link to="/" className="editorial-link">
+                <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
+              </Link>
+            </div>
             <div className="flex items-center gap-6">
               <button onClick={() => setLanguage(language === "es" ? "en" : "es")} className="caption text-muted-foreground hover:text-foreground transition-colors">
                 {language === "es" ? "EN" : "ES"}
