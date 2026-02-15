@@ -151,20 +151,20 @@ function mapToCitas(data: PatientData) {
   // Add Dentalink citas
   const dentalinkCitas = (data.dentalink_citas || []).map((cita, i) => {
     const c = cita as Record<string, any>;
-    const estado = c.estado || c.status || '';
+    const estado = c.estado_cita || c.estado || '';
     let stage = 'SCHEDULED';
     if (estado === 'Atendido' || estado === 'atendido') stage = 'COMPLETED';
     else if (estado === 'No asiste' || estado === 'no_asiste') stage = 'NO_SHOW';
-    else if (estado === 'Anulada' || estado === 'anulada') stage = 'CANCELLED';
+    else if (estado === 'Anulada' || estado === 'anulada' || estado === 'Cambio de fecha') stage = 'CANCELLED';
 
     return {
-      id: `dentalink-cita-${c.id_cita || c.id || i}`,
-      cita_agendada_at: c.fecha ? `${c.fecha}T${c.hora || '00:00'}` : null,
+      id: `dentalink-cita-${c.id || i}`,
+      cita_agendada_at: c.fecha ? `${c.fecha}T${c.hora_inicio || '00:00'}` : null,
       ia_ruta_sugerida: null as string | null,
       stage,
-      nombre: c.tratamiento || c.tipo || 'Cita',
-      profesional: c.profesional?.nombre || c.nombre_profesional || null,
-      sucursal: c.sucursal?.nombre || c.nombre_sucursal || 'Clínica Miró',
+      nombre: c.nombre_tratamiento || c.comentarios || 'Cita',
+      profesional: c.nombre_dentista || null,
+      sucursal: c.nombre_sucursal || 'Clínica Miró',
       duracion: c.duracion || null,
     };
   });
@@ -201,18 +201,34 @@ function mapToPagos(data: PatientData) {
 function mapToPlanesTratamiento(data: PatientData) {
   return data.dentalink_treatments.map((tto, i) => {
     const t = tto as Record<string, any>;
+    const total = t.total || 0;
+    const abonado = t.abonado || 0;
+    const deuda = t.deuda || 0;
+    const finalizado = t.finalizado === 1;
+    const progreso = total > 0 ? Math.round((abonado / total) * 100) : (finalizado ? 100 : 0);
+    
+    let estado = 'Pendiente';
+    if (finalizado) estado = 'Completado';
+    else if (t.bloqueado === 1) estado = 'Bloqueado';
+    else if (abonado > 0) estado = 'En ejecución';
+    
+    let estadoFinanciero = null;
+    if (deuda > 0) estadoFinanciero = `Deuda: $${deuda.toLocaleString('es-CL')}`;
+    else if (finalizado && deuda === 0) estadoFinanciero = 'Pagado';
+    else if (abonado > 0) estadoFinanciero = `Abonado: $${abonado.toLocaleString('es-CL')}`;
+
     return {
-      id: t.id_tratamiento || t.id || `tto-${i}`,
-      nombre: t.nombre || t.name || 'Plan de tratamiento',
-      estado: t.estado || t.status || '',
-      progreso: t.progreso || t.progress || 0,
-      estado_financiero: t.estado_financiero || t.financial_status || null,
-      profesional: t.profesional?.nombre || t.nombre_profesional || null,
-      especialidad: t.profesional?.especialidad || null,
-      ultima_cita: t.ultima_cita || t.last_appointment || null,
-      fecha_inicio: t.fecha_inicio || t.start_date || t.created_at || null,
-      descripcion: t.descripcion || t.description || null,
-      presupuesto_total: t.presupuesto_total || t.total_budget || null,
+      id: t.id || `tto-${i}`,
+      nombre: t.nombre || 'Plan de tratamiento',
+      estado,
+      progreso,
+      estado_financiero: estadoFinanciero,
+      profesional: t.nombre_dentista || null,
+      especialidad: null,
+      ultima_cita: null,
+      fecha_inicio: t.fecha || null,
+      descripcion: t.comentario || null,
+      presupuesto_total: total,
     };
   });
 }
