@@ -36,6 +36,15 @@ interface ProfileResponse {
     created_at: string;
     ia_scan_result: object | null;
   }>;
+  consents: Array<{
+    id: string;
+    consent_type: string;
+    accepted: boolean;
+    accepted_at: string | null;
+    consent_text: string | null;
+    version: string;
+    created_at: string;
+  }>;
   dentalink_patient: object | null;
   dentalink_treatments: Array<object>;
   dentalink_files: Array<object>;
@@ -229,6 +238,14 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(10);
 
+    // Obtiene consentimientos
+    const { data: consents } = await supabase
+      .from('consents')
+      .select('id, consent_type, accepted, accepted_at, consent_text, version, created_at')
+      .or(`profile_id.eq.${profile.id},lead_id.in.(${(funnelHistory || []).map(f => `"${f.id}"`).join(',')})`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
     const response: ProfileResponse = {
       id: profile.id,
       user_id: profile.user_id,
@@ -262,6 +279,15 @@ Deno.serve(async (req) => {
         status: f.status,
         created_at: f.created_at,
         ia_scan_result: f.ia_scan_result,
+      })),
+      consents: (consents || []).map(c => ({
+        id: c.id,
+        consent_type: c.consent_type,
+        accepted: c.accepted,
+        accepted_at: c.accepted_at,
+        consent_text: c.consent_text,
+        version: c.version,
+        created_at: c.created_at,
       })),
       dentalink_patient: dentalinkPatient,
       dentalink_treatments: dentalinkTreatments,
