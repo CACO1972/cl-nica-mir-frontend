@@ -57,6 +57,9 @@ interface PatientData {
     currency: string;
     status: string;
     created_at: string;
+    description?: string;
+    paid_at?: string | null;
+    checkout_url?: string | null;
   }>;
   funnel_history: Array<{
     id: string;
@@ -188,8 +191,8 @@ function mapToPagos(data: PatientData) {
     id: pay.id,
     payment_status: pay.status,
     monto_pagado: pay.amount,
-    paid_at: pay.status === "approved" ? pay.created_at : null,
-    checkout_url: null as string | null,
+    paid_at: pay.paid_at || (pay.status === "approved" ? pay.created_at : null),
+    checkout_url: pay.checkout_url || null,
     ia_ruta_sugerida: null as string | null,
     created_at: pay.created_at,
   }));
