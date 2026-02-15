@@ -14,6 +14,8 @@ interface Pago {
   checkout_url: string | null;
   ia_ruta_sugerida: string | null;
   created_at: string;
+  concepto?: string | null;
+  medio_pago?: string | null;
 }
 
 interface PagosTabProps {
@@ -172,7 +174,10 @@ const PagosTab = ({ pagos, isLoading }: PagosTabProps) => {
                     return (
                       <TableRow key={pago.id}>
                         <TableCell className="font-medium">
-                          {getRutaLabel(pago.ia_ruta_sugerida)}
+                          {pago.concepto || getRutaLabel(pago.ia_ruta_sugerida)}
+                          {pago.medio_pago && (
+                            <span className="block text-xs text-muted-foreground">{pago.medio_pago}</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {pago.paid_at 
