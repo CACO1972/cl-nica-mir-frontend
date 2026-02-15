@@ -39,7 +39,7 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.tagline": "Claridad antes de tratarte",
     
     // Evaluation Page
-    "eval.caption": "Proceso de Claridad Clínica",
+    "eval.caption": "Evaluación Paciente Nuevo",
     "eval.headline": "¿Te dieron diagnósticos distintos y no sabes cuál es el correcto?",
     "eval.subline": "Antes de tratarte, entiende tu caso con claridad clínica y visual.",
     
@@ -73,7 +73,7 @@ const translations: Record<Language, Record<string, string>> = {
     // How to Begin - 4 Equal Options
     "eval.begin.caption": "Tu Punto de Entrada",
     "eval.begin.headline": "¿Cómo quieres comenzar?",
-    "eval.begin.preevaluation.title": "Proceso de Claridad Clínica",
+    "eval.begin.preevaluation.title": "Evaluación Paciente Nuevo",
     "eval.begin.preevaluation.desc": "Te acompañamos paso a paso para entender tu caso. Sin compromiso. Sin venta. Solo claridad antes de cualquier decisión.",
     "eval.begin.preevaluation.cta": "Empezar mi evaluación guiada",
     "eval.begin.portal.title": "Portal Paciente",
@@ -186,7 +186,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Menu
     "menu.open": "Menú",
     "menu.close": "Cerrar",
-    "menu.evaluation": "Proceso de Claridad",
+    "menu.evaluation": "Evaluación Paciente Nuevo",
     "menu.portal": "Portal Paciente",
     "menu.opinion": "Segunda Opinión",
     "menu.international": "Pacientes Internacionales",
@@ -278,7 +278,7 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.tagline": "Clarity before treatment",
     
     // Evaluation Page
-    "eval.caption": "Clinical Clarity Process",
+    "eval.caption": "New Patient Evaluation",
     "eval.headline": "Did you get different diagnoses and don't know which one is right?",
     "eval.subline": "Before treating you, understand your case with clinical and visual clarity.",
     
@@ -312,7 +312,7 @@ const translations: Record<Language, Record<string, string>> = {
     // How to Begin - 4 Equal Options
     "eval.begin.caption": "Your Entry Point",
     "eval.begin.headline": "How would you like to begin?",
-    "eval.begin.preevaluation.title": "Clinical Clarity Process",
+    "eval.begin.preevaluation.title": "New Patient Evaluation",
     "eval.begin.preevaluation.desc": "We guide you step by step to understand your case. No commitment. No sales. Just clarity before any decision.",
     "eval.begin.preevaluation.cta": "Start my guided evaluation",
     "eval.begin.portal.title": "Patient Portal",
@@ -425,7 +425,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Menu
     "menu.open": "Menu",
     "menu.close": "Close",
-    "menu.evaluation": "Clarity Process",
+    "menu.evaluation": "New Patient Evaluation",
     "menu.portal": "Patient Portal",
     "menu.opinion": "Second Opinion",
     "menu.international": "International Patients",
