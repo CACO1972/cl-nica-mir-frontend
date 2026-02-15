@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PortalHeader, EvaluacionesTab, PagosTab, CitasTab, TratamientosTab, DocumentosTab } from "@/components/portal";
+import { Badge } from "@/components/ui/badge";
 
 /* ─── RUT helpers ─── */
 function formatRutInput(value: string): string {
@@ -75,6 +76,7 @@ interface PatientData {
   dentalink_patient: Record<string, unknown> | null;
   dentalink_treatments: Array<Record<string, unknown>>;
   dentalink_files: Array<Record<string, unknown>>;
+  dentalink_citas: Array<Record<string, unknown>>;
 }
 
 /* ─── Map me response → tab interfaces ─── */
@@ -131,14 +133,38 @@ function mapFunnelStatus(status: string): string {
 }
 
 function mapToCitas(data: PatientData) {
-  // Combine appointments from Supabase + Dentalink treatments
+  // Combine appointments from Supabase + Dentalink citas
   const supabaseCitas = data.appointments.map((apt) => ({
     id: apt.id,
     cita_agendada_at: `${apt.date}T${apt.time}`,
     ia_ruta_sugerida: null as string | null,
     stage: apt.status === "scheduled" || apt.status === "confirmed" ? "SCHEDULED" : apt.status === "completed" ? "COMPLETED" : apt.status,
     nombre: apt.type_name,
+    profesional: null as string | null,
+    sucursal: null as string | null,
+    duracion: null as number | null,
   }));
+
+  // Add Dentalink citas
+  const dentalinkCitas = (data.dentalink_citas || []).map((cita, i) => {
+    const c = cita as Record<string, any>;
+    const estado = c.estado || c.status || '';
+    let stage = 'SCHEDULED';
+    if (estado === 'Atendido' || estado === 'atendido') stage = 'COMPLETED';
+    else if (estado === 'No asiste' || estado === 'no_asiste') stage = 'NO_SHOW';
+    else if (estado === 'Anulada' || estado === 'anulada') stage = 'CANCELLED';
+
+    return {
+      id: `dentalink-cita-${c.id_cita || c.id || i}`,
+      cita_agendada_at: c.fecha ? `${c.fecha}T${c.hora || '00:00'}` : null,
+      ia_ruta_sugerida: null as string | null,
+      stage,
+      nombre: c.tratamiento || c.tipo || 'Cita',
+      profesional: c.profesional?.nombre || c.nombre_profesional || null,
+      sucursal: c.sucursal?.nombre || c.nombre_sucursal || 'Clínica Miró',
+      duracion: c.duracion || null,
+    };
+  });
 
   // Also add from funnel_history where status is PAID (pending to schedule)
   const pendientes = data.funnel_history
@@ -149,9 +175,12 @@ function mapToCitas(data: PatientData) {
       ia_ruta_sugerida: null as string | null,
       stage: 'PAID',
       nombre: 'Evaluación Premium',
+      profesional: null as string | null,
+      sucursal: null as string | null,
+      duracion: null as number | null,
     }));
 
-  return [...supabaseCitas, ...pendientes];
+  return [...dentalinkCitas, ...supabaseCitas, ...pendientes];
 }
 
 function mapToPagos(data: PatientData) {
@@ -166,16 +195,23 @@ function mapToPagos(data: PatientData) {
   }));
 }
 
-function mapToTratamientos(data: PatientData) {
-  return data.dentalink_treatments.map((tto) => ({
-    nombre: (tto as Record<string, string>).nombre || (tto as Record<string, string>).name || 'Tratamiento',
-    estado: (tto as Record<string, string>).estado || (tto as Record<string, string>).status || '',
-    fecha_inicio: (tto as Record<string, string>).fecha_inicio || (tto as Record<string, string>).start_date || undefined,
-    fecha_fin: (tto as Record<string, string>).fecha_fin || (tto as Record<string, string>).end_date || undefined,
-    profesional: (tto as Record<string, string>).profesional || (tto as Record<string, string>).professional || undefined,
-    descripcion: (tto as Record<string, string>).descripcion || (tto as Record<string, string>).description || undefined,
-    piezas: (tto as Record<string, string>).piezas || (tto as Record<string, string>).teeth || undefined,
-  }));
+function mapToPlanesTratamiento(data: PatientData) {
+  return data.dentalink_treatments.map((tto, i) => {
+    const t = tto as Record<string, any>;
+    return {
+      id: t.id_tratamiento || t.id || `tto-${i}`,
+      nombre: t.nombre || t.name || 'Plan de tratamiento',
+      estado: t.estado || t.status || '',
+      progreso: t.progreso || t.progress || 0,
+      estado_financiero: t.estado_financiero || t.financial_status || null,
+      profesional: t.profesional?.nombre || t.nombre_profesional || null,
+      especialidad: t.profesional?.especialidad || null,
+      ultima_cita: t.ultima_cita || t.last_appointment || null,
+      fecha_inicio: t.fecha_inicio || t.start_date || t.created_at || null,
+      descripcion: t.descripcion || t.description || null,
+      presupuesto_total: t.presupuesto_total || t.total_budget || null,
+    };
+  });
 }
 
 function mapToDocumentos(data: PatientData) {
@@ -460,19 +496,15 @@ const Portal = () => {
               <Tabs defaultValue="citas" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto">
                   <TabsTrigger value="citas" className="flex-1 min-w-0 text-xs sm:text-sm">Citas</TabsTrigger>
-                  <TabsTrigger value="evaluaciones" className="flex-1 min-w-0 text-xs sm:text-sm">Evaluaciones</TabsTrigger>
-                  <TabsTrigger value="tratamientos" className="flex-1 min-w-0 text-xs sm:text-sm">Tratamientos</TabsTrigger>
-                  <TabsTrigger value="pagos" className="flex-1 min-w-0 text-xs sm:text-sm">Pagos</TabsTrigger>
+                  <TabsTrigger value="planes" className="flex-1 min-w-0 text-xs sm:text-sm">Planes de tratamiento</TabsTrigger>
+                  <TabsTrigger value="pagos" className="flex-1 min-w-0 text-xs sm:text-sm">Facturación y pagos</TabsTrigger>
                   <TabsTrigger value="documentos" className="flex-1 min-w-0 text-xs sm:text-sm">Documentos</TabsTrigger>
                 </TabsList>
                 <TabsContent value="citas" className="mt-6">
                   <CitasTab citas={mapToCitas(patientData)} isLoading={false} />
                 </TabsContent>
-                <TabsContent value="evaluaciones" className="mt-6">
-                  <EvaluacionesTab evaluaciones={mapToEvaluaciones(patientData)} isLoading={false} />
-                </TabsContent>
-                <TabsContent value="tratamientos" className="mt-6">
-                  <TratamientosTab tratamientos={mapToTratamientos(patientData)} isLoading={false} />
+                <TabsContent value="planes" className="mt-6">
+                  <TratamientosTab tratamientos={mapToPlanesTratamiento(patientData)} isLoading={false} />
                 </TabsContent>
                 <TabsContent value="pagos" className="mt-6">
                   <PagosTab pagos={mapToPagos(patientData)} isLoading={false} />

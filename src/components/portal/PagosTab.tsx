@@ -147,7 +147,7 @@ const PagosTab = ({ pagos, isLoading }: PagosTabProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-gold" />
-              Historial de pagos
+              Facturación y pagos
             </CardTitle>
           </CardHeader>
           <CardContent>
