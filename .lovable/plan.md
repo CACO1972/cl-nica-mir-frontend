@@ -1,38 +1,34 @@
 
+## Agregar flecha de retroceso en el header de todas las paginas internas
 
-## Destacar tarjetas de servicio con enlace
-
-### Problema actual
-Las tarjetas de la seccion "Tratamientos Exclusivos" (Bento Grid) no tienen enlaces ni indicacion visual de que se puede hacer clic. Los textos son pequenos y un usuario no tecnico no sabe que debe interactuar con ellas.
+### Problema
+Las paginas `/evaluation`, `/segunda-opinion`, `/regional` y `/portal` no tienen un boton visible para volver atras. Solo esta el logo, pero no es intuitivo para todos los usuarios.
 
 ### Solucion
+Agregar un icono de flecha (`ArrowLeft` de Lucide) a la izquierda del logo en el header de todas las paginas internas. Al hacer clic, navega a la pagina anterior o al inicio (`/`).
 
-**1. Asignar enlaces a las tarjetas que correspondan**
+### Paginas a modificar
 
-Mapeo de servicios a rutas existentes:
-- "Evaluacion Miro IA" (diagnostic) --> `/evaluation`
-- "IA Predictiva" (ai) --> `/evaluation`
-- "Agenda Inteligente" (scheduling) --> `/evaluation` (o WhatsApp/contacto)
+1. **`src/pages/Evaluation.tsx`** - Tiene 2 headers (uno para el wizard activo, otro para la pagina principal). Agregar flecha en ambos.
+2. **`src/pages/SecondOpinion.tsx`** - Mismo patron, 2 headers.
+3. **`src/pages/Regional.tsx`** - Mismo patron, 2 headers.
+4. **`src/components/portal/PortalHeader.tsx`** - Header del portal paciente.
 
-Las tarjetas sin ruta (Estetica Dental, Prevencion, Atencion Integral) se mantienen sin enlace.
+### Implementacion
 
-**2. Cambios visuales para tarjetas con enlace**
-
-- Aumentar el tamano de los titulos en tarjetas con link (de `text-lg` a `text-xl lg:text-2xl` en normales, y de `text-2xl` a `text-3xl lg:text-4xl` en featured)
-- Agregar un CTA visible al pie de la tarjeta: texto "Conocer mas -->" o "Iniciar evaluacion -->" con estilo `editorial-link` y color dorado
-- Agregar `cursor-pointer` y un efecto hover sutil (borde dorado o elevacion con sombra)
-- Envolver la tarjeta completa en un componente `<Link>` de react-router-dom
-
-**3. Tarjetas sin enlace**
-
-Se mantienen identicas, sin CTA ni efecto hover especial, para que el contraste visual deje claro cuales son interactivas.
+- Importar `ArrowLeft` de `lucide-react` y `useNavigate` (donde no exista)
+- Colocar el icono antes del logo, dentro del mismo `flex` container
+- Estilo: `text-muted-foreground hover:text-gold transition-colors` para mantener la estetica editorial
+- Accion: `navigate(-1)` para volver a la pagina anterior (comportamiento natural de navegacion)
+- Tamano del icono: `h-5 w-5` para que sea visible sin ser invasivo
 
 ### Detalles tecnicos
 
-**Archivo a modificar:** `src/components/ServicesBento.tsx`
+Ejemplo del cambio en cada header:
 
-- Agregar propiedad `link` y `ctaLabel` opcionales al array `services`
-- Importar `Link` de `react-router-dom`
-- Condicionar el wrapper: si tiene `link`, usar `<Link to={...}>`, si no, usar `<div>`
-- Agregar traducciones para los CTA labels (ej: `"services.diagnostic.cta": "Iniciar evaluacion"`)
-- Aplicar clases diferenciadas: tarjetas con link reciben `hover:border-gold/60 hover:shadow-lg transition-all cursor-pointer` y un icono de flecha junto al CTA
+```text
+Antes:  [Logo]                    [EN] [Night] [Menu]
+Despues: [<-] [Logo]              [EN] [Night] [Menu]
+```
+
+La flecha usa `navigate(-1)` del hook `useNavigate` de react-router-dom, lo que permite volver a la pagina desde donde se llego (no siempre al inicio).
