@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const MERCADOPAGO_API_URL = "https://api.mercadopago.com";
+const FLOW_API_URL = "https://www.flow.cl/api";
 const EVALUATION_PRICE = 49000; // CLP
 
 interface CheckoutRequest {
@@ -15,144 +15,180 @@ interface CheckoutRequest {
   pending_url?: string;
 }
 
-interface WebhookRequest {
-  action: 'webhook';
-  type?: string;
-  data?: {
-    id?: string;
-  };
+// ─── Flow.cl signing utility ───
+function flowSign(params: Record<string, string>, secretKey: string): string {
+  const keys = Object.keys(params).sort();
+  let toSign = "";
+  for (const key of keys) {
+    toSign += key + params[key];
+  }
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+  const msgData = encoder.encode(toSign);
+
+  // Use Web Crypto HMAC
+  // We need sync, but Deno supports createHmac via node compat or we do async
+  // For Deno edge functions, use crypto.subtle
+  return ""; // placeholder – actual signing done in async helper
 }
 
-async function createMercadoPagoPreference(
-  lead: { id: string; name: string; email: string; phone: string },
-  backUrls: { success: string; failure: string; pending: string },
-  notificationUrl: string
-) {
-  const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-  
-  if (!accessToken) {
-    throw new Error('MERCADOPAGO_ACCESS_TOKEN not configured');
+async function flowSignAsync(params: Record<string, string>, secretKey: string): Promise<string> {
+  const keys = Object.keys(params).sort();
+  let toSign = "";
+  for (const key of keys) {
+    toSign += key + params[key];
   }
 
-  const preferenceData = {
-    items: [{
-      title: 'Evaluación Presencial Premium',
-      description: 'Diagnóstico con IA en vivo, visualización de alternativas y plan de tratamiento personalizado - 90 min',
-      quantity: 1,
-      unit_price: EVALUATION_PRICE,
-      currency_id: 'CLP',
-    }],
-    payer: {
-      name: lead.name,
-      email: lead.email,
-      phone: { number: lead.phone },
-    },
-    external_reference: `funnel_${lead.id}`,
-    back_urls: backUrls,
-    auto_return: 'approved',
-    notification_url: notificationUrl,
-    statement_descriptor: 'CLINICA MIRO',
-    expires: true,
-    expiration_date_from: new Date().toISOString(),
-    expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secretKey),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(toSign));
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function createFlowPayment(
+  lead: { id: string; name: string; email: string },
+  urlReturn: string,
+  urlConfirmation: string
+): Promise<{ url: string; token: string; flowOrder: number }> {
+  const apiKey = Deno.env.get('FLOW_API_KEY');
+  const secretKey = Deno.env.get('FLOW_SECRET_KEY');
+
+  if (!apiKey || !secretKey) {
+    throw new Error('FLOW_API_KEY or FLOW_SECRET_KEY not configured');
+  }
+
+  // Flow limits commerceOrder to 45 chars. Use short prefix + timestamp
+  const shortId = lead.id.replace(/-/g, '').substring(0, 12);
+  const commerceOrder = `f_${shortId}_${Date.now()}`;
+
+  const params: Record<string, string> = {
+    apiKey,
+    commerceOrder,
+    subject: 'Evaluación Presencial Premium – Clínica Miró',
+    amount: String(EVALUATION_PRICE),
+    email: lead.email,
+    currency: 'CLP',
+    urlReturn,
+    urlConfirmation,
   };
 
-  console.log('[Funnel Checkout] Creating MercadoPago preference');
+  const signature = await flowSignAsync(params, secretKey);
+  params.s = signature;
 
-  const response = await fetch(`${MERCADOPAGO_API_URL}/checkout/preferences`, {
+  // Flow API requires application/x-www-form-urlencoded
+  const formBody = new URLSearchParams(params).toString();
+
+  console.log(`[Funnel Checkout] Creating Flow payment for order ${commerceOrder}`);
+
+  const response = await fetch(`${FLOW_API_URL}/payment/create`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(preferenceData),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formBody,
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`[Funnel Checkout] MercadoPago error: ${response.status} - ${errorText}`);
-    throw new Error(`MercadoPago API error: ${response.status}`);
+    console.error(`[Funnel Checkout] Flow error: ${response.status} - ${errorText}`);
+    throw new Error(`Flow API error: ${response.status} - ${errorText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log(`[Funnel Checkout] Flow order created: ${data.flowOrder}`);
+  return data;
 }
 
-async function getPaymentDetails(paymentId: string) {
-  const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-  
-  if (!accessToken) {
-    throw new Error('MERCADOPAGO_ACCESS_TOKEN not configured');
-  }
+async function getFlowPaymentStatus(token: string): Promise<Record<string, unknown>> {
+  const apiKey = Deno.env.get('FLOW_API_KEY')!;
+  const secretKey = Deno.env.get('FLOW_SECRET_KEY')!;
 
-  const response = await fetch(`${MERCADOPAGO_API_URL}/v1/payments/${paymentId}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  });
+  const params: Record<string, string> = { apiKey, token };
+  const signature = await flowSignAsync(params, secretKey);
+  params.s = signature;
+
+  const qs = new URLSearchParams(params).toString();
+  const response = await fetch(`${FLOW_API_URL}/payment/getStatus?${qs}`);
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`[Funnel Checkout] MercadoPago get payment error: ${response.status} - ${errorText}`);
-    throw new Error(`Failed to get payment: ${response.status}`);
+    console.error(`[Funnel Checkout] Flow getStatus error: ${response.status} - ${errorText}`);
+    throw new Error(`Flow getStatus error: ${response.status}`);
   }
 
   return response.json();
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const body = await req.json();
-    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle webhook from MercadoPago
-    if (body.action === 'webhook' || body.type === 'payment') {
-      console.log('[Funnel Checkout] Processing webhook:', JSON.stringify(body));
-      
-      const paymentId = body.data?.id;
-      if (!paymentId) {
-        console.log('[Funnel Checkout] Webhook without payment ID, ignoring');
+    // Detect if this is a Flow confirmation callback (urlConfirmation)
+    // Flow sends POST with application/x-www-form-urlencoded containing "token"
+    const contentType = req.headers.get('content-type') || '';
+
+    if (contentType.includes('x-www-form-urlencoded')) {
+      // This is a Flow webhook/confirmation callback
+      const formData = await req.formData();
+      const token = formData.get('token') as string;
+
+      if (!token) {
+        console.log('[Funnel Checkout] Confirmation without token, ignoring');
         return new Response(
           JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Get payment details from MercadoPago
-      const payment = await getPaymentDetails(paymentId);
-      console.log(`[Funnel Checkout] Payment ${paymentId} status: ${payment.status}`);
+      console.log(`[Funnel Checkout] Processing Flow confirmation, token: ${token}`);
 
-      // Extract lead_id from external_reference
-      const externalRef = payment.external_reference || '';
-      const leadId = externalRef.replace('funnel_', '');
+      // Get payment status from Flow
+      const flowPayment = await getFlowPaymentStatus(token) as Record<string, any>;
+      console.log(`[Funnel Checkout] Flow payment status: ${flowPayment.status}, flowOrder: ${flowPayment.flowOrder}`);
+
+      // Look up lead_id via flowOrder stored in mercadopago_preference_id
+      const flowOrderStr = String(flowPayment.flowOrder);
+      const { data: paymentRecord } = await supabase
+        .from('funnel_payments')
+        .select('lead_id')
+        .eq('mercadopago_preference_id', flowOrderStr)
+        .single();
+
+      const leadId = paymentRecord?.lead_id;
 
       if (!leadId) {
-        console.error('[Funnel Checkout] No lead_id in external_reference');
+        console.error('[Funnel Checkout] No payment found for flowOrder:', flowOrderStr);
         return new Response(
           JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Map MercadoPago status to our status
+      // Flow statuses: 1=pending, 2=paid, 3=rejected, 4=cancelled
       let paymentStatus: 'pending' | 'approved' | 'rejected' | 'cancelled' = 'pending';
-      if (payment.status === 'approved') paymentStatus = 'approved';
-      else if (['rejected', 'cancelled'].includes(payment.status)) paymentStatus = 'rejected';
+      if (flowPayment.status === 2) paymentStatus = 'approved';
+      else if (flowPayment.status === 3) paymentStatus = 'rejected';
+      else if (flowPayment.status === 4) paymentStatus = 'cancelled';
 
       // Update payment record
       const { error: paymentError } = await supabase
         .from('funnel_payments')
         .update({
-          mercadopago_payment_id: paymentId,
-          mercadopago_status: payment.status,
-          mercadopago_response: payment,
+          mercadopago_payment_id: String(flowPayment.flowOrder),
+          mercadopago_status: String(flowPayment.status),
+          mercadopago_response: flowPayment,
           status: paymentStatus,
           paid_at: paymentStatus === 'approved' ? new Date().toISOString() : null,
         })
@@ -162,7 +198,7 @@ Deno.serve(async (req) => {
         console.error('[Funnel Checkout] Failed to update payment:', paymentError);
       }
 
-      // If approved, update lead status
+      // If approved, trigger post-payment workflow
       if (paymentStatus === 'approved') {
         const { error: leadError } = await supabase
           .from('funnel_leads')
@@ -236,11 +272,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Regular checkout request
-    const checkoutBody = body as CheckoutRequest;
-    console.log('[Funnel Checkout] Creating checkout for lead:', checkoutBody.lead_id);
+    // ─── Regular checkout request (JSON from frontend) ───
+    const body: CheckoutRequest = await req.json();
+    console.log('[Funnel Checkout] Creating checkout for lead:', body.lead_id);
 
-    if (!checkoutBody.lead_id) {
+    if (!body.lead_id) {
       return new Response(
         JSON.stringify({ error: 'Missing required field: lead_id' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -251,11 +287,11 @@ Deno.serve(async (req) => {
     const { data: lead, error: leadError } = await supabase
       .from('funnel_leads')
       .select('*')
-      .eq('id', checkoutBody.lead_id)
+      .eq('id', body.lead_id)
       .single();
 
     if (leadError || !lead) {
-      console.error('[Funnel Checkout] Lead not found:', checkoutBody.lead_id);
+      console.error('[Funnel Checkout] Lead not found:', body.lead_id);
       return new Response(
         JSON.stringify({ error: 'Lead not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -266,7 +302,7 @@ Deno.serve(async (req) => {
     const { data: existingPayment } = await supabase
       .from('funnel_payments')
       .select('status')
-      .eq('lead_id', checkoutBody.lead_id)
+      .eq('lead_id', body.lead_id)
       .eq('status', 'approved')
       .single();
 
@@ -279,26 +315,18 @@ Deno.serve(async (req) => {
 
     // Build URLs
     const baseUrl = supabaseUrl.replace('.supabase.co', '.lovable.app');
-    const backUrls = {
-      success: checkoutBody.success_url || `${baseUrl}/evaluacion/pago-exitoso`,
-      failure: checkoutBody.failure_url || `${baseUrl}/evaluacion/pago-fallido`,
-      pending: checkoutBody.pending_url || `${baseUrl}/evaluacion/pago-pendiente`,
-    };
-    const notificationUrl = `${supabaseUrl}/functions/v1/funnel-checkout`;
+    const urlReturn = body.success_url || `${baseUrl}/evaluacion/pago-exitoso`;
+    const urlConfirmation = `${supabaseUrl}/functions/v1/funnel-checkout`;
 
-    // Create MercadoPago preference
-    const mpPreference = await createMercadoPagoPreference(
-      { 
-        id: lead.id, 
-        name: lead.name, 
-        email: lead.email, 
-        phone: lead.phone 
-      },
-      backUrls,
-      notificationUrl
+    // Create Flow payment
+    const flowResult = await createFlowPayment(
+      { id: lead.id, name: lead.name, email: lead.email },
+      urlReturn,
+      urlConfirmation
     );
 
-    console.log(`[Funnel Checkout] Preference created: ${mpPreference.id}`);
+    const checkoutUrl = `${flowResult.url}?token=${flowResult.token}`;
+    console.log(`[Funnel Checkout] Flow checkout URL generated, flowOrder: ${flowResult.flowOrder}`);
 
     // Create payment record
     const { data: payment, error: paymentInsertError } = await supabase
@@ -308,7 +336,7 @@ Deno.serve(async (req) => {
         amount: EVALUATION_PRICE,
         currency: 'CLP',
         description: 'Evaluación Presencial Premium',
-        mercadopago_preference_id: mpPreference.id,
+        mercadopago_preference_id: String(flowResult.flowOrder),
         status: 'pending',
       })
       .select()
@@ -329,13 +357,13 @@ Deno.serve(async (req) => {
       .eq('id', lead.id);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         data: {
           payment_id: payment.id,
-          checkout_url: mpPreference.init_point,
-          sandbox_url: mpPreference.sandbox_init_point,
-          preference_id: mpPreference.id,
+          checkout_url: checkoutUrl,
+          sandbox_url: checkoutUrl,
+          preference_id: String(flowResult.flowOrder),
           amount: EVALUATION_PRICE,
           currency: 'CLP',
         }

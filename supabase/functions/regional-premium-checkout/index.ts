@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const MERCADOPAGO_API_URL = "https://api.mercadopago.com";
+const FLOW_API_URL = "https://www.flow.cl/api";
 
 interface RegionalCheckoutRequest {
   lead_id: string;
@@ -17,83 +17,89 @@ interface RegionalCheckoutRequest {
   timezone?: string;
 }
 
-// Pricing for regional/international patients
 const PRICING = {
   online: {
-    amount: 35000, // CLP - Evaluación Premium Online (videollamada)
+    amount: 35000,
     description: 'Evaluación Premium Online - Videollamada con Especialista',
   },
   presencial: {
-    amount: 49000, // CLP - Same as regular premium
+    amount: 49000,
     description: 'Evaluación Presencial Premium - 100% abonable a tratamiento',
   },
 };
 
-async function createMercadoPagoPreference(
+async function flowSignAsync(params: Record<string, string>, secretKey: string): Promise<string> {
+  const keys = Object.keys(params).sort();
+  let toSign = "";
+  for (const key of keys) {
+    toSign += key + params[key];
+  }
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secretKey),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(toSign));
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function createFlowPayment(
   lead: { id: string; name: string; email: string },
   evaluationType: 'online' | 'presencial',
   baseUrl: string
-): Promise<{ preference_id: string; init_point: string } | null> {
-  const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-  
-  if (!accessToken) {
-    console.log('[Regional Checkout] MERCADOPAGO_ACCESS_TOKEN not configured');
+): Promise<{ url: string; token: string; flowOrder: number } | null> {
+  const apiKey = Deno.env.get('FLOW_API_KEY');
+  const secretKey = Deno.env.get('FLOW_SECRET_KEY');
+
+  if (!apiKey || !secretKey) {
+    console.log('[Regional Checkout] FLOW_API_KEY or FLOW_SECRET_KEY not configured');
     return null;
   }
 
   const pricing = PRICING[evaluationType];
+  const shortId = lead.id.replace(/-/g, '').substring(0, 10);
+  const prefix = evaluationType === 'online' ? 'ro' : 'rp';
+  const commerceOrder = `${prefix}_${shortId}_${Date.now()}`;
+
+  const params: Record<string, string> = {
+    apiKey,
+    commerceOrder,
+    subject: pricing.description,
+    amount: String(pricing.amount),
+    email: lead.email,
+    currency: 'CLP',
+    urlReturn: `${baseUrl.replace('.supabase.co', '.lovable.app')}/evaluation/regional/success?lead=${lead.id}&type=${evaluationType}`,
+    urlConfirmation: `${baseUrl}/functions/v1/funnel-checkout`,
+  };
+
+  const signature = await flowSignAsync(params, secretKey);
+  params.s = signature;
+
+  const formBody = new URLSearchParams(params).toString();
 
   try {
-    const response = await fetch(`${MERCADOPAGO_API_URL}/checkout/preferences`, {
+    const response = await fetch(`${FLOW_API_URL}/payment/create`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        items: [
-          {
-            title: pricing.description,
-            quantity: 1,
-            unit_price: pricing.amount,
-            currency_id: 'CLP',
-          },
-        ],
-        payer: {
-          name: lead.name.split(' ')[0],
-          surname: lead.name.split(' ').slice(1).join(' ') || '',
-          email: lead.email,
-        },
-        external_reference: `regional_${evaluationType}_${lead.id}`,
-        notification_url: `${baseUrl}/functions/v1/mercadopago`,
-        back_urls: {
-          success: `${baseUrl.replace('supabase.co', 'lovable.app')}/evaluation/regional/success?lead=${lead.id}&type=${evaluationType}`,
-          failure: `${baseUrl.replace('supabase.co', 'lovable.app')}/evaluation/regional/checkout?lead=${lead.id}&error=payment_failed`,
-          pending: `${baseUrl.replace('supabase.co', 'lovable.app')}/evaluation/regional/pending?lead=${lead.id}`,
-        },
-        auto_return: 'approved',
-        statement_descriptor: 'CLINICA MIRO',
-        expires: true,
-        expiration_date_from: new Date().toISOString(),
-        expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-      }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Regional Checkout] MercadoPago error: ${response.status} - ${errorText}`);
+      console.error(`[Regional Checkout] Flow error: ${response.status} - ${errorText}`);
       return null;
     }
 
     const data = await response.json();
-    console.log(`[Regional Checkout] MercadoPago preference created: ${data.id}`);
-    
-    return {
-      preference_id: data.id,
-      init_point: data.init_point,
-    };
+    console.log(`[Regional Checkout] Flow order created: ${data.flowOrder}`);
+    return data;
   } catch (error) {
-    console.error('[Regional Checkout] MercadoPago failed:', error);
+    console.error('[Regional Checkout] Flow failed:', error);
     return null;
   }
 }
@@ -148,7 +154,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify this is a regional lead
     const preferences = lead.scheduling_preferences as Record<string, unknown> | null;
     if (!preferences?.is_regional) {
       return new Response(
@@ -159,12 +164,8 @@ Deno.serve(async (req) => {
 
     const pricing = PRICING[body.evaluation_type];
 
-    // Create MercadoPago preference
-    const mpPreference = await createMercadoPagoPreference(
-      lead,
-      body.evaluation_type,
-      supabaseUrl
-    );
+    // Create Flow payment
+    const flowResult = await createFlowPayment(lead, body.evaluation_type, supabaseUrl);
 
     // Create payment record
     const { data: payment, error: paymentError } = await supabase
@@ -174,7 +175,7 @@ Deno.serve(async (req) => {
         amount: pricing.amount,
         description: pricing.description,
         status: 'pending',
-        mercadopago_preference_id: mpPreference?.preference_id || null,
+        mercadopago_preference_id: flowResult ? String(flowResult.flowOrder) : null,
       })
       .select()
       .single();
@@ -187,24 +188,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update lead status and add travel dates if provided
-    const updateData: Record<string, unknown> = {
-      status: 'CHECKOUT_CREATED',
-    };
-
+    // Update lead status
+    const updateData: Record<string, unknown> = { status: 'CHECKOUT_CREATED' };
     if (body.travel_dates || body.timezone) {
       updateData.scheduling_preferences = {
         ...preferences,
         travel_dates: body.travel_dates,
-        timezone: body.timezone || preferences.timezone,
+        timezone: body.timezone || (preferences as Record<string, unknown>).timezone,
         evaluation_type: body.evaluation_type,
       };
     }
 
-    await supabase
-      .from('funnel_leads')
-      .update(updateData)
-      .eq('id', body.lead_id);
+    await supabase.from('funnel_leads').update(updateData).eq('id', body.lead_id);
 
     // Track analytics
     await supabase.from('analytics_events').insert({
@@ -214,16 +209,17 @@ Deno.serve(async (req) => {
       event_data: {
         evaluation_type: body.evaluation_type,
         amount: pricing.amount,
-        country: preferences.country,
+        country: preferences?.country,
         has_travel_dates: !!body.travel_dates,
       },
     });
 
+    const checkoutUrl = flowResult ? `${flowResult.url}?token=${flowResult.token}` : null;
     console.log(`[Regional Checkout] Checkout created for lead ${body.lead_id}, payment: ${payment.id}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         data: {
           lead_id: body.lead_id,
           payment_id: payment.id,
@@ -231,8 +227,8 @@ Deno.serve(async (req) => {
           amount: pricing.amount,
           currency: 'CLP',
           description: pricing.description,
-          checkout_url: mpPreference?.init_point || null,
-          preference_id: mpPreference?.preference_id || null,
+          checkout_url: checkoutUrl,
+          preference_id: flowResult ? String(flowResult.flowOrder) : null,
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
