@@ -5,160 +5,159 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const MERCADOPAGO_API_URL = "https://api.mercadopago.com";
+const FLOW_API_URL = "https://www.flow.cl/api";
+
+// ─── Flow.cl HMAC signing ───
+async function flowSignAsync(params: Record<string, string>, secretKey: string): Promise<string> {
+  const keys = Object.keys(params).sort();
+  let toSign = "";
+  for (const key of keys) {
+    toSign += key + params[key];
+  }
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secretKey),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(toSign));
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 interface PaymentRequest {
-  action: 'create_preference' | 'get_payment' | 'webhook';
-  // For create_preference
-  items?: Array<{
-    title: string;
-    description?: string;
-    quantity: number;
-    unit_price: number;
-    currency_id?: string;
-  }>;
-  payer_email?: string;
-  payer_name?: string;
-  payer_phone?: string;
-  external_reference?: string;
-  notification_url?: string;
-  back_urls?: {
-    success: string;
-    failure: string;
-    pending: string;
-  };
-  // For get_payment
-  payment_id?: string;
+  action: 'create_payment' | 'get_status' | 'webhook';
+  // For create_payment
+  commerceOrder?: string;
+  subject?: string;
+  amount?: number;
+  email?: string;
+  urlReturn?: string;
+  urlConfirmation?: string;
+  currency?: string;
+  // For get_status
+  token?: string;
   // For webhook
   webhook_data?: object;
 }
 
-async function mercadopagoRequest(endpoint: string, method: string = 'GET', body?: object) {
-  const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-  
-  if (!accessToken) {
-    throw new Error('MERCADOPAGO_ACCESS_TOKEN not configured');
-  }
-
-  const options: RequestInit = {
-    method,
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  };
-
-  if (body && method !== 'GET') {
-    options.body = JSON.stringify(body);
-  }
-
-  console.log(`[MercadoPago] ${method} ${endpoint}`);
-  
-  const response = await fetch(`${MERCADOPAGO_API_URL}${endpoint}`, options);
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[MercadoPago] Error: ${response.status} - ${errorText}`);
-    throw new Error(`MercadoPago API error: ${response.status}`);
-  }
-
-  return response.json();
-}
-
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const body: PaymentRequest = await req.json();
-    console.log(`[MercadoPago] Action: ${body.action}`);
+    const apiKey = Deno.env.get('FLOW_API_KEY');
+    const secretKey = Deno.env.get('FLOW_SECRET_KEY');
+
+    if (!apiKey || !secretKey) {
+      throw new Error('FLOW_API_KEY or FLOW_SECRET_KEY not configured');
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Webhook doesn't require user auth
-    if (body.action === 'webhook') {
-      console.log('[MercadoPago] Processing webhook');
-      // Process webhook notification from MercadoPago
-      const webhookData = body.webhook_data;
-      console.log('[MercadoPago] Webhook data:', JSON.stringify(webhookData));
-      
-      // TODO: Update payment status in database
-      // This would typically update a payments table with the new status
-      
+    // Handle Flow confirmation callback (form-urlencoded with token)
+    const contentType = req.headers.get('content-type') || '';
+    if (contentType.includes('x-www-form-urlencoded')) {
+      const formData = await req.formData();
+      const token = formData.get('token') as string;
+
+      if (!token) {
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`[Flow] Confirmation callback, token: ${token}`);
+
+      // Get payment status
+      const statusParams: Record<string, string> = { apiKey, token };
+      const sig = await flowSignAsync(statusParams, secretKey);
+      statusParams.s = sig;
+
+      const qs = new URLSearchParams(statusParams).toString();
+      const statusRes = await fetch(`${FLOW_API_URL}/payment/getStatus?${qs}`);
+      const flowPayment = await statusRes.json();
+
+      console.log(`[Flow] Payment status: ${flowPayment.status}, order: ${flowPayment.flowOrder}`);
+
       return new Response(
-        JSON.stringify({ success: true }),
+        JSON.stringify({ success: true, data: flowPayment }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Other actions require authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('[MercadoPago] No authorization header');
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      console.error('[MercadoPago] Auth error:', authError?.message);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`[MercadoPago] Authenticated user: ${user.id}`);
+    // JSON requests
+    const body: PaymentRequest = await req.json();
+    console.log(`[Flow] Action: ${body.action}`);
 
     let result;
 
     switch (body.action) {
-      case 'create_preference': {
-        if (!body.items || body.items.length === 0) {
-          throw new Error('Missing required field: items');
+      case 'create_payment': {
+        if (!body.subject || !body.amount || !body.email) {
+          throw new Error('Missing required fields: subject, amount, email');
         }
 
-        const preferenceData = {
-          items: body.items.map(item => ({
-            title: item.title,
-            description: item.description || '',
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            currency_id: item.currency_id || 'ARS',
-          })),
-          payer: {
-            email: body.payer_email || user.email,
-            name: body.payer_name,
-            phone: body.payer_phone ? { number: body.payer_phone } : undefined,
-          },
-          external_reference: body.external_reference || `user_${user.id}_${Date.now()}`,
-          back_urls: body.back_urls || {
-            success: `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app')}/payment/success`,
-            failure: `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app')}/payment/failure`,
-            pending: `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app')}/payment/pending`,
-          },
-          auto_return: 'approved',
-          notification_url: body.notification_url,
+        const params: Record<string, string> = {
+          apiKey,
+          commerceOrder: body.commerceOrder || `order_${Date.now()}`,
+          subject: body.subject,
+          amount: String(body.amount),
+          email: body.email,
+          currency: body.currency || 'CLP',
+          urlReturn: body.urlReturn || `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/payment/success`,
+          urlConfirmation: body.urlConfirmation || `${supabaseUrl}/functions/v1/mercadopago`,
         };
 
-        result = await mercadopagoRequest('/checkout/preferences', 'POST', preferenceData);
-        console.log(`[MercadoPago] Preference created: ${result.id}`);
+        const sig = await flowSignAsync(params, secretKey);
+        params.s = sig;
+
+        const formBody = new URLSearchParams(params).toString();
+        const response = await fetch(`${FLOW_API_URL}/payment/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formBody,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Flow API error: ${response.status} - ${errorText}`);
+        }
+
+        const flowData = await response.json();
+        result = {
+          checkout_url: `${flowData.url}?token=${flowData.token}`,
+          flow_order: flowData.flowOrder,
+          token: flowData.token,
+        };
         break;
       }
 
-      case 'get_payment': {
-        if (!body.payment_id) {
-          throw new Error('Missing required field: payment_id');
+      case 'get_status': {
+        if (!body.token) {
+          throw new Error('Missing required field: token');
         }
-        result = await mercadopagoRequest(`/v1/payments/${body.payment_id}`);
+
+        const params: Record<string, string> = { apiKey, token: body.token };
+        const sig = await flowSignAsync(params, secretKey);
+        params.s = sig;
+
+        const qs = new URLSearchParams(params).toString();
+        const response = await fetch(`${FLOW_API_URL}/payment/getStatus?${qs}`);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Flow getStatus error: ${response.status} - ${errorText}`);
+        }
+
+        result = await response.json();
         break;
       }
 
@@ -166,7 +165,7 @@ Deno.serve(async (req) => {
         throw new Error(`Unknown action: ${body.action}`);
     }
 
-    console.log(`[MercadoPago] Success`);
+    console.log('[Flow] Success');
     return new Response(
       JSON.stringify({ success: true, data: result }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -174,7 +173,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[MercadoPago] Error:', errorMessage);
+    console.error('[Flow] Error:', errorMessage);
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
