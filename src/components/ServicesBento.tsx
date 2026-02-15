@@ -2,49 +2,49 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Scan, Sparkles, Calendar, Shield, Brain, Heart } from "lucide-react";
 
 const services = [
-  {
-    id: "diagnostic",
-    icon: Scan,
-    titleKey: "services.diagnostic.title",
-    descKey: "services.diagnostic.desc",
-    size: "featured", // 2x2
-  },
-  {
-    id: "aesthetic",
-    icon: Sparkles,
-    titleKey: "services.aesthetic.title",
-    descKey: "services.aesthetic.desc",
-    size: "wide", // 2x1
-  },
-  {
-    id: "preventive",
-    icon: Shield,
-    titleKey: "services.preventive.title",
-    descKey: "services.preventive.desc",
-    size: "normal", // 1x1
-  },
-  {
-    id: "ai",
-    icon: Brain,
-    titleKey: "services.ai.title",
-    descKey: "services.ai.desc",
-    size: "normal", // 1x1
-  },
-  {
-    id: "scheduling",
-    icon: Calendar,
-    titleKey: "services.scheduling.title",
-    descKey: "services.scheduling.desc",
-    size: "wide", // 2x1
-  },
-  {
-    id: "care",
-    icon: Heart,
-    titleKey: "services.care.title",
-    descKey: "services.care.desc",
-    size: "tall", // 1x2
-  },
-];
+{
+  id: "diagnostic",
+  icon: Scan,
+  titleKey: "services.diagnostic.title",
+  descKey: "services.diagnostic.desc",
+  size: "featured" // 2x2
+},
+{
+  id: "aesthetic",
+  icon: Sparkles,
+  titleKey: "services.aesthetic.title",
+  descKey: "services.aesthetic.desc",
+  size: "wide" // 2x1
+},
+{
+  id: "preventive",
+  icon: Shield,
+  titleKey: "services.preventive.title",
+  descKey: "services.preventive.desc",
+  size: "normal" // 1x1
+},
+{
+  id: "ai",
+  icon: Brain,
+  titleKey: "services.ai.title",
+  descKey: "services.ai.desc",
+  size: "normal" // 1x1
+},
+{
+  id: "scheduling",
+  icon: Calendar,
+  titleKey: "services.scheduling.title",
+  descKey: "services.scheduling.desc",
+  size: "wide" // 2x1
+},
+{
+  id: "care",
+  icon: Heart,
+  titleKey: "services.care.title",
+  descKey: "services.care.desc",
+  size: "tall" // 1x2
+}];
+
 
 const translations: Record<string, Record<string, string>> = {
   es: {
@@ -61,7 +61,7 @@ const translations: Record<string, Record<string, string>> = {
     "services.scheduling.title": "Agenda Inteligente",
     "services.scheduling.desc": "Sistema de citas optimizado que respeta tu tiempo. Confirmaciones automáticas y recordatorios personalizados.",
     "services.care.title": "Atención Integral",
-    "services.care.desc": "Acompañamiento completo desde la primera consulta hasta el seguimiento post-tratamiento. Tu bienestar es nuestra prioridad.",
+    "services.care.desc": "Acompañamiento completo desde la primera consulta hasta el seguimiento post-tratamiento. Tu bienestar es nuestra prioridad."
   },
   en: {
     "services.caption": "Our Services",
@@ -77,8 +77,8 @@ const translations: Record<string, Record<string, string>> = {
     "services.scheduling.title": "Smart Scheduling",
     "services.scheduling.desc": "Optimized appointment system that respects your time. Automatic confirmations and personalized reminders.",
     "services.care.title": "Comprehensive Care",
-    "services.care.desc": "Complete support from the first consultation to post-treatment follow-up. Your wellbeing is our priority.",
-  },
+    "services.care.desc": "Complete support from the first consultation to post-treatment follow-up. Your wellbeing is our priority."
+  }
 };
 
 const ServicesBento = () => {
@@ -115,89 +115,89 @@ const ServicesBento = () => {
           {services.map((service) => {
             const Icon = service.icon;
             const isFeatured = service.size === "featured";
-            
-            return (
-              <article
-                key={service.id}
-                className={`
-                  ${getSizeClasses(service.size)}
-                  group relative overflow-hidden
-                  bg-background dark:bg-[hsl(0,0%,8%)]
-                  p-6 lg:p-8
-                  border border-border
-                  transition-all duration-500 ease-out
-                  hover:shadow-[var(--shadow-hover)]
-                  hover:border-gold-muted/30
-                `}
-              >
-                {/* Subtle gradient overlay on hover */}
-                <div 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                  style={{
-                    background: "linear-gradient(135deg, hsla(var(--gold), 0.03) 0%, transparent 60%)"
-                  }}
-                />
-                
-                {/* Content */}
-                <div className="relative z-10 h-full flex flex-col">
-                  {/* Icon */}
-                  <div className="mb-6">
-                    <div 
-                      className={`
-                        inline-flex items-center justify-center
-                        ${isFeatured ? "w-14 h-14" : "w-10 h-10"}
-                        border border-gold-muted/30
-                        text-gold-muted
-                        group-hover:text-gold group-hover:border-gold/50
-                        transition-colors duration-300
-                      `}
-                    >
-                      <Icon className={isFeatured ? "w-7 h-7" : "w-5 h-5"} strokeWidth={1.5} />
-                    </div>
-                  </div>
 
-                  {/* Text */}
-                  <h3 
-                    className={`
-                      ${isFeatured ? "display-medium" : "body-large font-medium"}
-                      text-foreground mb-3
-                    `}
-                  >
-                    {t(service.titleKey)}
-                  </h3>
-                  
-                  <p 
-                    className={`
-                      ${isFeatured ? "body-large" : "text-sm"}
-                      text-muted-foreground leading-relaxed
-                      ${isFeatured ? "" : "line-clamp-3"}
-                    `}
-                  >
-                    {t(service.descKey)}
-                  </p>
+            return;
 
-                  {/* Decorative element for featured card */}
-                  {isFeatured && (
-                    <div className="mt-auto pt-8">
-                      <div className="w-12 h-px bg-gradient-to-r from-gold-muted/50 to-transparent" />
-                    </div>
-                  )}
-                </div>
 
-                {/* Corner accent */}
-                <div 
-                  className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{
-                    background: "linear-gradient(225deg, hsla(var(--gold), 0.08) 0%, transparent 70%)"
-                  }}
-                />
-              </article>
-            );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           })}
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default ServicesBento;
