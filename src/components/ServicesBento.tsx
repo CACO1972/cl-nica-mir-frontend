@@ -48,7 +48,7 @@ const services = [
 
 const translations: Record<string, Record<string, string>> = {
   es: {
-    "services.caption": "Miró",
+    "services.caption": "Tratamientos Exclusivos",
     "services.headline": "Excelencia en cada detalle",
     "services.diagnostic.title": "Diagnóstico Avanzado",
     "services.diagnostic.desc": "Tomografía 3D, escáner intraoral y análisis predictivo para un diagnóstico preciso antes de cualquier intervención.",
@@ -64,7 +64,7 @@ const translations: Record<string, Record<string, string>> = {
     "services.care.desc": "Acompañamiento completo desde la primera consulta hasta el seguimiento post-tratamiento. Tu bienestar es nuestra prioridad."
   },
   en: {
-    "services.caption": "Miró",
+    "services.caption": "Exclusive Treatments",
     "services.headline": "Excellence in every detail",
     "services.diagnostic.title": "Advanced Diagnostics",
     "services.diagnostic.desc": "3D tomography, intraoral scanner and predictive analysis for precise diagnosis before any intervention.",
