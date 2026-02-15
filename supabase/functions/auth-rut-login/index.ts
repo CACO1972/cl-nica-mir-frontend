@@ -127,18 +127,17 @@ Deno.serve(async (req) => {
       const patientPhone = String(dentalinkPatient.telefono || dentalinkPatient.celular || '');
       const dentalinkId = String(dentalinkPatient.id_paciente || dentalinkPatient.id || '');
 
+      // If no email in Dentalink, generate a placeholder email from the RUT
+      const finalEmail = patientEmail || `${normalizedRut.replace('-', '')}@paciente.clinicamiro.cl`;
       if (!patientEmail) {
-        return new Response(
-          JSON.stringify({ error: 'Paciente encontrado en Dentalink pero sin email registrado. Contacta a la clínica.' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        console.log(`[Auth RUT Login] No email in Dentalink, using placeholder: ${finalEmail}`);
       }
 
-      console.log(`[Auth RUT Login] Dentalink patient found: ${patientName} (${patientEmail}), ID: ${dentalinkId}`);
+      console.log(`[Auth RUT Login] Dentalink patient found: ${patientName} (${finalEmail}), ID: ${dentalinkId}`);
 
       // 3. Check if a user with this email already exists in auth
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find(u => u.email === patientEmail);
+      const existingUser = existingUsers?.users?.find(u => u.email === finalEmail);
 
       let userId: string;
 
@@ -154,7 +153,7 @@ Deno.serve(async (req) => {
       } else {
         // 4. Create new auth user
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-          email: patientEmail,
+          email: finalEmail,
           email_confirm: true,
           user_metadata: { full_name: patientName },
         });
@@ -185,8 +184,8 @@ Deno.serve(async (req) => {
           .eq('user_id', userId);
       }
 
-      userEmail = patientEmail;
-      userName = patientName || patientEmail;
+      userEmail = finalEmail;
+      userName = patientName || finalEmail;
     }
 
     // 5. Generate session via magic link verification
