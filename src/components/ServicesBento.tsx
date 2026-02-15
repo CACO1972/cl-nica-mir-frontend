@@ -114,7 +114,7 @@ const ServicesBento = () => {
         {/* Section Header */}
         <div className="mb-16 lg:mb-24">
           <p className="caption text-gold-muted mb-6">{t("services.caption")}</p>
-          <h2 className="display-large text-foreground max-w-2xl">
+          <h2 className="display-large text-foreground text-shadow-subtle max-w-2xl">
             {t("services.headline")}
           </h2>
         </div>
@@ -128,34 +128,46 @@ const ServicesBento = () => {
 
             const cardContent = (
               <div className={`flex flex-col justify-between h-full ${isFeatured ? 'p-8 lg:p-12' : 'p-6 lg:p-8'}`}>
-                <Icon className={`${isFeatured ? 'w-8 h-8' : 'w-6 h-6'} text-gold-muted mb-4`} strokeWidth={1.5} />
+                <div className="flex items-start justify-between">
+                  <Icon
+                    className={`${isFeatured ? 'w-8 h-8' : 'w-6 h-6'} text-gold-muted mb-4 transition-colors duration-300 ${hasLink ? 'group-hover:text-gold' : ''}`}
+                    strokeWidth={1.5}
+                  />
+                  {hasLink && (
+                    <ArrowRight
+                      className="w-4 h-4 text-gold/0 group-hover:text-gold transition-all duration-500 -translate-x-2 group-hover:translate-x-0 opacity-0 group-hover:opacity-100"
+                      strokeWidth={1.5}
+                    />
+                  )}
+                </div>
                 <div>
                   <h3 className={`${
                     hasLink
                       ? (isFeatured ? 'text-3xl lg:text-4xl' : 'text-xl lg:text-2xl')
                       : (isFeatured ? 'text-2xl lg:text-3xl' : 'text-lg lg:text-xl')
-                  } font-medium text-foreground mb-2`}>
+                  } font-medium text-foreground text-shadow-subtle mb-3 leading-tight`}>
                     {t(service.titleKey)}
                   </h3>
                   <p className={`${isFeatured ? 'body-large' : 'body-small'} text-muted-foreground`}>
                     {t(service.descKey)}
                   </p>
                   {hasLink && service.ctaKey && (
-                    <p className="mt-4 flex items-center gap-2 text-gold tracking-widest text-xs uppercase font-medium group-hover:gap-3 transition-all duration-300">
+                    <p className="mt-5 flex items-center gap-2 text-gold tracking-widest text-xs uppercase font-medium editorial-link">
                       {t(service.ctaKey)}
-                      <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
                     </p>
                   )}
                 </div>
               </div>
             );
 
+            const baseClasses = `bento-card group ${getSizeClasses(service.size)}`;
+
             if (hasLink) {
               return (
                 <Link
                   key={service.id}
                   to={service.link!}
-                  className={`bento-card group ${getSizeClasses(service.size)} cursor-pointer hover:border-gold/60 hover:shadow-lg transition-all duration-300`}
+                  className={`${baseClasses} bento-card-interactive`}
                 >
                   {cardContent}
                 </Link>
@@ -163,10 +175,7 @@ const ServicesBento = () => {
             }
 
             return (
-              <div
-                key={service.id}
-                className={`bento-card group ${getSizeClasses(service.size)}`}
-              >
+              <div key={service.id} className={baseClasses}>
                 {cardContent}
               </div>
             );

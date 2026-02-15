@@ -59,7 +59,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto w-full text-center px-2">
           {/* Primary headline - maximum visual authority */}
           <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
-            <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block leading-[0.95]">
+            <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block leading-[0.95] text-shadow-subtle">
               La odontología del futuro, hoy.
               {/* Subtle gold underline accent */}
               <span 
@@ -94,7 +94,7 @@ const Index = () => {
               <p className="caption text-muted-foreground mb-6">
                 {t("philosophy.caption")}
               </p>
-              <h2 className="display-large text-foreground">
+              <h2 className="display-large text-foreground text-shadow-subtle">
                 {t("philosophy.headline")}
               </h2>
             </div>
@@ -127,7 +127,7 @@ const Index = () => {
             <p className="caption text-muted-foreground mb-6">
               {t("approach.caption")}
             </p>
-            <h2 className="display-medium text-foreground mb-16">
+            <h2 className="display-medium text-foreground text-shadow-subtle mb-16">
               {t("approach.headline")}
             </h2>
           </div>
@@ -161,7 +161,7 @@ const Index = () => {
       <section className="py-section px-6 lg:px-12 bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h2 className="display-large text-foreground">
+            <h2 className="display-large text-foreground text-shadow-subtle">
               {t("vision.headline")}
             </h2>
             <p className="body-large text-muted-foreground max-w-2xl mx-auto">
@@ -175,7 +175,7 @@ const Index = () => {
       <section className="py-section px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-12">
-            <h2 className="display-large text-foreground">
+            <h2 className="display-large text-foreground text-shadow-subtle">
               {t("cta.headline")}
             </h2>
             <Link 
