@@ -7,7 +7,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PortalHeader, EvaluacionesTab, PagosTab, CitasTab } from "@/components/portal";
+import { PortalHeader, EvaluacionesTab, PagosTab, CitasTab, TratamientosTab, DocumentosTab } from "@/components/portal";
 
 /* ─── RUT helpers ─── */
 function formatRutInput(value: string): string {
@@ -62,6 +62,15 @@ interface PatientData {
     status: string;
     created_at: string;
     ia_scan_result?: Record<string, unknown> | null;
+  }>;
+  consents: Array<{
+    id: string;
+    consent_type: string;
+    accepted: boolean;
+    accepted_at: string | null;
+    consent_text: string | null;
+    version: string;
+    created_at: string;
   }>;
   dentalink_patient: Record<string, unknown> | null;
   dentalink_treatments: Array<Record<string, unknown>>;
@@ -155,6 +164,52 @@ function mapToPagos(data: PatientData) {
     ia_ruta_sugerida: null as string | null,
     created_at: pay.created_at,
   }));
+}
+
+function mapToTratamientos(data: PatientData) {
+  return data.dentalink_treatments.map((tto) => ({
+    nombre: (tto as Record<string, string>).nombre || (tto as Record<string, string>).name || 'Tratamiento',
+    estado: (tto as Record<string, string>).estado || (tto as Record<string, string>).status || '',
+    fecha_inicio: (tto as Record<string, string>).fecha_inicio || (tto as Record<string, string>).start_date || undefined,
+    fecha_fin: (tto as Record<string, string>).fecha_fin || (tto as Record<string, string>).end_date || undefined,
+    profesional: (tto as Record<string, string>).profesional || (tto as Record<string, string>).professional || undefined,
+    descripcion: (tto as Record<string, string>).descripcion || (tto as Record<string, string>).description || undefined,
+    piezas: (tto as Record<string, string>).piezas || (tto as Record<string, string>).teeth || undefined,
+  }));
+}
+
+function mapToDocumentos(data: PatientData) {
+  const fromFiles = data.dentalink_files.map((file, i) => ({
+    id: `file-${i}`,
+    nombre: (file as Record<string, string>).nombre || (file as Record<string, string>).name || `Archivo ${i + 1}`,
+    tipo: 'archivo_clinico' as const,
+    url: (file as Record<string, string>).url || (file as Record<string, string>).link || null,
+    fecha: (file as Record<string, string>).fecha || (file as Record<string, string>).created_at || data.created_at,
+  }));
+
+  const fromConsents = (data.consents || [])
+    .filter(c => c.accepted)
+    .map(c => ({
+      id: c.id,
+      nombre: getConsentLabel(c.consent_type),
+      tipo: 'consentimiento' as const,
+      url: null as string | null,
+      fecha: c.accepted_at || c.created_at,
+      version: c.version,
+    }));
+
+  return [...fromConsents, ...fromFiles];
+}
+
+function getConsentLabel(type: string): string {
+  const labels: Record<string, string> = {
+    'tratamiento': 'Consentimiento de tratamiento',
+    'datos_personales': 'Consentimiento de datos personales',
+    'evaluacion': 'Consentimiento de evaluación',
+    'privacy': 'Política de privacidad',
+    'terms': 'Términos y condiciones',
+  };
+  return labels[type] || `Consentimiento: ${type}`;
 }
 
 const Portal = () => {
@@ -402,54 +457,13 @@ const Portal = () => {
                 </p>
               </div>
 
-              {/* Dentalink treatments summary */}
-              {patientData.dentalink_treatments.length > 0 && (
-                <div className="mb-6 p-4 border border-gold-muted/20 bg-gold-muted/5 rounded-lg">
-                  <p className="caption text-gold-muted tracking-widest mb-2">TRATAMIENTOS EN CURSO (DENTALINK)</p>
-                  <div className="space-y-2">
-                    {patientData.dentalink_treatments.slice(0, 3).map((tto, i) => (
-                      <div key={i} className="flex items-center justify-between text-sm">
-                        <span className="text-foreground">
-                          {(tto as Record<string, string>).nombre || (tto as Record<string, string>).name || `Tratamiento ${i + 1}`}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {(tto as Record<string, string>).estado || (tto as Record<string, string>).status || ''}
-                        </span>
-                      </div>
-                    ))}
-                    {patientData.dentalink_treatments.length > 3 && (
-                      <p className="text-xs text-muted-foreground">
-                        +{patientData.dentalink_treatments.length - 3} más
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Dentalink files */}
-              {patientData.dentalink_files.length > 0 && (
-                <div className="mb-6 p-4 border border-border rounded-lg">
-                  <p className="caption text-muted-foreground tracking-widest mb-2">ARCHIVOS CLÍNICOS</p>
-                  <div className="flex flex-wrap gap-2">
-                    {patientData.dentalink_files.slice(0, 5).map((file, i) => (
-                      <span key={i} className="text-xs px-3 py-1 bg-secondary rounded-full text-muted-foreground">
-                        {(file as Record<string, string>).nombre || (file as Record<string, string>).name || `Archivo ${i + 1}`}
-                      </span>
-                    ))}
-                    {patientData.dentalink_files.length > 5 && (
-                      <span className="text-xs px-3 py-1 bg-secondary rounded-full text-muted-foreground">
-                        +{patientData.dentalink_files.length - 5}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
               <Tabs defaultValue="citas" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="citas">Citas</TabsTrigger>
-                  <TabsTrigger value="evaluaciones">Evaluaciones</TabsTrigger>
-                  <TabsTrigger value="pagos">Pagos</TabsTrigger>
+                <TabsList className="flex w-full overflow-x-auto">
+                  <TabsTrigger value="citas" className="flex-1 min-w-0 text-xs sm:text-sm">Citas</TabsTrigger>
+                  <TabsTrigger value="evaluaciones" className="flex-1 min-w-0 text-xs sm:text-sm">Evaluaciones</TabsTrigger>
+                  <TabsTrigger value="tratamientos" className="flex-1 min-w-0 text-xs sm:text-sm">Tratamientos</TabsTrigger>
+                  <TabsTrigger value="pagos" className="flex-1 min-w-0 text-xs sm:text-sm">Pagos</TabsTrigger>
+                  <TabsTrigger value="documentos" className="flex-1 min-w-0 text-xs sm:text-sm">Documentos</TabsTrigger>
                 </TabsList>
                 <TabsContent value="citas" className="mt-6">
                   <CitasTab citas={mapToCitas(patientData)} isLoading={false} />
@@ -457,8 +471,14 @@ const Portal = () => {
                 <TabsContent value="evaluaciones" className="mt-6">
                   <EvaluacionesTab evaluaciones={mapToEvaluaciones(patientData)} isLoading={false} />
                 </TabsContent>
+                <TabsContent value="tratamientos" className="mt-6">
+                  <TratamientosTab tratamientos={mapToTratamientos(patientData)} isLoading={false} />
+                </TabsContent>
                 <TabsContent value="pagos" className="mt-6">
                   <PagosTab pagos={mapToPagos(patientData)} isLoading={false} />
+                </TabsContent>
+                <TabsContent value="documentos" className="mt-6">
+                  <DocumentosTab documentos={mapToDocumentos(patientData)} isLoading={false} />
                 </TabsContent>
               </Tabs>
             </motion.div>
