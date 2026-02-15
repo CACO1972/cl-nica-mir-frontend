@@ -50,7 +50,7 @@ const translations: Record<string, Record<string, string>> = {
   es: {
     "services.caption": "Tratamientos Exclusivos",
     "services.headline": "Excelencia en cada detalle",
-    "services.diagnostic.title": "Diagnóstico Avanzado",
+    "services.diagnostic.title": "Evaluación Miró IA",
     "services.diagnostic.desc": "Tomografía 3D, escáner intraoral y análisis predictivo para un diagnóstico preciso antes de cualquier intervención.",
     "services.aesthetic.title": "Estética Dental",
     "services.aesthetic.desc": "Diseño de sonrisa digital, carillas de porcelana y blanqueamiento de última generación.",
@@ -66,7 +66,7 @@ const translations: Record<string, Record<string, string>> = {
   en: {
     "services.caption": "Exclusive Treatments",
     "services.headline": "Excellence in every detail",
-    "services.diagnostic.title": "Advanced Diagnostics",
+    "services.diagnostic.title": "Miró AI Evaluation",
     "services.diagnostic.desc": "3D tomography, intraoral scanner and predictive analysis for precise diagnosis before any intervention.",
     "services.aesthetic.title": "Dental Aesthetics",
     "services.aesthetic.desc": "Digital smile design, porcelain veneers and state-of-the-art whitening.",
