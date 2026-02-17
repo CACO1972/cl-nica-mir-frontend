@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import ServicesBento from "@/components/ServicesBento";
 import AIEcosystem from "@/components/AIEcosystem";
+import PainPoints from "@/components/PainPoints";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
@@ -78,11 +79,12 @@ const Index = () => {
       {/* Hero Section - Institutional Declaration */}
       <section className="min-h-[100svh] md:min-h-[110svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)] relative">
         <div className="max-w-7xl mx-auto w-full text-center px-2">
-          {/* Primary headline - maximum visual authority */}
+          {/* Primary headline - emotional declaration */}
           <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
             <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block leading-[0.95] text-shadow-subtle">
-              La odontología del futuro, hoy.
-              {/* Subtle gold underline accent */}
+              No son dientes.
+              <br />
+              Es dignidad.
               <span 
                 className="absolute -bottom-2 sm:-bottom-4 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-gold-muted/50 to-transparent"
                 style={{ animation: 'fadeIn 1.5s ease-out 1s forwards', opacity: 0 }}
@@ -90,13 +92,17 @@ const Index = () => {
             </h1>
           </div>
           
-          {/* Subheadline - clearly separated, deliberate reading */}
-          <div className="mt-12 sm:mt-16 lg:mt-32 animate-slide-up" style={{ animationDelay: "0.8s", animationFillMode: "both" }}>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-[hsl(0,0%,70%)] tracking-[0.02em] max-w-2xl mx-auto leading-relaxed text-center" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>
-              Aplicamos IA para diagnósticos y tratamientos más precisos, seguros y previsibles. Entiende tu salud dental como nunca antes y llévate un informe detallado de 5 páginas para decidir en familia.
+          {/* Action triad */}
+          <div className="mt-10 sm:mt-14 animate-slide-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+            <p className="text-lg sm:text-2xl md:text-3xl text-gold tracking-[0.15em] text-center" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: '0.2em' }}>
+              Repara · Recupera · Revive
             </p>
-            <p className="mt-10 sm:mt-14 text-lg sm:text-xl md:text-2xl text-gold tracking-[0.02em] text-center leading-snug max-w-xl mx-auto" style={{ fontFamily: "'Lora', serif", fontWeight: 400, fontStyle: 'italic' }}>
-              En Miró te entendemos: sabemos lo que necesitas para recuperar tu sonrisa.
+          </div>
+
+          {/* Institutional tagline */}
+          <div className="mt-12 sm:mt-20 lg:mt-28 animate-slide-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground tracking-[0.02em] text-center max-w-xl mx-auto leading-relaxed" style={{ fontFamily: "'Lora', serif", fontWeight: 400, fontStyle: 'italic' }}>
+              Miró — La odontología del futuro, hoy.
             </p>
           </div>
         </div>
@@ -133,6 +139,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Pain Points - Problem → Solution */}
+      <PainPoints />
 
       {/* Editorial Break */}
       <section className="py-section-sm px-6 lg:px-12">
