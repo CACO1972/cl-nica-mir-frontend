@@ -313,9 +313,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build URLs
-    const baseUrl = supabaseUrl.replace('.supabase.co', '.lovable.app');
-    const urlReturn = body.success_url || `${baseUrl}/evaluacion/pago-exitoso`;
+    // Build URLs - use frontend-provided success_url
+    const urlReturn = body.success_url || `https://miro-patient-portal.lovable.app/evaluation?payment=success`;
     const urlConfirmation = `${supabaseUrl}/functions/v1/funnel-checkout`;
 
     // Create Flow payment

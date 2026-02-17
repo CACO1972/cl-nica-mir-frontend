@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -16,8 +16,20 @@ const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showWizard, setShowWizard] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  // Handle payment return
+  useEffect(() => {
+    const paymentParam = searchParams.get("payment");
+    if (paymentParam === "success") {
+      setPaymentSuccess(true);
+      // Clean URL
+      window.history.replaceState({}, "", "/evaluation");
+    }
+  }, [searchParams]);
   
   // Check if splash was already seen this session
   const splashAlreadySeen = sessionStorage.getItem(SPLASH_SEEN_KEY) === "true";
@@ -49,6 +61,33 @@ const Evaluation = () => {
     // Trigger content entrance animation
     setTimeout(() => setContentVisible(true), 100);
   };
+
+  // Payment success screen
+  if (paymentSuccess) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
+        <div className="max-w-lg text-center space-y-8">
+          <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
+            <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <h1 className="display-medium text-foreground">
+            {language === "es" ? "¡Pago confirmado!" : "Payment confirmed!"}
+          </h1>
+          <p className="body-large text-muted-foreground">
+            {language === "es" 
+              ? "Tu evaluación premium ha sido reservada. Te contactaremos pronto para agendar tu cita."
+              : "Your premium evaluation has been booked. We'll contact you soon to schedule your appointment."}
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="editorial-link caption text-muted-foreground hover:text-gold transition-colors tracking-widest"
+          >
+            {language === "es" ? "VOLVER AL INICIO →" : "BACK TO HOME →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // If wizard is active, show it full screen
   if (showWizard) {
