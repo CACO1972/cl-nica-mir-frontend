@@ -11,8 +11,7 @@ import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
-import logoMDark from "@/assets/logo-m-dark.jpg";
-import logoMLight from "@/assets/logo-m-light.svg";
+import logoMiroHeader from "@/assets/logo-miro-header.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 
@@ -39,19 +38,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="flex items-center">
-              {theme === 'dark' ? (
-                <img
-                  src={logoMDark}
-                  alt="Clínica Miró"
-                  className="h-12 w-12 rounded-full object-cover object-center"
-                />
-              ) : (
-                <img
-                  src={logoMLight}
-                  alt="Clínica Miró"
-                  className="h-12 w-auto object-contain"
-                />
-              )}
+              <img
+                src={logoMiroHeader}
+                alt="Clínica Miró"
+                className="h-14 w-auto object-contain"
+              />
             </Link>
             <div className="flex items-center gap-6">
               <Link
