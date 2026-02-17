@@ -104,11 +104,28 @@ const Index = () => {
             </h1>
           </div>
           
-          {/* Action triad */}
-          <div className="mt-10 sm:mt-14 animate-slide-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
-            <p className="text-lg sm:text-2xl md:text-3xl text-gold tracking-[0.15em] text-center" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: '0.2em' }}>
-              Repara · Recupera · Revive
-            </p>
+          {/* Action triad — crescendo */}
+          <div className="mt-10 sm:mt-14 animate-slide-up flex items-baseline justify-center gap-2 sm:gap-3" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+            <span
+              className="text-base sm:text-lg md:text-xl text-gold-muted tracking-[0.2em]"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, opacity: 0.6 }}
+            >
+              Repara
+            </span>
+            <span className="text-gold-muted/40 tracking-widest text-sm">·</span>
+            <span
+              className="text-lg sm:text-2xl md:text-3xl text-gold tracking-[0.18em]"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, opacity: 0.8 }}
+            >
+              Recupera
+            </span>
+            <span className="text-gold/40 tracking-widest text-sm">·</span>
+            <span
+              className="text-2xl sm:text-3xl md:text-4xl text-gold tracking-[0.15em]"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+            >
+              Revive
+            </span>
           </div>
 
           {/* Institutional tagline */}
