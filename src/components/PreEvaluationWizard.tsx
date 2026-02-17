@@ -562,9 +562,18 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
         </label>
       </div>
       {formData.imageFile && (
-        <p className="body-small text-foreground">
-          {t("wizard.step4.selected")}: {formData.imageFile.name}
-        </p>
+        <div className="space-y-3">
+          <div className="relative max-w-xs overflow-hidden rounded border border-border">
+            <img
+              src={URL.createObjectURL(formData.imageFile)}
+              alt="Vista previa"
+              className="w-full h-auto max-h-64 object-contain bg-secondary"
+            />
+          </div>
+          <p className="body-small text-muted-foreground">
+            {t("wizard.step4.selected")}: {formData.imageFile.name}
+          </p>
+        </div>
       )}
     </div>
   );
