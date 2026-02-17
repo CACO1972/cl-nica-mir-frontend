@@ -4,7 +4,7 @@ const painPoints = [
   {
     problem: "Entre 40% y 80% de los tratamientos nunca se completan.",
     detail: "Solo el 34% de los tratamientos presentados son aceptados por los pacientes, y de ellos, no todos llegan a completarse. El miedo, el costo y la incertidumbre son las principales barreras.",
-    solution: "Miró reduce esa incertidumbre con un informe visual predictivo que te permite decidir con datos, no con fe ciega.",
+    solution: "Aquí entra el primer motor inteligente de Miró: ya no tendrás que «creerle» a uno u otro dentista. Nuestra IA tiene una sensibilidad de 0.85 y especificidad de 0.90, superando al dentista promedio en detección temprana.",
     source: "Jarvis Analytics · Levin Group Data Center · Martin et al., Frontiers in Public Health, 2017",
   },
   {
