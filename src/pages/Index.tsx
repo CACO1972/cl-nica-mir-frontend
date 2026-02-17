@@ -135,15 +135,6 @@ const Index = () => {
             </p>
           </div>
 
-          {/* CTA Button */}
-          <div className="mt-10 sm:mt-12 flex items-center justify-center animate-slide-up" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
-            <button
-              onClick={() => document.querySelector('#como-trabajamos')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-3 border border-border text-foreground text-sm tracking-widest caption hover:border-gold-muted hover:text-gold transition-colors duration-300"
-            >
-              Conoce cómo trabajamos
-            </button>
-          </div>
         </div>
         
         {/* Minimal scroll indicator */}
