@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
+import AudioToggleButton from "@/components/AudioToggleButton";
+import audioSplashSrc from "@/assets/audio_splash.mp3";
+import audioCloseSrc from "@/assets/audio_close.mp3";
 
 interface EvaluationSplashProps {
   onComplete: () => void;
@@ -228,6 +232,21 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
   const [phase, setPhase] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
+  // Audio: pitch emocional IA — autoplay with fade-in
+  const splashAudio = useAutoplayAudio({
+    src: audioSplashSrc,
+    autoplay: true,
+    fadeInMs: 1500,
+    volume: 0.85,
+  });
+
+  // Audio: close transition sound
+  const closeAudio = useAutoplayAudio({
+    src: audioCloseSrc,
+    autoplay: false,
+    volume: 0.6,
+  });
+
   // Generate random particles
   const particles = Array.from({ length: 30 }, (_, i) => ({
     id: i,
@@ -264,6 +283,9 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
       setTimeout(() => setPhase(6), 8500),   // Show fourth message
       setTimeout(() => {
         setIsExiting(true);
+        splashAudio.fadeOut(() => {
+          closeAudio.play();
+        });
         setTimeout(onComplete, 1200);
       }, 11000) // Exit
     ];
@@ -273,8 +295,11 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
 
   const handleSkip = useCallback(() => {
     setIsExiting(true);
+    splashAudio.fadeOut(() => {
+      closeAudio.play();
+    });
     setTimeout(onComplete, 800);
-  }, [onComplete]);
+  }, [onComplete, splashAudio, closeAudio]);
 
   return (
     <motion.div
@@ -356,6 +381,15 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
           ))}
         </motion.div>
       </div>
+
+      {/* Audio toggle button */}
+      <AudioToggleButton
+        isPlaying={splashAudio.isPlaying}
+        blocked={splashAudio.blocked}
+        onToggle={splashAudio.toggle}
+        onUnblock={splashAudio.play}
+        position="bottom-left"
+      />
 
       {/* Skip button */}
       <motion.button

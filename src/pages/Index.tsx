@@ -5,12 +5,23 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronDown } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import ServicesBento from "@/components/ServicesBento";
+import AudioToggleButton from "@/components/AudioToggleButton";
+import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
+import audioMainSrc from "@/assets/audio_main.mp3";
 
 const Index = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Audio: teaser 3D — autoplay with fade-in on landing
+  const heroAudio = useAutoplayAudio({
+    src: audioMainSrc,
+    autoplay: true,
+    fadeInMs: 2000,
+    volume: 0.7,
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
@@ -53,6 +64,15 @@ const Index = () => {
           </div>
         </div>
       </header>
+
+      {/* Audio toggle */}
+      <AudioToggleButton
+        isPlaying={heroAudio.isPlaying}
+        blocked={heroAudio.blocked}
+        onToggle={heroAudio.toggle}
+        onUnblock={heroAudio.play}
+        position="bottom-left"
+      />
 
       {/* Hero Section - Institutional Declaration */}
       <section className="min-h-[100svh] md:min-h-[110svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)] relative">
