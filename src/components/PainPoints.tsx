@@ -2,19 +2,22 @@ import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 
 const painPoints = [
   {
-    problem: "No es el precio. Es la incertidumbre.",
-    detail: "Vas a tres dentistas, te dan tres diagnósticos distintos. No sabes en quién confiar ni qué tratamiento es el correcto.",
-    solution: "En Miró, la IA analiza tu caso con datos objetivos. Te entregamos un informe visual de 5 páginas para que decidas con claridad, no con fe ciega.",
+    problem: "Entre 40% y 80% de los tratamientos nunca se completan.",
+    detail: "El miedo, el costo y la incertidumbre hacen que la mayoría de los pacientes abandone antes de terminar. Solo el 34% de los tratamientos presentados llega al calendario.",
+    solution: "Miró reduce esa incertidumbre con un informe visual predictivo que te permite decidir con datos, no con fe ciega.",
+    source: "Jarvis Analytics · Levin Group Data Center · Martin et al., Frontiers in Public Health, 2017",
   },
   {
-    problem: "No entiendes porque no te explican.",
-    detail: "Te hablan en jerga técnica, te muestran una radiografía que no entiendes y te piden que decidas en el momento.",
-    solution: "Te mostramos tu caso en imágenes 3D, te explicamos cada alternativa sobre tu propia boca y te damos tiempo para decidir en familia.",
+    problem: "Un mismo paciente puede recibir presupuestos con diferencia de 20x.",
+    detail: "136 dentistas de 14 países evaluaron la misma radiografía: no hubo ni un solo caso de acuerdo unánime. Los planes variaron de cientos de dólares a $36,000.",
+    solution: "Nuestra IA estandariza el diagnóstico con sensibilidad de 0.85 y especificidad de 0.90, superando al dentista promedio en detección temprana.",
+    source: "Dental AI Council, 2020 · Garcia Cantu et al., Journal of Dentistry, 2020",
   },
   {
-    problem: "El financiamiento es opaco.",
-    detail: "No sabes cuánto cuesta realmente, qué incluye, ni si hay opciones de pago. La letra chica aparece después.",
-    solution: "Transparencia total: el costo real de cada opción, formas de pago disponibles y sin sorpresas. Todo antes de comprometerte.",
+    problem: "América Latina tiene la mayor carga de enfermedad oral del mundo.",
+    detail: "Más de la mitad de los niños de la región tiene caries. En adultos mayores, las necesidades dentales no satisfechas llegan hasta el 98.4%.",
+    solution: "La odontología predictiva democratiza el diagnóstico de calidad en la región que más lo necesita.",
+    source: "Global Burden of Disease 2021, The Lancet · Gimenez et al., PLOS ONE, 2016",
   },
 ];
 
@@ -27,15 +30,15 @@ const PainPoints = () => {
         {/* Section header */}
         <div className="text-center mb-16 lg:mb-24">
           <p className="caption text-gold-muted tracking-widest mb-6">
-            El problema real
+            La evidencia
           </p>
           <h2
             className="display-medium text-foreground text-shadow-subtle max-w-3xl mx-auto"
             style={{ fontFamily: "'Lora', serif", fontStyle: "italic" }}
           >
-            Muchas veces no es el precio.
+            Datos que respaldan
             <br />
-            Es no saber si te están diciendo la verdad.
+            una nueva forma de diagnosticar.
           </h2>
         </div>
 
@@ -69,6 +72,11 @@ const PainPoints = () => {
               {/* Solution */}
               <p className="body-small text-foreground/80 leading-relaxed">
                 {item.solution}
+              </p>
+
+              {/* Source */}
+              <p className="mt-4 text-[10px] text-muted-foreground/50 leading-relaxed tracking-wide">
+                {item.source}
               </p>
             </div>
           ))}
