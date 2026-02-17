@@ -33,7 +33,7 @@ const Index = () => {
       <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Minimal Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/30">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="caption text-foreground tracking-widest font-medium">
