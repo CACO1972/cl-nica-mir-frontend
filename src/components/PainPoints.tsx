@@ -9,7 +9,7 @@ const painPoints = [
   },
   {
     problem: "Un mismo paciente puede recibir presupuestos con diferencia de 20x.",
-    detail: "136 dentistas de 14 países evaluaron la misma radiografía: no hubo ni un solo caso de acuerdo unánime. Los planes variaron desde unos cientos de miles de pesos hasta más de $28.000.000 CLP.",
+    detail: "136 dentistas de 14 países evaluaron la misma radiografía de boca completa: no hubo ni un solo caso de acuerdo unánime sobre la presencia de caries. Para el mismo paciente, un dentista propuso un plan de $200.000 CLP y otro uno de $28.000.000 CLP.",
     solution: "Aquí entra el segundo motor inteligente de Miró: un copiloto de asistencia clínica que muestra en vivo los tratamientos con mayores probabilidades de éxito para cada paciente específico.",
     source: "Dental AI Council, 2020 · Garcia Cantu et al., Journal of Dentistry, 2020",
   },
