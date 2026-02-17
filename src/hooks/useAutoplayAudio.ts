@@ -23,20 +23,13 @@ export function useAutoplayAudio({
   const [isPlaying, setIsPlaying] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Prevent double-play from StrictMode double-mount
-  const hasAttemptedAutoplay = useRef(false);
-  const isUnmounted = useRef(false);
-
-  const clearFade = useCallback(() => {
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current);
-      fadeIntervalRef.current = null;
-    }
-  }, []);
+  // Guards against StrictMode double-mount and unmounted updates
+  const mountedRef = useRef(false);
+  const playedOnceRef = useRef(false);
 
   // Create audio element once
   useEffect(() => {
-    isUnmounted.current = false;
+    mountedRef.current = true;
 
     const audio = new Audio(src);
     audio.loop = loop;
@@ -45,28 +38,26 @@ export function useAutoplayAudio({
     audioRef.current = audio;
 
     const handleEnded = () => {
-      if (!isUnmounted.current) {
-        setIsPlaying(false);
-        onEnded?.();
-      }
+      if (mountedRef.current) setIsPlaying(false);
+      onEnded?.();
     };
     audio.addEventListener("ended", handleEnded);
 
     return () => {
-      isUnmounted.current = true;
-      clearFade();
+      mountedRef.current = false;
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
       audio.removeEventListener("ended", handleEnded);
       audio.pause();
       audio.src = "";
       audioRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
 
   const fadeIn = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || fadeInMs <= 0) return;
-    clearFade();
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
     audio.volume = 0;
     const steps = 20;
@@ -75,35 +66,33 @@ export function useAutoplayAudio({
     let current = 0;
 
     fadeIntervalRef.current = setInterval(() => {
-      if (!audioRef.current) { clearFade(); return; }
+      const a = audioRef.current;
+      if (!a) { clearInterval(fadeIntervalRef.current!); return; }
       current += stepVolume;
       if (current >= volume) {
-        audioRef.current.volume = volume;
-        clearFade();
+        a.volume = volume;
+        clearInterval(fadeIntervalRef.current!);
+        fadeIntervalRef.current = null;
       } else {
-        audioRef.current.volume = current;
+        a.volume = current;
       }
     }, stepTime);
-  }, [fadeInMs, volume, clearFade]);
+  }, [fadeInMs, volume]);
 
   const play = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    // Reset to beginning if ended
-    if (audio.ended) {
-      audio.currentTime = 0;
-    }
+    if (audio.ended) audio.currentTime = 0;
 
     try {
       await audio.play();
-      if (!isUnmounted.current) {
+      if (mountedRef.current) {
         setIsPlaying(true);
         setBlocked(false);
         if (fadeInMs > 0) fadeIn();
       }
     } catch {
-      if (!isUnmounted.current) {
+      if (mountedRef.current) {
         setBlocked(true);
         setIsPlaying(false);
       }
@@ -112,34 +101,35 @@ export function useAutoplayAudio({
 
   const fadeOut = useCallback((onComplete?: () => void) => {
     const audio = audioRef.current;
-    clearFade();
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
     if (!audio || fadeOutMs <= 0) {
       audio?.pause();
-      if (!isUnmounted.current) setIsPlaying(false);
+      if (mountedRef.current) setIsPlaying(false);
       onComplete?.();
       return;
     }
 
     const steps = 20;
     const stepTime = fadeOutMs / steps;
-    const startVol = audio.volume;
-    const stepVolume = startVol / steps;
+    const stepVolume = audio.volume / steps;
 
     fadeIntervalRef.current = setInterval(() => {
-      if (!audioRef.current) { clearFade(); return; }
-      const newVol = audioRef.current.volume - stepVolume;
+      const a = audioRef.current;
+      if (!a) { clearInterval(fadeIntervalRef.current!); return; }
+      const newVol = a.volume - stepVolume;
       if (newVol <= 0) {
-        audioRef.current.volume = 0;
-        audioRef.current.pause();
-        clearFade();
-        if (!isUnmounted.current) setIsPlaying(false);
+        a.volume = 0;
+        a.pause();
+        clearInterval(fadeIntervalRef.current!);
+        fadeIntervalRef.current = null;
+        if (mountedRef.current) setIsPlaying(false);
         onComplete?.();
       } else {
-        audioRef.current.volume = newVol;
+        a.volume = newVol;
       }
     }, stepTime);
-  }, [fadeOutMs, clearFade]);
+  }, [fadeOutMs]);
 
   const stop = useCallback(() => fadeOut(), [fadeOut]);
 
@@ -148,13 +138,13 @@ export function useAutoplayAudio({
     else play();
   }, [isPlaying, play, stop]);
 
-  // Attempt autoplay — only once, guarded against StrictMode double-mount
+  // Autoplay — guarded with playedOnceRef to prevent StrictMode double-fire
   useEffect(() => {
-    if (autoplay && !hasAttemptedAutoplay.current) {
-      hasAttemptedAutoplay.current = true;
+    if (autoplay && !playedOnceRef.current) {
+      playedOnceRef.current = true;
       play();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { isPlaying, blocked, play, stop, fadeOut, toggle, audioRef };
