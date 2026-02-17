@@ -10,6 +10,7 @@ import PainPoints from "@/components/PainPoints";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
+import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 const Index = () => {
@@ -79,7 +80,11 @@ const Index = () => {
       {/* Hero Section - Institutional Declaration */}
       <section className="min-h-[100svh] md:min-h-[110svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 bg-background dark:bg-[hsl(0,0%,6%)] relative">
         <div className="max-w-7xl mx-auto w-full text-center px-2">
-          {/* Primary headline - emotional declaration */}
+          {/* Logo */}
+          <div className="animate-slide-up mb-8" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
+            <img src={logoHero} alt="Clínica Miró" className="h-32 sm:h-44 md:h-56 lg:h-64 w-auto mx-auto" />
+          </div>
+          
           <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
             <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block leading-[0.95] text-shadow-subtle">
               No son dientes.
