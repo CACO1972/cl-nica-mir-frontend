@@ -7,6 +7,7 @@ import MenuOverlay from "@/components/MenuOverlay";
 import ServicesBento from "@/components/ServicesBento";
 import AIEcosystem from "@/components/AIEcosystem";
 import PainPoints from "@/components/PainPoints";
+import FutureVarianceBlock from "@/components/FutureVarianceBlock";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
@@ -153,6 +154,9 @@ const Index = () => {
 
       {/* Pain Points - Problem → Solution */}
       <PainPoints />
+
+      {/* Future Variance Block */}
+      <FutureVarianceBlock />
 
       {/* Editorial Break */}
       <section className="py-section-sm px-6 lg:px-12">
