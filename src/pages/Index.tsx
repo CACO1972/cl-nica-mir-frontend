@@ -12,6 +12,7 @@ import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import logoMDark from "@/assets/logo-m-dark.jpg";
+import logoMLight from "@/assets/logo-m-light.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 
@@ -38,11 +39,19 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="flex items-center">
-              <img
-                src={logoMDark}
-                alt="Clínica Miró"
-                className={`h-10 w-10 rounded-full object-cover object-center transition-all duration-300 ${theme === 'light' ? '[mix-blend-mode:multiply]' : ''}`}
-              />
+              {theme === 'dark' ? (
+                <img
+                  src={logoMDark}
+                  alt="Clínica Miró"
+                  className="h-12 w-12 rounded-full object-cover object-center"
+                />
+              ) : (
+                <img
+                  src={logoMLight}
+                  alt="Clínica Miró"
+                  className="h-12 w-auto object-contain"
+                />
+              )}
             </Link>
             <div className="flex items-center gap-6">
               <Link
