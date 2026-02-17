@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronDown } from "lucide-react";
@@ -84,63 +85,151 @@ const Index = () => {
         position="bottom-left"
       />
 
-      {/* Hero Section - Institutional Declaration */}
-      <section className="min-h-[100svh] md:min-h-[110svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 relative overflow-hidden bg-background">
-        <div className="max-w-7xl mx-auto w-full text-center px-2 relative z-10">
-          {/* Logo */}
-          <div className="animate-slide-up mb-8" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-            <img src={logoHero} alt="Clínica Miró" className="h-32 sm:h-44 md:h-56 lg:h-64 w-auto mx-auto" />
-          </div>
-          
-          <div className="animate-slide-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
-            <h1 className="display-institutional text-foreground dark:text-[hsl(30,10%,96%)] relative inline-block leading-[0.95] text-shadow-subtle">
-              No son dientes.
-              <br />
-              Es dignidad.
-              <span 
-                className="absolute -bottom-2 sm:-bottom-4 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-gold-muted/50 to-transparent"
-                style={{ animation: 'fadeIn 1.5s ease-out 1s forwards', opacity: 0 }}
-              />
-            </h1>
-          </div>
-          
-          {/* Action triad — crescendo */}
-          <div className="mt-10 sm:mt-14 animate-slide-up flex items-baseline justify-center gap-2 sm:gap-3" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
-            <span
-              className="text-base sm:text-lg md:text-xl text-gold-muted tracking-[0.2em]"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, opacity: 0.6 }}
-            >
-              Repara
-            </span>
-            <span className="text-gold-muted/40 tracking-widest text-sm">·</span>
-            <span
-              className="text-lg sm:text-2xl md:text-3xl text-gold tracking-[0.18em]"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, opacity: 0.8 }}
-            >
-              Recupera
-            </span>
-            <span className="text-gold/40 tracking-widest text-sm">·</span>
-            <span
-              className="text-2xl sm:text-3xl md:text-4xl text-gold tracking-[0.15em]"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
-            >
-              Revive
-            </span>
-          </div>
+      {/* Hero Section — Futuristic Clinical Interface */}
+      <section className="min-h-[100svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 relative overflow-hidden bg-background">
 
-          {/* Institutional tagline */}
-          <div className="mt-12 sm:mt-16 animate-slide-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground tracking-[0.02em] text-center max-w-xl mx-auto leading-relaxed" style={{ fontFamily: "'Lora', serif", fontWeight: 400, fontStyle: 'italic' }}>
-              Miró — La odontología del futuro, hoy.
-            </p>
-          </div>
-
+        {/* Background grid — scanline aesthetic */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden>
+          {/* Horizontal scan line */}
+          <motion.div
+            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent"
+            initial={{ top: "20%", opacity: 0 }}
+            animate={{ top: ["20%", "80%", "20%"], opacity: [0, 0.6, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: 2 }}
+          />
+          {/* Corner brackets TL */}
+          <motion.div
+            className="absolute top-24 left-6 sm:left-12 w-8 h-8 border-t border-l border-gold/20"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          />
+          {/* Corner brackets BR */}
+          <motion.div
+            className="absolute bottom-24 right-6 sm:right-12 w-8 h-8 border-b border-r border-gold/20"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          />
+          {/* Coordinate labels */}
+          <motion.span
+            className="absolute top-[6.5rem] left-6 sm:left-12 text-[9px] tracking-[0.3em] text-gold/30 font-mono"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
+          >
+            CL · MR · 2025
+          </motion.span>
+          <motion.span
+            className="absolute bottom-[6rem] right-6 sm:right-12 text-[9px] tracking-[0.3em] text-gold/30 font-mono"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
+          >
+            AI · v2.0
+          </motion.span>
         </div>
-        
-        {/* Minimal scroll indicator */}
-        <div className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 animate-fade-in" style={{ animationDelay: "1.5s", animationFillMode: "both" }}>
+
+        {/* Main content — strict vertical rhythm */}
+        <div className="max-w-5xl mx-auto w-full text-center relative z-10 flex flex-col items-center gap-0">
+
+          {/* Status tag — clinical precision */}
+          <motion.div
+            className="flex items-center gap-2 mb-10"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+            <span className="text-[10px] tracking-[0.4em] text-gold-muted font-mono uppercase">
+              Sistema Activo · Santiago, Chile
+            </span>
+          </motion.div>
+
+          {/* Logo — centered, breathing */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-12"
+          >
+            <img
+              src={logoHero}
+              alt="Clínica Miró"
+              className="h-28 sm:h-40 md:h-52 lg:h-60 w-auto mx-auto"
+            />
+          </motion.div>
+
+          {/* Horizontal rule — precise separator */}
+          <motion.div
+            className="w-full max-w-xs h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent mb-10"
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          />
+
+          {/* Headline — absolute declaration */}
+          <motion.h1
+            className="display-institutional text-foreground leading-[0.92] text-shadow-subtle"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+          >
+            No son dientes.
+            <br />
+            <span className="italic">Es dignidad.</span>
+          </motion.h1>
+
+          {/* Triad — calibrated crescendo */}
+          <motion.div
+            className="flex items-baseline justify-center gap-3 sm:gap-5 mt-10 sm:mt-14"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3, duration: 0.8 }}
+          >
+            {[
+              { word: "Repara",   size: "text-sm sm:text-base md:text-lg", weight: 300, opacity: 0.5 },
+              { word: "Recupera", size: "text-base sm:text-xl md:text-2xl", weight: 400, opacity: 0.75 },
+              { word: "Revive",   size: "text-xl sm:text-3xl md:text-4xl", weight: 600, opacity: 1 },
+            ].map((item, i) => (
+              <motion.span
+                key={item.word}
+                className={`${item.size} text-gold tracking-[0.2em]`}
+                style={{ fontFamily: "'Inter', sans-serif", fontWeight: item.weight, opacity: item.opacity }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: item.opacity, y: 0 }}
+                transition={{ delay: 1.35 + i * 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {item.word}
+                {i < 2 && (
+                  <span className="ml-3 sm:ml-5 text-gold/25 font-light">·</span>
+                )}
+              </motion.span>
+            ))}
+          </motion.div>
+
+          {/* Tagline */}
+          <motion.p
+            className="mt-10 text-sm sm:text-base text-muted-foreground tracking-wide max-w-sm mx-auto"
+            style={{ fontFamily: "'Lora', serif", fontStyle: "italic" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.7, duration: 0.8 }}
+          >
+            La odontología del futuro, hoy.
+          </motion.p>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.2, duration: 0.8 }}
+        >
           <ChevronDown className="w-4 h-4 text-muted-foreground/30 animate-gentle-bounce" strokeWidth={1} />
-        </div>
+        </motion.div>
       </section>
 
       {/* Bloque 2 — El Problema */}
