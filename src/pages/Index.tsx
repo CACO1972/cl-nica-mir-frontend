@@ -112,10 +112,26 @@ const Index = () => {
           </div>
 
           {/* Institutional tagline */}
-          <div className="mt-12 sm:mt-20 lg:mt-28 animate-slide-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
+          <div className="mt-12 sm:mt-16 animate-slide-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground tracking-[0.02em] text-center max-w-xl mx-auto leading-relaxed" style={{ fontFamily: "'Lora', serif", fontWeight: 400, fontStyle: 'italic' }}>
               Miró — La odontología del futuro, hoy.
             </p>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
+            <Link
+              to="/evaluation"
+              className="px-8 py-3 bg-gold text-background text-sm tracking-widest caption hover:bg-gold-muted transition-colors duration-300"
+            >
+              Comienza tu evaluación
+            </Link>
+            <button
+              onClick={() => document.querySelector('#como-trabajamos')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-8 py-3 border border-border text-foreground text-sm tracking-widest caption hover:border-gold-muted hover:text-gold transition-colors duration-300"
+            >
+              Conoce cómo trabajamos
+            </button>
           </div>
         </div>
         
@@ -125,34 +141,65 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Philosophy Section */}
-      <section className="py-section px-6 lg:px-12">
+      {/* Bloque 2 — El Problema */}
+      <section id="como-trabajamos" className="py-section px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
             <div className="lg:sticky lg:top-32">
-              <p className="caption text-muted-foreground mb-6">
-                {t("philosophy.caption")}
-              </p>
-              <h2 className="display-large text-foreground text-shadow-subtle">
-                {t("philosophy.headline")}
+              <p className="caption text-muted-foreground mb-6">El Problema</p>
+              <h2 className="display-large text-foreground text-shadow-subtle" style={{ fontFamily: "'Lora', serif" }}>
+                Cuando hay duda,<br />hay abandono.
               </h2>
             </div>
-            <div className="space-y-12 lg:pt-24">
+            <div className="space-y-8 lg:pt-24">
               <p className="body-large text-muted-foreground">
-                {t("philosophy.p1")}
+                Una proporción significativa de tratamientos dentales nunca se completa.
               </p>
               <p className="body-large text-muted-foreground">
-                {t("philosophy.p2")}
+                La literatura documenta variabilidad diagnóstica entre profesionales.
               </p>
-              <p className="body-large text-foreground">
-                {t("philosophy.p3")}
+              <p className="body-large text-muted-foreground">
+                América Latina presenta una de las mayores cargas de enfermedad oral del mundo.
+              </p>
+              <p className="body-large text-foreground font-medium" style={{ fontFamily: "'Lora', serif" }}>
+                El problema no es el precio.<br />Es la incertidumbre.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pain Points - Problem → Solution */}
+      {/* Bloque 3 — La Solución */}
+      <section className="py-section px-6 lg:px-12 bg-secondary">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+            <div className="lg:sticky lg:top-32">
+              <p className="caption text-muted-foreground mb-6">La Solución</p>
+              <h2 className="display-large text-foreground text-shadow-subtle" style={{ fontFamily: "'Lora', serif" }}>
+                Claridad antes de tratarte.
+              </h2>
+            </div>
+            <div className="space-y-8 lg:pt-24">
+              <p className="body-large text-muted-foreground">
+                En Clínica Miró integramos inteligencia clínica avanzada para:
+              </p>
+              <ul className="space-y-3">
+                {["Estandarizar diagnósticos", "Visualizar tu caso con precisión", "Comparar escenarios de tratamiento", "Reducir variabilidad extrema", "Aumentar transparencia"].map((item) => (
+                  <li key={item} className="flex items-center gap-3 body-large text-muted-foreground">
+                    <span className="w-1 h-1 rounded-full bg-gold shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="body-large text-foreground font-medium" style={{ fontFamily: "'Lora', serif" }}>
+                No reemplazamos al dentista.<br />Lo potenciamos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pain Points — Evidencia */}
       <PainPoints />
 
       {/* Future Variance Block */}
@@ -165,41 +212,27 @@ const Index = () => {
         </div>
       </section>
 
-
-
-
       {/* AI Ecosystem Visualization */}
       <AIEcosystem />
 
       {/* Services Bento Grid */}
       <ServicesBento />
 
-      {/* Vision Section */}
+      {/* Vision + CTA Section */}
       <section className="py-section px-6 lg:px-12 bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h2 className="display-large text-foreground text-shadow-subtle">
-              {t("vision.headline")}
+            <h2 className="display-large text-foreground text-shadow-subtle" style={{ fontFamily: "'Lora', serif" }}>
+              Tu sonrisa merece decisiones informadas.
             </h2>
             <p className="body-large text-muted-foreground max-w-2xl mx-auto">
-              {t("vision.subline")}
+              No te vendemos un tratamiento.<br />Te ayudamos a entender tu caso.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-section px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-12">
-            <h2 className="display-large text-foreground text-shadow-subtle">
-              {t("cta.headline")}
-            </h2>
-            <Link 
+            <Link
               to="/evaluation"
-              className="inline-block editorial-link body-small text-foreground hover:text-gold tracking-widest transition-colors"
+              className="inline-block px-10 py-4 bg-gold text-background text-sm tracking-widest caption hover:bg-gold-muted transition-colors duration-300"
             >
-              {t("cta.button")}
+              Empezar evaluación guiada
             </Link>
           </div>
         </div>
