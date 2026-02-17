@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { ChevronDown } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import ServicesBento from "@/components/ServicesBento";
+import AIEcosystem from "@/components/AIEcosystem";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
@@ -142,6 +143,9 @@ const Index = () => {
 
 
 
+
+      {/* AI Ecosystem Visualization */}
+      <AIEcosystem />
 
       {/* Services Bento Grid */}
       <ServicesBento />
