@@ -702,3 +702,9 @@ section {
   transform: scaleX(1);
   transform-origin: left;
 }
+
+/* AI Ecosystem orbital rotation */
+@keyframes ecosystem-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
