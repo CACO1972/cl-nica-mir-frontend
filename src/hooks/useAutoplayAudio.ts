@@ -1,19 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 interface UseAutoplayAudioOptions {
-  /** Audio source (imported asset path) */
   src: string;
-  /** Whether to attempt autoplay immediately */
   autoplay?: boolean;
-  /** Loop the audio */
   loop?: boolean;
-  /** Volume 0-1 */
   volume?: number;
-  /** Fade in duration in ms */
   fadeInMs?: number;
-  /** Fade out duration in ms */
   fadeOutMs?: number;
-  /** Callback when audio ends naturally */
   onEnded?: () => void;
 }
 
@@ -30,32 +23,51 @@ export function useAutoplayAudio({
   const [isPlaying, setIsPlaying] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Prevent double-play from StrictMode double-mount
+  const hasAttemptedAutoplay = useRef(false);
+  const isUnmounted = useRef(false);
 
-  // Create audio element
+  const clearFade = useCallback(() => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+  }, []);
+
+  // Create audio element once
   useEffect(() => {
+    isUnmounted.current = false;
+
     const audio = new Audio(src);
     audio.loop = loop;
     audio.volume = fadeInMs > 0 ? 0 : volume;
     audio.preload = "auto";
     audioRef.current = audio;
 
-    audio.addEventListener("ended", () => {
-      setIsPlaying(false);
-      onEnded?.();
-    });
+    const handleEnded = () => {
+      if (!isUnmounted.current) {
+        setIsPlaying(false);
+        onEnded?.();
+      }
+    };
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+      isUnmounted.current = true;
+      clearFade();
+      audio.removeEventListener("ended", handleEnded);
       audio.pause();
       audio.src = "";
       audioRef.current = null;
     };
-  }, [src, loop]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src]);
 
   const fadeIn = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || fadeInMs <= 0) return;
-    
+    clearFade();
+
     audio.volume = 0;
     const steps = 20;
     const stepTime = fadeInMs / steps;
@@ -63,77 +75,87 @@ export function useAutoplayAudio({
     let current = 0;
 
     fadeIntervalRef.current = setInterval(() => {
+      if (!audioRef.current) { clearFade(); return; }
       current += stepVolume;
       if (current >= volume) {
-        audio.volume = volume;
-        if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+        audioRef.current.volume = volume;
+        clearFade();
       } else {
-        audio.volume = current;
+        audioRef.current.volume = current;
       }
     }, stepTime);
-  }, [fadeInMs, volume]);
+  }, [fadeInMs, volume, clearFade]);
 
   const play = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    // Reset to beginning if ended
+    if (audio.ended) {
+      audio.currentTime = 0;
+    }
+
     try {
       await audio.play();
-      setIsPlaying(true);
-      setBlocked(false);
-      if (fadeInMs > 0) fadeIn();
+      if (!isUnmounted.current) {
+        setIsPlaying(true);
+        setBlocked(false);
+        if (fadeInMs > 0) fadeIn();
+      }
     } catch {
-      // Autoplay blocked by browser
-      setBlocked(true);
-      setIsPlaying(false);
+      if (!isUnmounted.current) {
+        setBlocked(true);
+        setIsPlaying(false);
+      }
     }
   }, [fadeIn, fadeInMs]);
 
   const fadeOut = useCallback((onComplete?: () => void) => {
     const audio = audioRef.current;
+    clearFade();
+
     if (!audio || fadeOutMs <= 0) {
       audio?.pause();
-      setIsPlaying(false);
+      if (!isUnmounted.current) setIsPlaying(false);
       onComplete?.();
       return;
     }
 
     const steps = 20;
     const stepTime = fadeOutMs / steps;
-    const stepVolume = audio.volume / steps;
+    const startVol = audio.volume;
+    const stepVolume = startVol / steps;
 
     fadeIntervalRef.current = setInterval(() => {
-      const newVol = audio.volume - stepVolume;
+      if (!audioRef.current) { clearFade(); return; }
+      const newVol = audioRef.current.volume - stepVolume;
       if (newVol <= 0) {
-        audio.volume = 0;
-        audio.pause();
-        if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-        setIsPlaying(false);
+        audioRef.current.volume = 0;
+        audioRef.current.pause();
+        clearFade();
+        if (!isUnmounted.current) setIsPlaying(false);
         onComplete?.();
       } else {
-        audio.volume = newVol;
+        audioRef.current.volume = newVol;
       }
     }, stepTime);
-  }, [fadeOutMs]);
+  }, [fadeOutMs, clearFade]);
 
-  const stop = useCallback(() => {
-    fadeOut();
-  }, [fadeOut]);
+  const stop = useCallback(() => fadeOut(), [fadeOut]);
 
   const toggle = useCallback(() => {
-    if (isPlaying) {
-      stop();
-    } else {
-      play();
-    }
+    if (isPlaying) stop();
+    else play();
   }, [isPlaying, play, stop]);
 
-  // Attempt autoplay
+  // Attempt autoplay — only once, guarded against StrictMode double-mount
   useEffect(() => {
-    if (autoplay) {
+    if (autoplay && !hasAttemptedAutoplay.current) {
+      hasAttemptedAutoplay.current = true;
       play();
     }
-  }, [autoplay]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { isPlaying, blocked, play, stop, fadeOut, toggle, audioRef };
 }
