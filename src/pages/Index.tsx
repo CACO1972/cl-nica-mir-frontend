@@ -12,7 +12,7 @@ import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
-import heroVideo from "@/assets/hero-video.mp4";
+
 
 const Index = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -79,19 +79,7 @@ const Index = () => {
       />
 
       {/* Hero Section - Institutional Declaration */}
-      <section className="min-h-[100svh] md:min-h-[110svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 relative overflow-hidden">
-        {/* Video background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src={heroVideo} type="video/mp4" />
-        </video>
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/60" />
+      <section className="min-h-[100svh] md:min-h-[110svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 relative overflow-hidden bg-background">
         <div className="max-w-7xl mx-auto w-full text-center px-2 relative z-10">
           {/* Logo */}
           <div className="animate-slide-up mb-8" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
