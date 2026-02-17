@@ -118,14 +118,8 @@ const Index = () => {
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
-            <Link
-              to="/evaluation"
-              className="px-8 py-3 bg-gold text-background text-sm tracking-widest caption hover:bg-gold-muted transition-colors duration-300"
-            >
-              Comienza tu evaluación
-            </Link>
+          {/* CTA Button */}
+          <div className="mt-10 sm:mt-12 flex items-center justify-center animate-slide-up" style={{ animationDelay: "1.2s", animationFillMode: "both" }}>
             <button
               onClick={() => document.querySelector('#como-trabajamos')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-3 border border-border text-foreground text-sm tracking-widest caption hover:border-gold-muted hover:text-gold transition-colors duration-300"
