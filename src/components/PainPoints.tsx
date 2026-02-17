@@ -3,7 +3,7 @@ import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 const painPoints = [
   {
     problem: "Entre 40% y 80% de los tratamientos nunca se completan.",
-    detail: "El miedo, el costo y la incertidumbre hacen que la mayoría de los pacientes abandone antes de terminar. Solo el 34% de los tratamientos presentados llega al calendario.",
+    detail: "Solo el 34% de los tratamientos presentados son aceptados por los pacientes, y de ellos, no todos llegan a completarse. El miedo, el costo y la incertidumbre son las principales barreras.",
     solution: "Miró reduce esa incertidumbre con un informe visual predictivo que te permite decidir con datos, no con fe ciega.",
     source: "Jarvis Analytics · Levin Group Data Center · Martin et al., Frontiers in Public Health, 2017",
   },
