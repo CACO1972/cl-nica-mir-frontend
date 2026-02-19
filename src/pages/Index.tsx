@@ -232,7 +232,7 @@ const Index = () => {
             transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           />
 
-          {/* Headline — the statement */}
+          {/* Headline — idea fuerza */}
           <motion.h1
             className="text-foreground leading-[0.9] tracking-[-0.02em] mb-6"
             style={{
@@ -243,20 +243,20 @@ const Index = () => {
             {...fadeUpProps(0.75)}
           >
             {language === "es" ? (
-              <>La odontología<br /><em>ya no es una opinión.</em></>
+              <>No son dientes.<br /><em>Es dignidad.</em></>
             ) : (
-              <>Dentistry is no longer<br /><em>a matter of opinion.</em></>
+              <>Not teeth.<br /><em>Dignity.</em></>
             )}
           </motion.h1>
 
-          {/* Sub — one punchy sentence */}
+          {/* Sub — en línea con el audio */}
           <motion.p
             className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-sm mx-auto mb-10 sm:mb-14 leading-relaxed"
             {...fadeUpProps(1.0)}
           >
             {language === "es"
-              ? "Ahora es una certeza. Diagnóstico predictivo basado en IA, no en criterios contradictorios."
-              : "Now it's a certainty. Predictive diagnosis powered by AI, not conflicting opinions."}
+              ? "Decidir tu tratamiento no debería ser confuso. Claridad diagnóstica, basada en IA, antes de cualquier intervención."
+              : "Deciding your treatment shouldn't be confusing. Diagnostic clarity, powered by AI, before any intervention."}
           </motion.p>
 
           {/* Primary CTA */}
