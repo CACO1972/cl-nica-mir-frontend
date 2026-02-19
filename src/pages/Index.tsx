@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "En Miró, nuestra IA suma una segunda capa de certeza a 30 años de experiencia clínica. Para que tu diagnóstico sea uno — claro, preciso, tuyo."
-              : "At Miró, our AI adds a second layer of certainty to 30 years of clinical expertise. So your diagnosis is one — clear, precise, yours."}
+              ? "Treinta años de experiencia clínica. Ahora con una segunda capa de certeza. Para que tu diagnóstico sea uno solo — no tres versiones distintas."
+              : "Thirty years of clinical expertise. Now with a second layer of certainty. So your diagnosis is one — not three different versions."}
           </motion.p>
 
           {/* Primary CTA */}
