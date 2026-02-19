@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "30 años de experiencia clínica, potenciados con IA. Diagnósticos claros, precisos y respaldados por evidencia. Porque las decisiones se toman contigo — no para ti."
-              : "30 years of clinical expertise, enhanced with AI. Clear, precise diagnoses backed by evidence. Because decisions are made with you — not for you."}
+              ? "Treinta años de experiencia clínica potenciados con inteligencia artificial. Para que tu diagnóstico sea una certeza — no tres versiones distintas de la misma duda."
+              : "Thirty years of clinical expertise, enhanced by artificial intelligence. So your diagnosis is a certainty — not three different versions of the same doubt."}
           </motion.p>
 
           {/* Primary CTA */}
