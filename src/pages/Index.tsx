@@ -8,7 +8,7 @@ import MenuOverlay from "@/components/MenuOverlay";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import PathTransition from "@/components/PathTransition";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
-import logoMiro from "@/assets/logo-miro.svg";
+import logoMiro from "@/assets/logo-miro-header.svg";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
