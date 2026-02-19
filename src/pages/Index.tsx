@@ -107,27 +107,27 @@ const Index = () => {
   const pillars = [
     {
       num: "01",
-      title: language === "es" ? "Cero Incertidumbre" : "Zero Uncertainty",
+      title: language === "es" ? "Claridad desde el inicio" : "Clarity from the Start",
       desc:
         language === "es"
-          ? "Nuestra IA contrasta tu caso contra miles de protocolos documentados. El diagnóstico deja de ser opinión."
-          : "Our AI cross-references your case against thousands of documented protocols. Diagnosis stops being an opinion.",
+          ? "Decidir un tratamiento dental no debería ser confuso. Muchas personas reciben opiniones distintas ante un mismo caso. En Miró, esa variabilidad termina."
+          : "Deciding on dental treatment shouldn't be confusing. Many people receive conflicting opinions for the same case. At Miró, that variability ends.",
     },
     {
       num: "02",
-      title: language === "es" ? "Comprensión Visual" : "Visual Understanding",
+      title: language === "es" ? "Diagnóstico con evidencia" : "Evidence-Based Diagnosis",
       desc:
         language === "es"
-          ? "Ves lo mismo que el especialista. Cuando entiendes, confías. Cuando confías, decides."
-          : "You see exactly what the specialist sees. When you understand, you trust. When you trust, you decide.",
+          ? "La IA actúa como un segundo par de ojos. No reemplaza el criterio clínico — lo valida. Cada diagnóstico respaldado por datos objetivos, no por opiniones."
+          : "AI acts as a second pair of eyes. It doesn't replace clinical judgment — it validates it. Every diagnosis backed by objective data, not opinions.",
     },
     {
       num: "03",
-      title: language === "es" ? "Resultado Predecible" : "Predictable Result",
+      title: language === "es" ? "Decisiones contigo" : "Decisions With You",
       desc:
         language === "es"
-          ? "Diseñamos el resultado antes de intervenir. Planificación digital sin sorpresas."
-          : "We design the outcome before intervening. Digital planning with no surprises.",
+          ? "Ves y entiendes tu diagnóstico antes de cualquier intervención. Cada alternativa explicada con transparencia. Porque comprender tu salud con certeza cambia todo."
+          : "You see and understand your diagnosis before any intervention. Every alternative explained transparently. Because understanding your health with certainty changes everything.",
     },
   ];
 
@@ -242,10 +242,10 @@ const Index = () => {
             }}
             {...fadeUpProps(0.75)}
           >
-            {language === "es" ? (
-              <>No son dientes.<br /><em>Es dignidad.</em></>
+          {language === "es" ? (
+              <>No restauramos sonrisas.<br /><em>Restauramos dignidad.</em></>
             ) : (
-              <>Not teeth.<br /><em>Dignity.</em></>
+              <>We don't restore smiles.<br /><em>We restore dignity.</em></>
             )}
           </motion.h1>
 
@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "Treinta años de experiencia clínica. Ahora con una segunda capa de certeza. Para que tu diagnóstico sea uno solo — no tres versiones distintas."
-              : "Thirty years of clinical expertise. Now with a second layer of certainty. So your diagnosis is one — not three different versions."}
+              ? "30 años de experiencia clínica, potenciados con IA. Diagnósticos claros, precisos y respaldados por evidencia. Porque las decisiones se toman contigo — no para ti."
+              : "30 years of clinical expertise, enhanced with AI. Clear, precise diagnoses backed by evidence. Because decisions are made with you — not for you."}
           </motion.p>
 
           {/* Primary CTA */}
