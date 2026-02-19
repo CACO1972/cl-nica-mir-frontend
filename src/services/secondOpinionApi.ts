@@ -1,19 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
 
-// Types
+// ─── Types ────────────────────────────────────────────────────────────────────
+export type FlowType = 'ia_only' | 'ia_plus_specialist' | 'budget_comparison';
+
 export interface SecondOpinionData {
   name: string;
   email: string;
   phone: string;
-  reason: string;
-  current_diagnosis?: string;
-  external_budget_amount?: number;
-  external_clinic_name?: string;
-  flow_type: 'ia_only' | 'ia_plus_specialist';
-  // Image upload
-  image_data?: string;
-  image_name?: string;
-  image_mime?: string;
+  rut?: string;
+  medical_history?: {
+    last_visit: string;
+    conditions: string[];
+    current_treatment?: string;
+  };
+  diagnosis: string;
+  doubt: string;
+  flow_type: FlowType;
+  // RX (required)
+  rx_data?: string;
+  rx_name?: string;
+  rx_mime?: string;
+  // Budget document (budget_comparison flow)
+  budget_data?: string;
+  budget_name?: string;
+  budget_mime?: string;
 }
 
 export interface CreateResponse {
@@ -46,6 +56,32 @@ export interface IAReportResponse {
   error?: string;
 }
 
+export interface BudgetItem {
+  treatment: string;
+  external_price: number;
+  miro_price: number;
+  notes?: string;
+}
+
+export interface BudgetComparisonReport {
+  external_total: number;
+  miro_total: number;
+  savings: number;
+  savings_percent: number;
+  items: BudgetItem[];
+  notes?: string;
+  disclaimer: string;
+}
+
+export interface BudgetComparisonResponse {
+  success: boolean;
+  data?: {
+    id: string;
+    budget_report: BudgetComparisonReport;
+  };
+  error?: string;
+}
+
 export interface SpecialistCheckoutResponse {
   success: boolean;
   data?: {
@@ -58,6 +94,8 @@ export interface SpecialistCheckoutResponse {
   error?: string;
 }
 
+// ─── API Functions ────────────────────────────────────────────────────────────
+
 export async function createSecondOpinion(data: SecondOpinionData): Promise<CreateResponse> {
   try {
     const { data: response, error } = await supabase.functions.invoke('second-opinion', {
@@ -66,14 +104,17 @@ export async function createSecondOpinion(data: SecondOpinionData): Promise<Crea
         name: data.name,
         email: data.email,
         phone: data.phone,
-        reason: data.reason,
-        current_diagnosis: data.current_diagnosis,
-        external_budget_amount: data.external_budget_amount,
-        external_clinic_name: data.external_clinic_name,
+        rut: data.rut,
+        medical_history: data.medical_history,
+        diagnosis: data.diagnosis,
+        doubt: data.doubt,
         flow_type: data.flow_type,
-        image_data: data.image_data,
-        image_name: data.image_name,
-        image_mime: data.image_mime,
+        rx_data: data.rx_data,
+        rx_name: data.rx_name,
+        rx_mime: data.rx_mime,
+        budget_data: data.budget_data,
+        budget_name: data.budget_name,
+        budget_mime: data.budget_mime,
       },
     });
 
@@ -129,6 +170,38 @@ export async function requestIAReport(secondOpinionId: string): Promise<IAReport
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
     console.error('[SecondOpinionAPI] IA report exception:', message);
+    return { success: false, error: message };
+  }
+}
+
+export async function requestBudgetComparison(secondOpinionId: string): Promise<BudgetComparisonResponse> {
+  try {
+    const { data: response, error } = await supabase.functions.invoke('second-opinion', {
+      body: {
+        action: 'budget_comparison',
+        second_opinion_id: secondOpinionId,
+      },
+    });
+
+    if (error) {
+      console.error('[SecondOpinionAPI] Budget comparison error:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: {
+          id: response.data.id,
+          budget_report: response.data.budget_report,
+        },
+      };
+    }
+
+    return { success: false, error: response.error || 'Unknown error' };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error desconocido';
+    console.error('[SecondOpinionAPI] Budget comparison exception:', message);
     return { success: false, error: message };
   }
 }
