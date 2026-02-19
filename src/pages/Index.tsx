@@ -7,8 +7,7 @@ import { ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
-import logoMiroHeader from "@/assets/logo-miro-header.svg";
-import logoHero from "@/assets/logo-clinica-miro-hero.svg";
+import logoMiro from "@/assets/logo-miro.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 
@@ -140,7 +139,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="flex items-center justify-between h-18 sm:h-20">
             <Link to="/">
-              <img src={logoMiroHeader} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
+              <img src={logoMiro} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
             </Link>
             <div className="flex items-center gap-4 sm:gap-6">
               {/* Deep link */}
@@ -218,7 +217,7 @@ const Index = () => {
             className="mb-8 sm:mb-10"
           >
             <img
-              src={logoHero}
+              src={logoMiro}
               alt="Clínica Miró"
               className="h-36 sm:h-52 md:h-64 lg:h-80 w-auto mx-auto"
             />
@@ -249,15 +248,6 @@ const Index = () => {
             )}
           </motion.h1>
 
-          {/* Statement — odontología predictiva */}
-          <motion.p
-            className="text-gold/70 text-[11px] sm:text-xs tracking-[0.25em] uppercase font-mono mb-6 sm:mb-8"
-            {...fadeUpProps(0.95)}
-          >
-            {language === "es"
-              ? "Odontología predictiva significa adelantarse al problema, no esperar a que duela."
-              : "Predictive dentistry means getting ahead of the problem, not waiting for it to hurt."}
-          </motion.p>
 
           {/* Sub — elevado, en línea con la idea fuerza */}
           <motion.p
@@ -292,6 +282,49 @@ const Index = () => {
             </Link>
           </motion.div>
         </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          STATEMENT INTERSTICIAL — Odontología Predictiva
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 px-5 sm:px-8 lg:px-12 border-t border-border/20 overflow-hidden">
+        <motion.div
+          className="max-w-4xl mx-auto flex flex-col items-center text-center gap-6"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Decorative lines */}
+          <div className="flex items-center gap-5 w-full max-w-xs">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-gold/30" />
+            <span className="text-[8px] tracking-[0.5em] text-gold/40 font-mono uppercase">
+              {language === "es" ? "Principio" : "Principle"}
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-gold/30" />
+          </div>
+
+          {/* Statement */}
+          <p
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(1.35rem, 3.5vw, 2.4rem)",
+              fontWeight: 300,
+              lineHeight: 1.35,
+              letterSpacing: "-0.01em",
+            }}
+            className="text-foreground/80 italic"
+          >
+            {language === "es"
+              ? <>"Adelantarse al problema,<br />no esperar a que duela."</>
+              : <>"Getting ahead of the problem,<br />not waiting for it to hurt."</>}
+          </p>
+
+          {/* Attribution */}
+          <span className="text-[9px] tracking-[0.45em] text-gold/50 font-mono uppercase">
+            {language === "es" ? "Odontología Predictiva · Clínica Miró" : "Predictive Dentistry · Clínica Miró"}
+          </span>
+        </motion.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
@@ -440,7 +473,7 @@ const Index = () => {
       <footer className="py-10 sm:py-14 px-5 sm:px-8 lg:px-12 border-t border-border/30">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div className="space-y-1">
-            <img src={logoMiroHeader} alt="Clínica Miró" className="h-10 w-auto opacity-70" />
+            <img src={logoMiro} alt="Clínica Miró" className="h-10 w-auto opacity-70" />
             <p className="text-[10px] tracking-[0.25em] text-muted-foreground/40 font-mono uppercase">
               {language === "es" ? "Odontología Predictiva · Humana.AI" : "Predictive Dentistry · Humana.AI"}
             </p>
