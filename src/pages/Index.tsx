@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -6,10 +6,11 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import AudioToggleButton from "@/components/AudioToggleButton";
+import PathTransition from "@/components/PathTransition";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoMiro from "@/assets/logo-miro.svg";
+import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
-
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type PathKey = "segunda-opinion" | "nuevo" | "regional" | "portal";
@@ -20,9 +21,10 @@ interface PathOption {
   title: string;
   desc: string;
   route: string;
+  lines: [string, string, string];
 }
 
-// ─── Shared fade-up animation helper (inline, avoids Variants typing issues) ──
+// ─── Shared fade-up animation helper ─────────────────────────────────────────
 const fadeUpProps = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
   animate: { opacity: 1, y: 0 },
@@ -45,7 +47,10 @@ const Index = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedPath, setSelectedPath] = useState<PathKey | null>(null);
+  const [transition, setTransition] = useState<{ active: boolean; path: PathOption | null }>({
+    active: false,
+    path: null,
+  });
 
   const heroAudio = useAutoplayAudio({
     src: audioMainSrc,
@@ -65,74 +70,106 @@ const Index = () => {
       key: "segunda-opinion",
       via: "01",
       title: language === "es" ? "Segunda Opinión" : "Second Opinion",
-      desc:
-        language === "es"
-          ? "Valida tu diagnóstico actual con nuestra IA clínica."
-          : "Validate your current diagnosis with our clinical AI.",
+      desc: language === "es"
+        ? "Valida tu diagnóstico actual con nuestra IA clínica."
+        : "Validate your current diagnosis with our clinical AI.",
       route: "/segunda-opinion",
+      lines: language === "es"
+        ? [
+            "¿Te dieron diagnósticos distintos y no sabes cuál es el correcto?",
+            "Antes de tratarte, entiende tu caso con claridad clínica y visual.",
+            "Reparar, sonreír, revivir.",
+          ]
+        : [
+            "Were you given conflicting diagnoses and don't know which is right?",
+            "Before treatment, understand your case with clinical and visual clarity.",
+            "Repair, smile, revive.",
+          ],
     },
     {
       key: "nuevo",
       via: "02",
       title: language === "es" ? "Paciente Nuevo" : "New Patient",
-      desc:
-        language === "es"
-          ? "Evaluación integral bajo protocolo predictivo 3.0."
-          : "Comprehensive evaluation under predictive protocol 3.0.",
+      desc: language === "es"
+        ? "Evaluación integral bajo protocolo predictivo 3.0."
+        : "Comprehensive evaluation under predictive protocol 3.0.",
       route: "/evaluation",
+      lines: language === "es"
+        ? [
+            "¿Llevas tiempo postergando ir al dentista por no saber qué esperar?",
+            "Tu evaluación empieza aquí: sin presión, con total claridad.",
+            "Saber es el primer paso.",
+          ]
+        : [
+            "Have you been putting off going to the dentist, unsure of what to expect?",
+            "Your evaluation starts here: no pressure, total clarity.",
+            "Knowing is the first step.",
+          ],
     },
     {
       key: "regional",
       via: "03",
       title: language === "es" ? "Región / Exterior" : "Region / International",
-      desc:
-        language === "es"
-          ? "Tele-odontología y pre-análisis para pacientes remotos."
-          : "Tele-dentistry and pre-analysis for remote patients.",
+      desc: language === "es"
+        ? "Tele-odontología y pre-análisis para pacientes remotos."
+        : "Tele-dentistry and pre-analysis for remote patients.",
       route: "/regional",
+      lines: language === "es"
+        ? [
+            "¿Estás lejos de Santiago pero necesitas un diagnóstico real?",
+            "La distancia no define tu acceso a una atención de calidad.",
+            "Dondequiera que estés.",
+          ]
+        : [
+            "Are you far from Santiago but need a real diagnosis?",
+            "Distance doesn't define your access to quality care.",
+            "Wherever you are.",
+          ],
     },
     {
       key: "portal",
       via: "04",
       title: language === "es" ? "Ya soy Paciente" : "I'm a Patient",
-      desc:
-        language === "es"
-          ? "Acceso directo a tu historial, citas y evolución."
-          : "Direct access to your records, appointments and progress.",
+      desc: language === "es"
+        ? "Acceso directo a tu historial, citas y evolución."
+        : "Direct access to your records, appointments and progress.",
       route: "/portal",
+      lines: language === "es"
+        ? [
+            "Bienvenido de vuelta.",
+            "Tu historial, tus citas y tu evolución, en un solo lugar.",
+            "Tu salud, siempre contigo.",
+          ]
+        : [
+            "Welcome back.",
+            "Your records, appointments, and progress — all in one place.",
+            "Your health, always with you.",
+          ],
     },
   ];
 
-  const pillars = [
-    {
-      num: "01",
-      title: language === "es" ? "Claridad desde el inicio" : "Clarity from the Start",
-      desc:
-        language === "es"
-          ? "Decidir un tratamiento dental no debería ser confuso. Muchas personas reciben opiniones distintas ante un mismo caso. En Miró, esa variabilidad termina."
-          : "Deciding on dental treatment shouldn't be confusing. Many people receive conflicting opinions for the same case. At Miró, that variability ends.",
-    },
-    {
-      num: "02",
-      title: language === "es" ? "Diagnóstico con evidencia" : "Evidence-Based Diagnosis",
-      desc:
-        language === "es"
-          ? "La IA actúa como un segundo par de ojos. No reemplaza el criterio clínico — lo valida. Cada diagnóstico respaldado por datos objetivos, no por opiniones."
-          : "AI acts as a second pair of eyes. It doesn't replace clinical judgment — it validates it. Every diagnosis backed by objective data, not opinions.",
-    },
-    {
-      num: "03",
-      title: language === "es" ? "Decisiones contigo" : "Decisions With You",
-      desc:
-        language === "es"
-          ? "Ves y entiendes tu diagnóstico antes de cualquier intervención. Cada alternativa explicada con transparencia. Porque comprender tu salud con certeza cambia todo."
-          : "You see and understand your diagnosis before any intervention. Every alternative explained transparently. Because understanding your health with certainty changes everything.",
-    },
-  ];
+  const handlePathClick = useCallback((path: PathOption) => {
+    setTransition({ active: true, path });
+  }, []);
+
+  const handleTransitionComplete = useCallback(() => {
+    if (transition.path) {
+      navigate(transition.path.route);
+    }
+  }, [transition.path, navigate]);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
       <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+
+      {/* Transition overlay */}
+      {transition.path && (
+        <PathTransition
+          isVisible={transition.active}
+          lines={transition.path.lines}
+          onComplete={handleTransitionComplete}
+        />
+      )}
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
@@ -142,13 +179,6 @@ const Index = () => {
               <img src={logoMiro} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
             </Link>
             <div className="flex items-center gap-4 sm:gap-6">
-              {/* Deep link */}
-              <Link
-                to="/evaluation"
-                className="hidden sm:block caption text-muted-foreground/50 hover:text-muted-foreground transition-colors text-[10px] tracking-[0.25em] border-b border-transparent hover:border-muted-foreground/30"
-              >
-                {language === "es" ? "Filosofía & Ciencia →" : "Philosophy & Science →"}
-              </Link>
               <button
                 onClick={() => setLanguage(language === "es" ? "en" : "es")}
                 className="caption text-muted-foreground hover:text-foreground transition-colors"
@@ -181,12 +211,11 @@ const Index = () => {
       />
 
       {/* ══════════════════════════════════════════════════════════════════════
-          HERO — Máximo impacto, mínimo texto
+          HERO
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-background">
         <ScanLine />
 
-        {/* Brackets decoration */}
         <motion.div
           className="absolute top-24 left-5 sm:left-12 w-7 h-7 border-t border-l border-gold/15"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -201,10 +230,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto w-full text-center flex flex-col items-center">
 
           {/* Status pill */}
-          <motion.div
-            className="flex items-center gap-2 mb-8"
-            {...fadeUpProps(0.1)}
-          >
+          <motion.div className="flex items-center gap-2 mb-8" {...fadeUpProps(0.1)}>
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
             <span className="text-[9px] sm:text-[10px] tracking-[0.4em] text-gold-muted font-mono uppercase">
               Humana.AI · Santiago, Chile
@@ -212,12 +238,9 @@ const Index = () => {
           </motion.div>
 
           {/* Logo */}
-          <motion.div
-            {...fadeUpProps(0.2)}
-            className="mb-8 sm:mb-10"
-          >
+          <motion.div {...fadeUpProps(0.2)} className="mb-8 sm:mb-10">
             <img
-              src={logoMiro}
+              src={logoHero}
               alt="Clínica Miró"
               className="h-36 sm:h-52 md:h-64 lg:h-80 w-auto mx-auto"
             />
@@ -231,7 +254,7 @@ const Index = () => {
             transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           />
 
-          {/* Headline — idea fuerza */}
+          {/* Headline */}
           <motion.h1
             className="text-foreground leading-[0.9] tracking-[-0.02em] mb-6"
             style={{
@@ -241,20 +264,19 @@ const Index = () => {
             }}
             {...fadeUpProps(0.75)}
           >
-          {language === "es" ? (
+            {language === "es" ? (
               <>No son dientes.<br /><em>Es dignidad.</em></>
             ) : (
               <>Not teeth.<br /><em>Dignity.</em></>
             )}
           </motion.h1>
 
-
-          {/* Sub — elevado, en línea con la idea fuerza */}
+          {/* Sub */}
           <motion.p
             className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-10 sm:mb-14 leading-relaxed"
-            {...fadeUpProps(1.0)}
+            {...fadeUpProps(0.95)}
           >
-          {language === "es"
+            {language === "es"
               ? "30 años de experiencia clínica, ahora potenciados con análisis basado en IA, para ofrecer diagnósticos más precisos, tratamientos más seguros y resultados más predecibles."
               : "30 years of clinical expertise, now enhanced with AI-based analysis, to offer more precise diagnoses, safer treatments and more predictable results."}
           </motion.p>
@@ -263,128 +285,20 @@ const Index = () => {
           <motion.button
             onClick={scrollToPaths}
             className="group flex items-center gap-3 px-8 py-4 border border-gold/40 text-gold hover:bg-gold hover:text-background transition-all duration-500 text-[11px] tracking-[0.35em] uppercase font-light"
-            {...fadeUpProps(1.2)}
+            {...fadeUpProps(1.1)}
           >
-            {language === "es" ? "Comenzar experiencia" : "Begin experience"}
+            {language === "es" ? "Comenzar" : "Begin"}
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </motion.button>
-
-          {/* Depth link */}
-          <motion.div
-            className="mt-8"
-            {...fadeUpProps(1.5)}
-          >
-            <Link
-              to="/evaluation"
-              className="text-[10px] tracking-[0.3em] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors uppercase border-b border-muted-foreground/20 hover:border-muted-foreground/40 pb-0.5"
-            >
-              {language === "es" ? "Leer sobre nuestra ciencia →" : "Read about our science →"}
-            </Link>
-          </motion.div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          STATEMENT INTERSTICIAL — Odontología Predictiva
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 px-5 sm:px-8 lg:px-12 border-t border-border/20 overflow-hidden">
-        <motion.div
-          className="max-w-4xl mx-auto flex flex-col items-center text-center gap-6"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* Decorative lines */}
-          <div className="flex items-center gap-5 w-full max-w-xs">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-gold/30" />
-            <span className="text-[8px] tracking-[0.5em] text-gold/40 font-mono uppercase">
-              {language === "es" ? "Principio" : "Principle"}
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-gold/30" />
-          </div>
-
-          {/* Statement */}
-          <p
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(1.35rem, 3.5vw, 2.4rem)",
-              fontWeight: 300,
-              lineHeight: 1.35,
-              letterSpacing: "-0.01em",
-            }}
-            className="text-foreground/80 italic"
-          >
-            {language === "es"
-              ? <>"Adelantarse al problema,<br />no esperar a que duela."</>
-              : <>"Getting ahead of the problem,<br />not waiting for it to hurt."</>}
-          </p>
-
-          {/* Attribution */}
-          <span className="text-[9px] tracking-[0.45em] text-gold/50 font-mono uppercase">
-            {language === "es" ? "Odontología Predictiva · Clínica Miró" : "Predictive Dentistry · Clínica Miró"}
-          </span>
-        </motion.div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          3 PILARES — Cómo funciona la IA
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 px-5 sm:px-8 lg:px-12 bg-secondary">
-        <div className="max-w-6xl mx-auto">
-
-          {/* Section header */}
-          <motion.div
-            className="mb-16 sm:mb-20"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <p className="text-[10px] tracking-[0.4em] text-muted-foreground/50 font-mono uppercase mb-3">
-              {language === "es" ? "Por qué somos diferentes" : "Why we're different"}
-            </p>
-            <h2
-              className="text-foreground"
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
-                fontWeight: 400,
-                lineHeight: 1.1,
-              }}
-            >
-              {language === "es"
-                 ? <>La dignidad está en que te expliquen<br />con claridad y te dediquen el tiempo<br /><em>necesario para decidir con tranquilidad.</em></>
-                 : <>Dignity lies in having it explained clearly<br />and being given the time you need<br /><em>to decide with peace of mind.</em></>}
-            </h2>
-          </motion.div>
-
-          {/* Pillars grid */}
-          <div className="grid sm:grid-cols-3 gap-8 lg:gap-12">
-            {pillars.map((p, i) => (
-              <motion.div
-                key={p.num}
-                className="relative pl-5 border-l border-gold/25 space-y-3"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <span className="text-[9px] tracking-[0.4em] text-gold/50 font-mono">{p.num}</span>
-                <h3 className="text-foreground text-sm sm:text-base font-medium tracking-wide">{p.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{p.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          4 VÍAS — Selector de perfil de atención
+          4 VÍAS — Selector directo al flujo
       ══════════════════════════════════════════════════════════════════════ */}
       <section
         ref={pathsRef}
-        className="py-24 sm:py-32 px-5 sm:px-8 lg:px-12 relative overflow-hidden"
+        className="py-24 sm:py-32 px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-secondary"
       >
         {/* Subtle background text */}
         <div
@@ -408,7 +322,7 @@ const Index = () => {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="text-[10px] tracking-[0.4em] text-muted-foreground/50 font-mono uppercase mb-3">
-              {language === "es" ? "Selecciona tu perfil" : "Select your profile"}
+              {language === "es" ? "¿Cómo puedo ayudarte hoy?" : "How can I help you today?"}
             </p>
             <h2
               className="text-foreground"
@@ -419,7 +333,9 @@ const Index = () => {
                 lineHeight: 1.1,
               }}
             >
-              {language === "es" ? "¿Cómo podemos ayudarte?" : "How can we help you?"}
+              {language === "es"
+                ? <>Elige tu camino.<br /><em>Te guiamos desde aquí.</em></>
+                : <>Choose your path.<br /><em>We guide you from here.</em></>}
             </h2>
           </motion.div>
 
@@ -427,12 +343,8 @@ const Index = () => {
             {paths.map((path, i) => (
               <motion.button
                 key={path.key}
-                onClick={() => navigate(path.route)}
-                className={`group relative text-left p-6 sm:p-7 border transition-all duration-400 ${
-                  selectedPath === path.key
-                    ? "border-gold bg-gold/5"
-                    : "border-border/40 hover:border-gold/50 hover:bg-gold/[0.03]"
-                }`}
+                onClick={() => handlePathClick(path)}
+                className="group relative text-left p-6 sm:p-7 border border-border/40 hover:border-gold/50 hover:bg-gold/[0.03] transition-all duration-400"
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -468,7 +380,7 @@ const Index = () => {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          FOOTER — Minimal
+          FOOTER
       ══════════════════════════════════════════════════════════════════════ */}
       <footer className="py-10 sm:py-14 px-5 sm:px-8 lg:px-12 border-t border-border/30">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
