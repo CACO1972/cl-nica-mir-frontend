@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowRight } from "lucide-react";
@@ -30,6 +30,55 @@ const fadeUpProps = (delay = 0) => ({
   animate: { opacity: 1, y: 0 },
   transition: { delay, duration: 0.7, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
 });
+
+// ─── Audio Hint ───────────────────────────────────────────────────────────────
+const AudioHint = ({ language }: { language: string }) => {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const label = language === "es" ? "Escucha la experiencia" : "Listen to the experience";
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="fixed bottom-8 left-[4.5rem] z-50 flex items-center gap-2 pointer-events-none"
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -8 }}
+          transition={{ delay: 1.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Arrow pointing left toward the button */}
+          <motion.div
+            className="w-4 h-px bg-gold/60"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 2, duration: 0.4 }}
+            style={{ transformOrigin: "right" }}
+          />
+          <motion.span
+            className="text-[10px] tracking-[0.25em] text-gold/80 font-mono uppercase whitespace-nowrap"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0.7] }}
+            transition={{ delay: 2.1, duration: 2.5, times: [0, 0.2, 0.7, 1] }}
+          >
+            {label}
+          </motion.span>
+          {/* Pulsing dot */}
+          <motion.span
+            className="w-1 h-1 rounded-full bg-gold/70"
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: 2.2 }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 // ─── ScanLine decoration ──────────────────────────────────────────────────────
 const ScanLine = () => (
@@ -201,6 +250,9 @@ const Index = () => {
           </div>
         </div>
       </header>
+
+      {/* Audio hint tooltip */}
+      <AudioHint language={language} />
 
       <AudioToggleButton
         isPlaying={heroAudio.isPlaying}
