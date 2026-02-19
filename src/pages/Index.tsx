@@ -255,7 +255,7 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "30 años de experiencia clínica, ahora potenciados con inteligencia artificial, para brindarte diagnósticos más precisos, tratamientos más seguros y adaptados para ti, y resultados más previsibles."
+              ? "30 años de experiencia clínica, ahora potenciados con inteligencia artificial, para brindarte diagnósticos más precisos, tratamientos más seguros y personalizados, y resultados más previsibles."
               : "30 years of clinical expertise, now enhanced with artificial intelligence, to provide more precise diagnoses, safer and personalized treatments, and more predictable results."}
           </motion.p>
 
