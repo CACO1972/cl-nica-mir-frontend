@@ -3,23 +3,21 @@ import { useEffect, useRef } from "react";
 /**
  * DataGridCanvas
  * ──────────────────────────────────────────────────────────────────────────────
- * Un canvas de fondo que renderiza:
- *  1. Una grilla de puntos uniformes que pulsan suavemente
- *  2. Unas pocas partículas flotantes que se conectan entre sí con líneas tenues
- *
- * Completamente CSS-token-aware: lee --gold y --foreground del root para mantenerse
- * coherente con el design system en ambos modos (light / dark).
+ * Red de constelación periférica con nodos gold metalizado.
+ * Los nodos y líneas solo aparecen en los bordes del canvas,
+ * dejando el centro libre para el texto del hero.
  * ──────────────────────────────────────────────────────────────────────────────
  */
 
-interface Particle {
+interface Node {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
-  opacity: number;
+  baseX: number;
+  baseY: number;
   size: number;
-  pulseOffset: number;
+  phase: number;
+  driftSpeed: number;
+  driftRadius: number;
 }
 
 const DataGridCanvas = () => {
@@ -29,31 +27,23 @@ const DataGridCanvas = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // ── Leer colores del design system ─────────────────────────────────────
-    const rootStyles = getComputedStyle(document.documentElement);
-    const goldRaw = rootStyles.getPropertyValue("--gold").trim(); // "38 45% 50%"
-    // Construimos los colores que necesitamos
-    // gold con baja opacidad para la grilla
-    const gridColor = `hsla(${goldRaw}, 0.18)`;
-    const particleColor = `hsla(${goldRaw}, 0.55)`;
-    const lineColor = `hsla(${goldRaw}, 0.08)`;
-
-    // ── Configuración ──────────────────────────────────────────────────────
-    const GRID_SPACING = 52;   // px entre puntos de la grilla
-    const DOT_RADIUS = 0.9;    // radio base del punto
-    const PARTICLE_COUNT = 18;
-    const LINE_DIST = 160;     // distancia máxima para conectar partículas
-    const CONNECT_HERO = true; // conectar también las partículas con los dots más cercanos
-
-    // ── Estado ─────────────────────────────────────────────────────────────
-    let particles: Particle[] = [];
     let W = 0;
     let H = 0;
     let t = 0;
+    let nodes: Node[] = [];
+
+    // ── Gold metallic palette ──────────────────────────────────────────────
+    const GOLD_BRIGHT = "hsla(38, 60%, 58%, ";   // nodos brillantes
+    const GOLD_LINE   = "hsla(38, 50%, 48%, ";    // líneas
+    const GOLD_DOT    = "hsla(38, 40%, 45%, ";    // grid dots
+
+    const GRID_SPACING = 64;
+    const DOT_RADIUS = 0.6;
+    const LINE_DIST = 200;
+    const NODE_COUNT = 14;
 
     const resize = () => {
       W = canvas.offsetWidth;
@@ -63,83 +53,135 @@ const DataGridCanvas = () => {
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     };
 
-    const initParticles = () => {
-      particles = Array.from({ length: PARTICLE_COUNT }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.28,
-        vy: (Math.random() - 0.5) * 0.18,
-        opacity: 0.3 + Math.random() * 0.5,
-        size: 1.2 + Math.random() * 1.4,
-        pulseOffset: Math.random() * Math.PI * 2,
-      }));
+    // ── Place nodes only on edges (outside center text area) ──────────────
+    const initNodes = () => {
+      nodes = [];
+      const cx = W / 2;
+      const cy = H / 2;
+      // Exclusion zone: center 50% width, 40% height
+      const exW = W * 0.25;
+      const exH = H * 0.2;
+
+      for (let i = 0; i < NODE_COUNT; i++) {
+        let x: number, y: number;
+        let attempts = 0;
+        do {
+          // Bias towards edges
+          const edge = Math.random();
+          if (edge < 0.25) {
+            // top strip
+            x = Math.random() * W;
+            y = Math.random() * H * 0.22;
+          } else if (edge < 0.5) {
+            // bottom strip
+            x = Math.random() * W;
+            y = H - Math.random() * H * 0.22;
+          } else if (edge < 0.75) {
+            // left strip
+            x = Math.random() * W * 0.22;
+            y = Math.random() * H;
+          } else {
+            // right strip
+            x = W - Math.random() * W * 0.22;
+            y = Math.random() * H;
+          }
+          attempts++;
+        } while (
+          Math.abs(x - cx) < exW && Math.abs(y - cy) < exH && attempts < 20
+        );
+
+        nodes.push({
+          x,
+          y,
+          baseX: x,
+          baseY: y,
+          size: 1.5 + Math.random() * 2,
+          phase: Math.random() * Math.PI * 2,
+          driftSpeed: 0.0004 + Math.random() * 0.0006,
+          driftRadius: 8 + Math.random() * 16,
+        });
+      }
     };
 
+    // ── Subtle dot grid (very faint, periphery only) ─────────────────────
     const drawGrid = () => {
       const cols = Math.ceil(W / GRID_SPACING) + 1;
       const rows = Math.ceil(H / GRID_SPACING) + 1;
-
-      // Offset suave en el tiempo para que la grilla "respire"
-      const breathe = Math.sin(t * 0.0008) * 0.3 + 0.7; // 0.4 → 1.0
+      const cx = W / 2;
+      const cy = H / 2;
+      const fadeW = W * 0.2;
+      const fadeH = H * 0.18;
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const x = c * GRID_SPACING;
           const y = r * GRID_SPACING;
 
-          // Pulso individual por dot usando su posición como semilla
-          const phase = (c * 7 + r * 13) % (Math.PI * 2);
-          const pulse = Math.sin(t * 0.0012 + phase) * 0.4 + 0.6;
+          // Fade out towards center
+          const dx = Math.abs(x - cx);
+          const dy = Math.abs(y - cy);
+          let fade = 1;
+          if (dx < fadeW && dy < fadeH) {
+            fade = Math.max(dx / fadeW, dy / fadeH);
+            fade = fade * fade; // ease
+          }
 
-          const alpha = pulse * breathe * 0.22;
+          const alpha = fade * 0.12;
+          if (alpha < 0.01) continue;
+
           ctx.beginPath();
           ctx.arc(x, y, DOT_RADIUS, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${goldRaw}, ${alpha})`;
+          ctx.fillStyle = `${GOLD_DOT}${alpha})`;
           ctx.fill();
         }
       }
     };
 
-    const drawParticles = () => {
-      // Actualizar posiciones
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Rebotar en bordes con margen
-        if (p.x < -20) p.x = W + 20;
-        if (p.x > W + 20) p.x = -20;
-        if (p.y < -20) p.y = H + 20;
-        if (p.y > H + 20) p.y = -20;
+    // ── Constellation network ────────────────────────────────────────────
+    const drawNetwork = () => {
+      // Update node positions (gentle orbital drift)
+      nodes.forEach((n) => {
+        n.x = n.baseX + Math.cos(t * n.driftSpeed + n.phase) * n.driftRadius;
+        n.y = n.baseY + Math.sin(t * n.driftSpeed * 0.7 + n.phase) * n.driftRadius * 0.6;
       });
 
-      // Dibujar conexiones entre partículas
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
+      // Draw connections
+      ctx.lineWidth = 0.6;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < LINE_DIST) {
-            const alpha = (1 - dist / LINE_DIST) * 0.12;
+            const strength = 1 - dist / LINE_DIST;
+            const alpha = strength * strength * 0.15;
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(${goldRaw}, ${alpha})`;
-            ctx.lineWidth = 0.5;
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `${GOLD_LINE}${alpha})`;
             ctx.stroke();
           }
         }
       }
 
-      // Dibujar cada partícula
-      particles.forEach((p) => {
-        const pulse = Math.sin(t * 0.0015 + p.pulseOffset) * 0.3 + 0.7;
-        const alpha = p.opacity * pulse;
+      // Draw nodes with glow
+      nodes.forEach((n) => {
+        const pulse = Math.sin(t * 0.002 + n.phase) * 0.25 + 0.75;
 
+        // Outer glow
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.size * 4);
+        grad.addColorStop(0, `${GOLD_BRIGHT}${0.12 * pulse})`);
+        grad.addColorStop(1, `${GOLD_BRIGHT}0)`);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${goldRaw}, ${alpha * 0.7})`;
+        ctx.arc(n.x, n.y, n.size * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Core
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2);
+        ctx.fillStyle = `${GOLD_BRIGHT}${0.6 * pulse})`;
         ctx.fill();
       });
     };
@@ -148,18 +190,17 @@ const DataGridCanvas = () => {
       t++;
       ctx.clearRect(0, 0, W, H);
       drawGrid();
-      drawParticles();
+      drawNetwork();
       rafRef.current = requestAnimationFrame(loop);
     };
 
-    // ── Init ───────────────────────────────────────────────────────────────
     resize();
-    initParticles();
+    initNodes();
     rafRef.current = requestAnimationFrame(loop);
 
     const handleResize = () => {
       resize();
-      initParticles();
+      initNodes();
     };
     window.addEventListener("resize", handleResize);
 
@@ -173,7 +214,7 @@ const DataGridCanvas = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.9 }}
+      style={{ opacity: 0.85 }}
       aria-hidden
     />
   );
