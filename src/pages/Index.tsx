@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
             {language === "es"
-              ? "En Miró, ves tu diagnóstico antes de decidir. Cada alternativa de tratamiento — respaldada por IA y evidencia clínica — se decide contigo. No para ti. No en base a opiniones."
-              : "At Miró, you see your diagnosis before deciding. Every treatment option — backed by AI and clinical evidence — is decided with you. Not for you. Not based on opinions."}
+              ? "Visualiza tu diagnóstico. Entiende tus opciones. Decide con certeza — respaldado por IA y evidencia clínica, no por opiniones."
+              : "See your diagnosis. Understand your options. Decide with certainty — backed by AI and clinical evidence, not opinions."}
           </motion.p>
 
           {/* Primary CTA */}
