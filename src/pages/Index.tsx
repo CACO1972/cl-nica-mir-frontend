@@ -255,7 +255,7 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "No basta con un diagnóstico preciso. La dignidad está en que te lo expliquen con claridad y te dediquen el tiempo necesario para decidir con tranquilidad."
+              ? "No basta con un diagnóstico preciso. La dignidad está en que te expliquen con claridad y te dediquen el tiempo necesario para decidir con tranquilidad."
               : "A precise diagnosis is not enough. Dignity lies in having it explained clearly and being given the time you need to decide with peace of mind."}
           </motion.p>
 
@@ -311,7 +311,7 @@ const Index = () => {
               }}
             >
               {language === "es"
-                 ? <>La dignidad está en que te lo expliquen<br />con claridad y te dediquen el tiempo<br /><em>necesario para decidir con tranquilidad.</em></>
+                 ? <>La dignidad está en que te expliquen<br />con claridad y te dediquen el tiempo<br /><em>necesario para decidir con tranquilidad.</em></>
                  : <>Dignity lies in having it explained clearly<br />and being given the time you need<br /><em>to decide with peace of mind.</em></>}
             </h2>
           </motion.div>
