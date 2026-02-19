@@ -311,8 +311,8 @@ const Index = () => {
               }}
             >
               {language === "es"
-                ? <>Tu salud merece datos,<br /><em>no dudas.</em></>
-                : <>Your health deserves data,<br /><em>not doubts.</em></>}
+                 ? <>La dignidad está en que te lo expliquen<br />con claridad y te dediquen el tiempo<br /><em>necesario para decidir con tranquilidad.</em></>
+                 : <>Dignity lies in having it explained clearly<br />and being given the time you need<br /><em>to decide with peace of mind.</em></>}
             </h2>
           </motion.div>
 
