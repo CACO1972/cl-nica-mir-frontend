@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "Treinta años de experiencia clínica potenciados con inteligencia artificial. Para que tu diagnóstico sea una certeza — no tres versiones distintas de la misma duda."
-              : "Thirty years of clinical expertise, enhanced by artificial intelligence. So your diagnosis is a certainty — not three different versions of the same doubt."}
+              ? "No basta con un diagnóstico preciso. La dignidad está en que te lo expliquen con claridad y te dediquen el tiempo necesario para decidir con tranquilidad."
+              : "A precise diagnosis is not enough. Dignity lies in having it explained clearly and being given the time you need to decide with peace of mind."}
           </motion.p>
 
           {/* Primary CTA */}
