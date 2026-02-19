@@ -249,14 +249,14 @@ const Index = () => {
             )}
           </motion.h1>
 
-          {/* Sub — en línea con el audio */}
+          {/* Sub — elevado, en línea con la idea fuerza */}
           <motion.p
-            className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-sm mx-auto mb-10 sm:mb-14 leading-relaxed"
+            className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-10 sm:mb-14 leading-relaxed"
             {...fadeUpProps(1.0)}
           >
             {language === "es"
-              ? "Decidir tu tratamiento no debería ser confuso. Claridad diagnóstica, basada en IA, antes de cualquier intervención."
-              : "Deciding your treatment shouldn't be confusing. Diagnostic clarity, powered by AI, before any intervention."}
+              ? "En Miró, ves tu diagnóstico antes de decidir. Cada alternativa de tratamiento — respaldada por IA y evidencia clínica — se decide contigo. No para ti. No en base a opiniones."
+              : "At Miró, you see your diagnosis before deciding. Every treatment option — backed by AI and clinical evidence — is decided with you. Not for you. Not based on opinions."}
           </motion.p>
 
           {/* Primary CTA */}
