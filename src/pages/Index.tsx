@@ -291,20 +291,20 @@ const Index = () => {
             {...fadeUpProps(0.75)}
           >
             {language === "es" ? (
-              <>La odontología<br /><em>ya no es una opinión.</em></>
+              <>30 años de clínica.<br /><em>Ahora, con IA.</em></>
             ) : (
-              <>Dentistry is no longer<br /><em>a matter of opinion.</em></>
+              <>30 years of clinic.<br /><em>Now, with AI.</em></>
             )}
           </motion.h1>
 
           {/* Sub — one punchy sentence */}
           <motion.p
-            className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-sm mx-auto mb-10 sm:mb-14 leading-relaxed"
+            className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-md mx-auto mb-10 sm:mb-14 leading-relaxed"
             {...fadeUpProps(1.0)}
           >
             {language === "es"
-              ? "Ahora es una certeza. Diagnóstico predictivo basado en IA, no en criterios contradictorios."
-              : "Now it's a certainty. Predictive diagnosis powered by AI, not conflicting opinions."}
+              ? "Sumamos inteligencia artificial a nuestra experiencia clínica para que cada diagnóstico sea más preciso, cada tratamiento más seguro y cada decisión se tome contigo, con total transparencia."
+              : "We add artificial intelligence to our clinical experience so every diagnosis is more precise, every treatment safer, and every decision is made with you, in full transparency."}
           </motion.p>
 
           {/* Primary CTA */}
