@@ -8,7 +8,7 @@ import MenuOverlay from "@/components/MenuOverlay";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoMiroHeader from "@/assets/logo-miro-header.svg";
-import logoHero from "@/assets/logo-clinica-miro-hero.svg";
+import logoHero from "@/assets/logo-nuevo.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 
@@ -220,7 +220,7 @@ const Index = () => {
             <img
               src={logoHero}
               alt="Clínica Miró"
-              className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto"
+              className="h-36 sm:h-52 md:h-64 lg:h-80 w-auto mx-auto"
             />
           </motion.div>
 
@@ -248,6 +248,16 @@ const Index = () => {
               <>Not teeth.<br /><em>Dignity.</em></>
             )}
           </motion.h1>
+
+          {/* Statement — odontología predictiva */}
+          <motion.p
+            className="text-gold/70 text-[11px] sm:text-xs tracking-[0.25em] uppercase font-mono mb-6 sm:mb-8"
+            {...fadeUpProps(0.95)}
+          >
+            {language === "es"
+              ? "Odontología predictiva significa adelantarse al problema, no esperar a que duela."
+              : "Predictive dentistry means getting ahead of the problem, not waiting for it to hurt."}
+          </motion.p>
 
           {/* Sub — elevado, en línea con la idea fuerza */}
           <motion.p
