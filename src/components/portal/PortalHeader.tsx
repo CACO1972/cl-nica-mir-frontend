@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import logoMiro from '@/assets/logo-definitivo.svg';
+import logoPortal from '@/assets/logo-clinica-miro-portal.svg';
 
 interface PortalHeaderProps {
   title?: string;
@@ -25,7 +25,7 @@ const PortalHeader = ({ title = "Portal Paciente" }: PortalHeaderProps) => {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <button onClick={() => navigate('/')} className="flex items-center">
-              <img src={logoMiro} alt="Clínica Miró" className="h-14 md:h-18 w-auto" />
+              <img src={logoPortal} alt="Clínica Miró" className="h-14 md:h-18 w-auto" />
             </button>
           </div>
           <span className="text-sm text-muted-foreground hidden sm:inline">{title}</span>

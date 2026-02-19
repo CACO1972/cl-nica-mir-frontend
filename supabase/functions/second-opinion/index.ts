@@ -5,32 +5,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface SecondOpinionRequest {
-  action: 'create' | 'ia_report' | 'specialist_checkout' | 'budget_comparison';
-  // Create
+  action: 'create' | 'ia_report' | 'specialist_checkout';
   name?: string;
   email?: string;
   phone?: string;
-  rut?: string;
-  medical_history?: {
-    last_visit: string;
-    conditions: string[];
-    current_treatment?: string;
-  };
-  diagnosis?: string;
-  doubt?: string;
-  flow_type?: 'ia_only' | 'ia_plus_specialist' | 'budget_comparison';
-  // RX image
-  rx_data?: string;
-  rx_name?: string;
-  rx_mime?: string;
-  // Budget document
-  budget_data?: string;
-  budget_name?: string;
-  budget_mime?: string;
-  // For subsequent actions
+  reason?: string;
+  current_diagnosis?: string;
+  external_budget_amount?: number;
+  external_clinic_name?: string;
+  flow_type?: 'ia_only' | 'ia_plus_specialist';
   second_opinion_id?: string;
+  // Image upload support
+  image_data?: string; // base64
+  image_name?: string;
+  image_mime?: string;
 }
 
 interface IAReport {
@@ -44,71 +33,56 @@ interface IAReport {
   disclaimer: string;
 }
 
-interface BudgetItem {
-  treatment: string;
-  external_price: number;
-  miro_price: number;
-  notes?: string;
-}
-
-interface BudgetReport {
-  external_total: number;
-  miro_total: number;
-  savings: number;
-  savings_percent: number;
-  items: BudgetItem[];
-  notes?: string;
-  disclaimer: string;
-}
-
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const SPECIALIST_PRICE = 19000;
 
-// ─── IA Report generation ─────────────────────────────────────────────────────
 async function generateIAReport(
-  diagnosis: string,
-  doubt: string,
-  medicalHistory: string,
+  reason: string,
+  diagnosis: string | null,
+  externalAmount: number | null,
+  clinicName: string | null,
   imageBase64: string | null,
 ): Promise<IAReport> {
   const apiKey = Deno.env.get('LOVABLE_API_KEY');
   if (!apiKey) {
     console.error('[Second Opinion] LOVABLE_API_KEY not configured');
-    return generateFallbackIAReport(diagnosis);
+    return generateFallbackReport(diagnosis, externalAmount);
   }
 
   try {
-    const systemPrompt = `Eres un asistente clínico dental especializado en segundas opiniones. Analiza el caso y genera un informe estructurado en español.
+    const systemPrompt = `Eres un asistente clínico dental especializado en segundas opiniones. Analiza el caso y genera un informe estructurado.
 
 INSTRUCCIONES:
-- Evalúa el diagnóstico previo del paciente, su duda específica e historial médico
-- Si hay radiografía, analiza signos visibles (caries, inflamación gingival, pérdida ósea, alineación, tratamientos previos)
-- Responde directamente la duda específica del paciente
+- Evalúa el motivo de consulta, diagnóstico previo y presupuesto externo
+- Si hay imagen, analiza signos visibles (caries, inflamación gingival, pérdida ósea, alineación)
 - Determina urgencia: low, moderate, high
-- Sé específico y claro, usa lenguaje accesible para el paciente
-- Siempre recomienda la Evaluación Presencial Premium de Clínica Miró
+- Sugiere hallazgos clave y recomendaciones
+- Si hay presupuesto externo, estima un ahorro potencial (10-25%)
+- Siempre recomienda la Evaluación Presencial Premium
 
-Responde SOLO con JSON válido con esta estructura exacta:
+Responde SOLO con JSON válido con esta estructura:
 {
-  "assessment": "Respuesta directa a la duda del paciente y evaluación general en 3-4 oraciones",
-  "key_findings": ["hallazgo específico 1", "hallazgo específico 2", ...],
-  "recommendations": ["recomendación concreta 1", ...],
-  "comparison_notes": null,
-  "estimated_savings": null,
+  "assessment": "Resumen del análisis en 2-3 oraciones",
+  "key_findings": ["hallazgo 1", "hallazgo 2", ...],
+  "recommendations": ["recomendación 1", ...],
+  "comparison_notes": "Notas sobre presupuesto externo si aplica",
+  "estimated_savings": number o null,
   "urgency": "low" | "moderate" | "high",
   "cta_evaluation_premium": true,
-  "disclaimer": "Este informe es orientativo y no constituye un diagnóstico clínico certificado. Los resultados deben ser validados por un profesional de la salud dental en una evaluación presencial."
+  "disclaimer": "Este informe es orientativo y no constituye un diagnóstico clínico."
 }`;
 
     const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
       {
         type: "text",
-        text: `DIAGNÓSTICO RECIBIDO: ${diagnosis}\n\nDUDA ESPECÍFICA DEL PACIENTE: ${doubt}\n\nHISTORIAL MÉDICO DENTAL: ${medicalHistory}`,
+        text: `Motivo: ${reason}\nDiagnóstico previo: ${diagnosis || 'No proporcionado'}\nClínica externa: ${clinicName || 'No proporcionada'}\nPresupuesto externo: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP` : 'No proporcionado'}`,
       },
     ];
 
     if (imageBase64) {
-      userContent.push({ type: "image_url", image_url: { url: imageBase64 } });
+      userContent.push({
+        type: "image_url",
+        image_url: { url: imageBase64 },
+      });
     }
 
     const response = await fetch(AI_GATEWAY_URL, {
@@ -124,188 +98,81 @@ Responde SOLO con JSON válido con esta estructura exacta:
           { role: 'user', content: userContent },
         ],
         temperature: 0.3,
-        max_tokens: 2000,
+        max_tokens: 1500,
       }),
     });
 
     if (!response.ok) {
       console.error('[Second Opinion] AI gateway error:', response.status);
-      return generateFallbackIAReport(diagnosis);
+      return generateFallbackReport(diagnosis, externalAmount);
     }
 
     const aiData = await response.json();
     const rawText = aiData.choices?.[0]?.message?.content || '';
+    
+    // Parse JSON from response (handle markdown code blocks)
     const jsonMatch = rawText.match(/```json\s*([\s\S]*?)```/) || rawText.match(/\{[\s\S]*\}/);
     const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : rawText;
-    const parsed = JSON.parse(jsonStr.trim());
-
+    
+    const parsed = JSON.parse(jsonStr);
+    
     return {
       assessment: parsed.assessment || 'Análisis completado.',
       key_findings: parsed.key_findings || [],
       recommendations: parsed.recommendations || [],
-      comparison_notes: parsed.comparison_notes || undefined,
-      estimated_savings: parsed.estimated_savings || undefined,
+      comparison_notes: parsed.comparison_notes,
+      estimated_savings: parsed.estimated_savings,
       urgency: parsed.urgency || 'moderate',
-      cta_evaluation_premium: true,
+      cta_evaluation_premium: parsed.cta_evaluation_premium !== false,
       disclaimer: parsed.disclaimer || 'Este informe es orientativo y no constituye un diagnóstico clínico.',
     };
   } catch (error) {
     console.error('[Second Opinion] AI analysis error:', error);
-    return generateFallbackIAReport(diagnosis);
+    return generateFallbackReport(diagnosis, externalAmount);
   }
 }
 
-function generateFallbackIAReport(diagnosis: string): IAReport {
+function generateFallbackReport(
+  diagnosis: string | null,
+  externalAmount: number | null
+): IAReport {
+  const findings: string[] = [];
+  const recommendations: string[] = [];
+
+  if (diagnosis) {
+    findings.push(`Diagnóstico reportado: ${diagnosis}`);
+    findings.push('Se requiere validación clínica presencial para confirmar hallazgos');
+  } else {
+    findings.push('Sin diagnóstico previo proporcionado');
+    findings.push('Recomendamos una evaluación completa');
+  }
+
+  if (externalAmount && externalAmount > 0) {
+    const potentialSavings = Math.round(externalAmount * 0.15);
+    findings.push(`Presupuesto externo: $${externalAmount.toLocaleString('es-CL')} CLP`);
+    recommendations.push(`Potencial ahorro estimado: $${potentialSavings.toLocaleString('es-CL')} CLP`);
+  }
+
+  recommendations.push('Evaluación Presencial Premium para diagnóstico definitivo con IA en vivo');
+  recommendations.push('Visualización de alternativas de tratamiento sobre sus propias imágenes');
+  recommendations.push('Plan de tratamiento personalizado con financiamiento flexible');
+
   return {
-    assessment: `Hemos recibido su caso. Diagnóstico reportado: ${diagnosis}. Para una evaluación completa y validación clínica, recomendamos la Evaluación Presencial Premium.`,
-    key_findings: [
-      'Diagnóstico recibido registrado correctamente',
-      'Se requiere validación clínica presencial para confirmar hallazgos',
-      'La radiografía ha sido recibida para análisis por el especialista',
-    ],
-    recommendations: [
-      'Evaluación Presencial Premium con IA en vivo sobre sus propias imágenes',
-      'Consulta con especialista para plan de tratamiento personalizado',
-      'Comparación de alternativas de tratamiento con tecnología de punta',
-    ],
+    assessment: 'Basado en la información proporcionada, hemos analizado su caso.',
+    key_findings: findings,
+    recommendations,
+    comparison_notes: externalAmount
+      ? 'Su presupuesto externo ha sido analizado. En la Evaluación Premium le mostraremos alternativas con tecnología IA.'
+      : undefined,
+    estimated_savings: externalAmount ? Math.round(externalAmount * 0.15) : undefined,
     urgency: 'moderate',
     cta_evaluation_premium: true,
-    disclaimer: 'Este informe es orientativo y no constituye un diagnóstico clínico. Los resultados deben ser validados por un profesional.',
+    disclaimer: 'Este informe es orientativo y no constituye un diagnóstico clínico. Los resultados deben ser validados por un profesional de la salud dental.',
   };
 }
 
-// ─── Budget comparison with OCR ───────────────────────────────────────────────
-async function generateBudgetComparison(
-  diagnosis: string,
-  doubt: string,
-  budgetImageBase64: string | null,
-): Promise<BudgetReport> {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!apiKey) {
-    console.error('[Second Opinion] LOVABLE_API_KEY not configured for budget comparison');
-    return generateFallbackBudgetReport();
-  }
+const SPECIALIST_PRICE = 19000;
 
-  try {
-    const systemPrompt = `Eres un experto en aranceles dentales de Chile. Tu tarea es:
-1. Si hay imagen del presupuesto, extrae cada ítem con OCR (tratamiento y precio)
-2. Compara cada ítem con los aranceles de Clínica Miró (basados en el arancel CONTINENTAL LINK, que es el estándar dental chileno)
-3. Los precios de Clínica Miró son competitivos — generalmente entre 10% y 30% más económicos para implantes y rehabilitaciones complejas, similares en procedimientos simples
-
-ARANCELES DE REFERENCIA CLÍNICA MIRÓ (CLP aproximados, 2024):
-- Implante unitario (incluye corona): $850.000 - $1.200.000
-- Corona metal-porcelana: $280.000 - $350.000
-- Corona zirconio: $380.000 - $480.000
-- Extracción simple: $45.000 - $65.000
-- Extracción quirúrgica (ej. muela del juicio): $120.000 - $180.000
-- Elevación de seno (lateral): $650.000 - $900.000
-- Regeneración ósea guiada: $450.000 - $700.000
-- Ortodoncia (tratamiento completo): $1.800.000 - $2.800.000
-- Blanqueamiento: $150.000 - $220.000
-- Limpieza profesional: $45.000 - $65.000
-- Obturación (resina): $55.000 - $85.000
-- Endodoncia molar: $180.000 - $250.000
-- Prótesis parcial removible: $350.000 - $550.000
-- Prótesis total: $450.000 - $680.000
-- Carilla de porcelana: $280.000 - $420.000
-
-Responde SOLO con JSON válido:
-{
-  "items": [
-    {
-      "treatment": "nombre del tratamiento",
-      "external_price": número (precio del presupuesto externo),
-      "miro_price": número (precio estimado en Clínica Miró),
-      "notes": "nota breve si aplica"
-    }
-  ],
-  "external_total": número,
-  "miro_total": número,
-  "savings": número,
-  "savings_percent": número (redondeado),
-  "notes": "observaciones generales del presupuesto",
-  "disclaimer": "Los precios son aproximados y pueden variar según complejidad del caso. Solicita una evaluación presencial para un presupuesto exacto."
-}`;
-
-    const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
-      {
-        type: "text",
-        text: `Contexto del caso: ${diagnosis}\nDuda del paciente: ${doubt}\n\n${budgetImageBase64 ? 'Analiza el presupuesto adjunto aplicando OCR y extrae cada ítem.' : 'No se adjuntó presupuesto. Proporciona estimados genéricos basados en el diagnóstico descrito.'}`,
-      },
-    ];
-
-    if (budgetImageBase64) {
-      userContent.push({ type: "image_url", image_url: { url: budgetImageBase64 } });
-    }
-
-    const response = await fetch(AI_GATEWAY_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent },
-        ],
-        temperature: 0.2,
-        max_tokens: 2500,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('[Second Opinion] Budget AI error:', response.status);
-      return generateFallbackBudgetReport();
-    }
-
-    const aiData = await response.json();
-    const rawText = aiData.choices?.[0]?.message?.content || '';
-    const jsonMatch = rawText.match(/```json\s*([\s\S]*?)```/) || rawText.match(/\{[\s\S]*\}/);
-    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : rawText;
-    const parsed = JSON.parse(jsonStr.trim());
-
-    const items: BudgetItem[] = (parsed.items || []).map((item: BudgetItem) => ({
-      treatment: item.treatment,
-      external_price: item.external_price || 0,
-      miro_price: item.miro_price || 0,
-      notes: item.notes,
-    }));
-
-    const extTotal = parsed.external_total || items.reduce((s: number, i: BudgetItem) => s + i.external_price, 0);
-    const miroTotal = parsed.miro_total || items.reduce((s: number, i: BudgetItem) => s + i.miro_price, 0);
-    const savings = extTotal - miroTotal;
-    const savingsPercent = extTotal > 0 ? Math.round((savings / extTotal) * 100) : 0;
-
-    return {
-      items,
-      external_total: extTotal,
-      miro_total: miroTotal,
-      savings: Math.max(0, savings),
-      savings_percent: Math.max(0, savingsPercent),
-      notes: parsed.notes,
-      disclaimer: parsed.disclaimer || 'Los precios son aproximados. Solicita evaluación presencial para presupuesto exacto.',
-    };
-  } catch (error) {
-    console.error('[Second Opinion] Budget comparison error:', error);
-    return generateFallbackBudgetReport();
-  }
-}
-
-function generateFallbackBudgetReport(): BudgetReport {
-  return {
-    items: [],
-    external_total: 0,
-    miro_total: 0,
-    savings: 0,
-    savings_percent: 0,
-    notes: 'No fue posible procesar el presupuesto automáticamente. Un especialista de Clínica Miró lo revisará y te contactará.',
-    disclaimer: 'Los precios son aproximados. Solicita evaluación presencial para un presupuesto exacto.',
-  };
-}
-
-// ─── HTTP Handler ─────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -320,47 +187,35 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     switch (body.action) {
-
-      // ── CREATE ──────────────────────────────────────────────────────────────
       case 'create': {
-        if (!body.name || !body.email || !body.phone || !body.diagnosis || !body.doubt) {
+        if (!body.name || !body.email || !body.phone || !body.reason) {
           return new Response(
-            JSON.stringify({ error: 'Missing required fields: name, email, phone, diagnosis, doubt' }),
+            JSON.stringify({ error: 'Missing required fields: name, email, phone, reason' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        // Upload RX image
+        // Store image if provided
         let rxStoragePaths: string[] = [];
-        if (body.rx_data && body.rx_name) {
+        if (body.image_data && body.image_name) {
           try {
-            const base64 = body.rx_data.includes(',') ? body.rx_data.split(',')[1] : body.rx_data;
+            const base64 = body.image_data.includes(',') ? body.image_data.split(',')[1] : body.image_data;
             const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-            const filePath = `second-opinion/rx_${Date.now()}_${body.rx_name}`;
+            const filePath = `second-opinion/${Date.now()}_${body.image_name}`;
+            
             const { error: uploadError } = await supabase.storage
               .from('intake-files')
-              .upload(filePath, bytes, { contentType: body.rx_mime || 'image/jpeg' });
-            if (!uploadError) rxStoragePaths.push(filePath);
-            else console.error('[Second Opinion] RX upload error:', uploadError);
-          } catch (e) {
-            console.error('[Second Opinion] RX processing error:', e);
-          }
-        }
+              .upload(filePath, bytes, {
+                contentType: body.image_mime || 'image/jpeg',
+              });
 
-        // Upload budget document
-        let budgetStoragePath: string | null = null;
-        if (body.budget_data && body.budget_name) {
-          try {
-            const base64 = body.budget_data.includes(',') ? body.budget_data.split(',')[1] : body.budget_data;
-            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-            const filePath = `second-opinion/budget_${Date.now()}_${body.budget_name}`;
-            const { error: uploadError } = await supabase.storage
-              .from('intake-files')
-              .upload(filePath, bytes, { contentType: body.budget_mime || 'application/pdf' });
-            if (!uploadError) budgetStoragePath = filePath;
-            else console.error('[Second Opinion] Budget upload error:', uploadError);
+            if (!uploadError) {
+              rxStoragePaths.push(filePath);
+            } else {
+              console.error('[Second Opinion] Image upload error:', uploadError);
+            }
           } catch (e) {
-            console.error('[Second Opinion] Budget processing error:', e);
+            console.error('[Second Opinion] Image processing error:', e);
           }
         }
 
@@ -370,13 +225,13 @@ Deno.serve(async (req) => {
             name: body.name.trim(),
             email: body.email.toLowerCase().trim(),
             phone: body.phone.replace(/\D/g, ''),
-            reason: body.diagnosis.trim(), // stored in 'reason' column
-            current_diagnosis: body.doubt?.trim(), // stored doubt in current_diagnosis
+            reason: body.reason.trim(),
+            current_diagnosis: body.current_diagnosis?.trim(),
+            external_budget_amount: body.external_budget_amount,
+            external_clinic_name: body.external_clinic_name?.trim(),
             flow_type: body.flow_type || 'ia_only',
             status: 'pending',
-            rx_storage_paths: rxStoragePaths.length > 0 ? rxStoragePaths : [],
-            budget_document_path: budgetStoragePath,
-            has_rx: rxStoragePaths.length > 0,
+            rx_storage_paths: rxStoragePaths.length > 0 ? rxStoragePaths : null,
           })
           .select()
           .single();
@@ -391,19 +246,26 @@ Deno.serve(async (req) => {
           event_category: 'second_opinion',
           event_data: {
             flow_type: body.flow_type || 'ia_only',
-            has_rx: rxStoragePaths.length > 0,
-            has_budget: !!budgetStoragePath,
+            has_external_budget: !!body.external_budget_amount,
+            has_image: rxStoragePaths.length > 0,
           },
         });
 
         console.log(`[Second Opinion] Created: ${opinion.id}`);
+
         return new Response(
-          JSON.stringify({ success: true, data: { id: opinion.id, status: opinion.status, flow_type: opinion.flow_type } }),
+          JSON.stringify({
+            success: true,
+            data: {
+              id: opinion.id,
+              status: opinion.status,
+              flow_type: opinion.flow_type,
+            },
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // ── IA REPORT ────────────────────────────────────────────────────────────
       case 'ia_report': {
         if (!body.second_opinion_id) {
           return new Response(
@@ -425,13 +287,19 @@ Deno.serve(async (req) => {
           );
         }
 
-        await supabase.from('second_opinions').update({ status: 'ia_processing' }).eq('id', body.second_opinion_id);
+        await supabase
+          .from('second_opinions')
+          .update({ status: 'ia_processing' })
+          .eq('id', body.second_opinion_id);
 
-        // Download RX image if available
+        // Get image data if available
         let imageBase64: string | null = null;
         if (opinion.rx_storage_paths && Array.isArray(opinion.rx_storage_paths) && opinion.rx_storage_paths.length > 0) {
           try {
-            const { data: fileData } = await supabase.storage.from('intake-files').download(opinion.rx_storage_paths[0]);
+            const { data: fileData } = await supabase.storage
+              .from('intake-files')
+              .download(opinion.rx_storage_paths[0]);
+            
             if (fileData) {
               const buffer = await fileData.arrayBuffer();
               const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
@@ -442,102 +310,52 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Build medical history string
-        const medicalHistory = `Última visita al dentista: ${opinion.reason || 'No indicado'}`;
-        const doubt = opinion.current_diagnosis || 'No especificada';
-        const diagnosis = opinion.reason || '';
+        // Generate real IA report
+        const iaReport = await generateIAReport(
+          opinion.reason,
+          opinion.current_diagnosis,
+          opinion.external_budget_amount,
+          opinion.external_clinic_name,
+          imageBase64,
+        );
 
-        const iaReport = await generateIAReport(diagnosis, doubt, medicalHistory, imageBase64);
+        const { error: updateError } = await supabase
+          .from('second_opinions')
+          .update({
+            ia_report: iaReport,
+            ia_completed_at: new Date().toISOString(),
+            status: 'ia_done',
+          })
+          .eq('id', body.second_opinion_id);
 
-        await supabase.from('second_opinions').update({
-          ia_report: iaReport,
-          ia_completed_at: new Date().toISOString(),
-          status: 'ia_done',
-        }).eq('id', body.second_opinion_id);
+        if (updateError) {
+          console.error('[Second Opinion] Update error:', updateError);
+          throw updateError;
+        }
 
         await supabase.from('analytics_events').insert({
           event_type: 'second_opinion_ia_done',
           event_category: 'second_opinion',
-          event_data: { urgency: iaReport.urgency },
-        });
-
-        console.log(`[Second Opinion] IA report generated: ${body.second_opinion_id}`);
-        return new Response(
-          JSON.stringify({ success: true, data: { id: body.second_opinion_id, ia_report: iaReport } }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // ── BUDGET COMPARISON ────────────────────────────────────────────────────
-      case 'budget_comparison': {
-        if (!body.second_opinion_id) {
-          return new Response(
-            JSON.stringify({ error: 'Missing second_opinion_id' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        const { data: opinion, error: fetchError } = await supabase
-          .from('second_opinions')
-          .select('*')
-          .eq('id', body.second_opinion_id)
-          .single();
-
-        if (fetchError || !opinion) {
-          return new Response(
-            JSON.stringify({ error: 'Second opinion not found' }),
-            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        await supabase.from('second_opinions').update({ status: 'ia_processing' }).eq('id', body.second_opinion_id);
-
-        // Download budget document
-        let budgetBase64: string | null = null;
-        if (opinion.budget_document_path) {
-          try {
-            const { data: fileData } = await supabase.storage.from('intake-files').download(opinion.budget_document_path);
-            if (fileData) {
-              const buffer = await fileData.arrayBuffer();
-              const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-              const mime = opinion.budget_document_path.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg';
-              budgetBase64 = `data:${mime};base64,${base64}`;
-            }
-          } catch (e) {
-            console.error('[Second Opinion] Budget download error:', e);
-          }
-        }
-
-        const budgetReport = await generateBudgetComparison(
-          opinion.reason || '',
-          opinion.current_diagnosis || '',
-          budgetBase64,
-        );
-
-        // Store budget report in ia_report field (reuse)
-        await supabase.from('second_opinions').update({
-          ia_report: budgetReport,
-          ia_completed_at: new Date().toISOString(),
-          status: 'ia_done',
-        }).eq('id', body.second_opinion_id);
-
-        await supabase.from('analytics_events').insert({
-          event_type: 'second_opinion_budget_done',
-          event_category: 'second_opinion',
           event_data: {
-            savings: budgetReport.savings,
-            savings_percent: budgetReport.savings_percent,
+            urgency: iaReport.urgency,
+            has_savings: !!iaReport.estimated_savings,
           },
         });
 
-        console.log(`[Second Opinion] Budget comparison done: ${body.second_opinion_id}`);
+        console.log(`[Second Opinion] IA report generated: ${body.second_opinion_id}`);
+
         return new Response(
-          JSON.stringify({ success: true, data: { id: body.second_opinion_id, budget_report: budgetReport } }),
+          JSON.stringify({
+            success: true,
+            data: {
+              id: body.second_opinion_id,
+              ia_report: iaReport,
+            },
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // ── SPECIALIST CHECKOUT ──────────────────────────────────────────────────
       case 'specialist_checkout': {
         if (!body.second_opinion_id) {
           return new Response(
@@ -559,68 +377,72 @@ Deno.serve(async (req) => {
           );
         }
 
-        const flowApiKey = Deno.env.get('FLOW_API_KEY');
-        const flowSecretKey = Deno.env.get('FLOW_SECRET_KEY');
-        
-        if (!flowApiKey || !flowSecretKey) {
+        const accessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
+        if (!accessToken) {
           return new Response(
             JSON.stringify({ error: 'Payment gateway not configured' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        // Build Flow.cl payment
-        const baseUrl = 'https://miro-patient-portal.lovable.app';
-        const params: Record<string, string> = {
-          apiKey: flowApiKey,
-          commerceOrder: `so_${opinion.id.slice(0, 8)}_${Date.now()}`,
-          subject: 'Segunda Opinión con Especialista - Clínica Miró',
-          currency: 'CLP',
-          amount: String(SPECIALIST_PRICE),
-          email: opinion.email,
-          urlConfirmation: `${Deno.env.get('SUPABASE_URL')}/functions/v1/mercadopago`,
-          urlReturn: `${baseUrl}/segunda-opinion/confirmado`,
+        const baseUrl = supabaseUrl.replace('.supabase.co', '.lovable.app');
+
+        const preferenceData = {
+          items: [{
+            title: 'Segunda Opinión con Especialista',
+            description: 'Videollamada con especialista + informe IA detallado',
+            quantity: 1,
+            unit_price: SPECIALIST_PRICE,
+            currency_id: 'CLP',
+          }],
+          payer: {
+            name: opinion.name,
+            email: opinion.email,
+            phone: { number: opinion.phone },
+          },
+          external_reference: `second_opinion_${opinion.id}`,
+          back_urls: {
+            success: `${baseUrl}/segunda-opinion/confirmado`,
+            failure: `${baseUrl}/segunda-opinion/error`,
+            pending: `${baseUrl}/segunda-opinion/pendiente`,
+          },
+          auto_return: 'approved',
         };
 
-        // Sort params and sign
-        const sortedKeys = Object.keys(params).sort();
-        const toSign = sortedKeys.map(k => `${k}${params[k]}`).join('');
-        const keyBytes = new TextEncoder().encode(flowSecretKey);
-        const msgBytes = new TextEncoder().encode(toSign);
-        const cryptoKey = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-        const sigBuffer = await crypto.subtle.sign('HMAC', cryptoKey, msgBytes);
-        const signature = Array.from(new Uint8Array(sigBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-        params.s = signature;
-
-        const formBody = Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
-        const flowResponse = await fetch('https://www.flow.cl/api/payment/create', {
+        const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formBody,
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(preferenceData),
         });
 
-        if (!flowResponse.ok) {
-          const errText = await flowResponse.text();
-          console.error('[Second Opinion] Flow error:', errText);
+        if (!mpResponse.ok) {
+          const errorText = await mpResponse.text();
+          console.error('[Second Opinion] MercadoPago error:', errorText);
           throw new Error('Payment creation failed');
         }
 
-        const flowData = await flowResponse.json();
-        const checkoutUrl = `${flowData.url}?token=${flowData.token}`;
+        const mpPreference = await mpResponse.json();
 
-        await supabase.from('second_opinions').update({
-          payment_status: 'pending',
-          status: 'specialist_pending',
-        }).eq('id', body.second_opinion_id);
+        await supabase
+          .from('second_opinions')
+          .update({
+            payment_status: 'pending',
+            status: 'specialist_pending',
+          })
+          .eq('id', body.second_opinion_id);
 
-        console.log(`[Second Opinion] Specialist checkout created`);
+        console.log(`[Second Opinion] Specialist checkout created: ${mpPreference.id}`);
+
         return new Response(
           JSON.stringify({
             success: true,
             data: {
               id: body.second_opinion_id,
-              checkout_url: checkoutUrl,
-              sandbox_url: checkoutUrl,
+              checkout_url: mpPreference.init_point,
+              sandbox_url: mpPreference.sandbox_init_point,
               amount: SPECIALIST_PRICE,
               currency: 'CLP',
             },
