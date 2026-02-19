@@ -12,6 +12,8 @@ import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 import DataGridCanvas from "@/components/DataGridCanvas";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
+import HeroSplash, { shouldShowHeroSplash, markHeroSplashSeen } from "@/components/HeroSplash";
+import PathAudioButton from "@/components/PathAudioButton";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -50,6 +52,7 @@ const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedPath, setSelectedPath] = useState<PathKey | null>(null);
   const [activeWizard, setActiveWizard] = useState<"nuevo" | "regional" | null>(null);
+  const [showSplash, setShowSplash] = useState(shouldShowHeroSplash);
 
   const heroAudio = useAutoplayAudio({
     src: audioMainSrc,
@@ -107,6 +110,26 @@ const Index = () => {
     },
   ];
 
+  // Narration texts for ElevenLabs TTS per path
+  const pathNarrations: Record<PathKey, string> = {
+    "segunda-opinion":
+      language === "es"
+        ? "Si ya tienes un diagnóstico y quieres validarlo antes de decidir, esta vía es para ti. Nuestra inteligencia artificial analiza tu caso y lo contrasta con protocolos clínicos documentados, para que tomes una decisión informada, con claridad y sin presiones."
+        : "If you already have a diagnosis and want to validate it before deciding, this path is for you. Our AI analyzes your case against documented clinical protocols, so you can make an informed decision with clarity.",
+    "nuevo":
+      language === "es"
+        ? "Si es tu primera vez o buscas una evaluación completa, aquí comienza todo. Un protocolo integral que combina treinta años de experiencia clínica con inteligencia artificial, para un diagnóstico preciso y un plan de tratamiento personalizado."
+        : "If it's your first time or you're looking for a comprehensive evaluation, this is where it all begins. A protocol combining thirty years of clinical experience with AI for a precise diagnosis and personalized treatment plan.",
+    "regional":
+      language === "es"
+        ? "Si vives fuera de Santiago o en el extranjero, esta vía te permite acceder a una tele-evaluación con pre-análisis de inteligencia artificial. Optimizamos tu viaje para que cuando llegues a la clínica, ya tengamos un diagnóstico preliminar listo."
+        : "If you live outside Santiago or abroad, this path gives you access to a tele-evaluation with AI pre-analysis. We optimize your trip so that when you arrive at the clinic, we already have a preliminary diagnosis ready.",
+    "portal":
+      language === "es"
+        ? "Si ya eres paciente de Clínica Miró, accede directamente a tu historial clínico, tus citas, documentos y la evolución de tu tratamiento. Todo en un solo lugar, con total transparencia."
+        : "If you're already a Clínica Miró patient, access your clinical history, appointments, documents, and treatment progress directly. Everything in one place, with full transparency.",
+  };
+
   const pillars = [
     {
       num: "01",
@@ -133,6 +156,11 @@ const Index = () => {
           : "We design the outcome before intervening. Digital planning with no surprises.",
     },
   ];
+
+  // ── Splash screen ──────────────────────────────────────────────────────
+  if (showSplash) {
+    return <HeroSplash onComplete={() => setShowSplash(false)} />;
+  }
 
   // ── Wizard inline mode ────────────────────────────────────────────────────
   if (activeWizard) {
@@ -451,9 +479,12 @@ const Index = () => {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                {/* Via number */}
-                <span className="block text-[9px] tracking-[0.4em] text-gold/50 font-mono mb-4">
-                  VÍA {path.via}
+                {/* Via number + Audio button */}
+                <span className="flex items-center justify-between mb-4">
+                  <span className="text-[9px] tracking-[0.4em] text-gold/50 font-mono">
+                    VÍA {path.via}
+                  </span>
+                  <PathAudioButton text={pathNarrations[path.key]} />
                 </span>
 
                 {/* Title */}
