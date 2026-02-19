@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "Combinamos 30 años de experiencia clínica con inteligencia artificial para que tu diagnóstico sea claro y respaldado por evidencia. Porque decidir un tratamiento no debería ser confuso — y la dignidad comienza con la claridad."
-              : "We combine 30 years of clinical expertise with artificial intelligence so your diagnosis is clear and evidence-backed. Because deciding on treatment shouldn't be confusing — and dignity starts with clarity."}
+              ? "30 años de experiencia clínica, ahora potenciados con inteligencia artificial, para brindarte diagnósticos más precisos, tratamientos más seguros y adaptados para ti, y resultados más previsibles."
+              : "30 years of clinical expertise, now enhanced with artificial intelligence, to provide more precise diagnoses, safer and personalized treatments, and more predictable results."}
           </motion.p>
 
           {/* Primary CTA */}
