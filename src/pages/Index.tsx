@@ -8,8 +8,8 @@ import MenuOverlay from "@/components/MenuOverlay";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import PathTransition from "@/components/PathTransition";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
-import logoMiro from "@/assets/logo-miro-header.svg";
-import logoHero from "@/assets/logo-clinica-miro-hero.svg";
+import logoMiro from "@/assets/logo-definitivo.svg";
+import logoHero from "@/assets/logo-definitivo.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -172,28 +172,28 @@ const Index = () => {
       )}
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/30">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="flex items-center justify-between h-18 sm:h-20">
             <Link to="/">
-              <img src={logoMiro} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
+              <img src={logoMiro} alt="Clínica Miró" className="h-14 sm:h-16 w-auto" />
             </Link>
-            <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-5 sm:gap-7">
               <button
                 onClick={() => setLanguage(language === "es" ? "en" : "es")}
-                className="caption text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 {language === "es" ? "EN" : "ES"}
               </button>
               <button
                 onClick={toggleTheme}
-                className="caption text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 {theme === "light" ? "Night" : "Day"}
               </button>
               <button
                 onClick={() => setMenuOpen(true)}
-                className="caption text-muted-foreground hover:text-gold transition-colors"
+                className="text-xs tracking-[0.2em] text-foreground hover:text-gold transition-colors font-medium"
               >
                 {t("menu.open")}
               </button>
@@ -217,12 +217,12 @@ const Index = () => {
         <ScanLine />
 
         <motion.div
-          className="absolute top-24 left-5 sm:left-12 w-7 h-7 border-t border-l border-gold/15"
+          className="absolute top-24 left-5 sm:left-12 w-7 h-7 border-t border-l border-gold/20"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         />
         <motion.div
-          className="absolute bottom-24 right-5 sm:right-12 w-7 h-7 border-b border-r border-gold/15"
+          className="absolute bottom-24 right-5 sm:right-12 w-7 h-7 border-b border-r border-gold/20"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.8 }}
         />
@@ -232,23 +232,23 @@ const Index = () => {
           {/* Status pill */}
           <motion.div className="flex items-center gap-2 mb-8" {...fadeUpProps(0.1)}>
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-            <span className="text-[9px] sm:text-[10px] tracking-[0.4em] text-gold-muted font-mono uppercase">
+            <span className="text-[10px] sm:text-xs tracking-[0.35em] text-gold font-mono uppercase opacity-80">
               Humana.AI · Santiago, Chile
             </span>
           </motion.div>
 
-          {/* Logo */}
+          {/* Logo hero */}
           <motion.div {...fadeUpProps(0.2)} className="mb-8 sm:mb-10">
             <img
               src={logoHero}
               alt="Clínica Miró"
-              className="h-36 sm:h-52 md:h-64 lg:h-80 w-auto mx-auto"
+              className="h-40 sm:h-56 md:h-72 lg:h-96 w-auto mx-auto"
             />
           </motion.div>
 
           {/* Separator */}
           <motion.div
-            className="w-32 h-px bg-gradient-to-r from-transparent via-gold/35 to-transparent mb-8 sm:mb-10"
+            className="w-32 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent mb-8 sm:mb-10"
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 1 }}
             transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
@@ -256,10 +256,10 @@ const Index = () => {
 
           {/* Headline */}
           <motion.h1
-            className="text-foreground leading-[0.9] tracking-[-0.02em] mb-6"
+            className="text-foreground leading-[0.9] tracking-[-0.02em] mb-8"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(2.8rem, 10vw, 8rem)",
+              fontSize: "clamp(3rem, 10vw, 8rem)",
               fontWeight: 300,
             }}
             {...fadeUpProps(0.75)}
@@ -273,22 +273,22 @@ const Index = () => {
 
           {/* Sub */}
           <motion.p
-            className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-10 sm:mb-14 leading-relaxed"
+            className="text-foreground/70 text-base sm:text-lg max-w-lg mx-auto mb-12 sm:mb-16 leading-relaxed font-light"
             {...fadeUpProps(0.95)}
           >
             {language === "es"
-              ? "30 años de experiencia clínica, ahora potenciados con análisis basado en IA, para ofrecer diagnósticos más precisos, tratamientos más seguros y resultados más predecibles."
-              : "30 years of clinical expertise, now enhanced with AI-based analysis, to offer more precise diagnoses, safer treatments and more predictable results."}
+              ? "30 años de experiencia clínica, potenciados con IA, para diagnósticos más precisos, tratamientos más seguros y resultados más predecibles."
+              : "30 years of clinical expertise, enhanced with AI, for more precise diagnoses, safer treatments and more predictable results."}
           </motion.p>
 
           {/* Primary CTA */}
           <motion.button
             onClick={scrollToPaths}
-            className="group flex items-center gap-3 px-8 py-4 border border-gold/40 text-gold hover:bg-gold hover:text-background transition-all duration-500 text-[11px] tracking-[0.35em] uppercase font-light"
+            className="group flex items-center gap-3 px-10 py-4 border border-gold/60 text-gold hover:bg-gold hover:text-background transition-all duration-500 text-xs tracking-[0.35em] uppercase font-medium"
             {...fadeUpProps(1.1)}
           >
             {language === "es" ? "Comenzar" : "Begin"}
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </motion.button>
         </div>
       </section>
@@ -321,14 +321,14 @@ const Index = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-[10px] tracking-[0.4em] text-muted-foreground/50 font-mono uppercase mb-3">
+            <p className="text-xs tracking-[0.35em] text-muted-foreground font-mono uppercase mb-4">
               {language === "es" ? "¿Cómo puedo ayudarte hoy?" : "How can I help you today?"}
             </p>
             <h2
               className="text-foreground"
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+                fontSize: "clamp(2rem, 5vw, 3.5rem)",
                 fontWeight: 400,
                 lineHeight: 1.1,
               }}
@@ -344,35 +344,35 @@ const Index = () => {
               <motion.button
                 key={path.key}
                 onClick={() => handlePathClick(path)}
-                className="group relative text-left p-6 sm:p-7 border border-border/40 hover:border-gold/50 hover:bg-gold/[0.03] transition-all duration-400"
+                className="group relative text-left p-7 sm:p-8 border border-border/60 hover:border-gold/60 hover:bg-gold/[0.04] transition-all duration-400"
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Via number */}
-                <span className="block text-[9px] tracking-[0.4em] text-gold/50 font-mono mb-4">
+                <span className="block text-[10px] tracking-[0.4em] text-gold/70 font-mono mb-4 font-medium">
                   VÍA {path.via}
                 </span>
 
                 {/* Title */}
-                <h3 className="text-foreground text-sm sm:text-[0.9rem] font-medium mb-3 group-hover:text-gold transition-colors duration-300">
+                <h3 className="text-foreground text-base sm:text-lg font-medium mb-3 group-hover:text-gold transition-colors duration-300 leading-snug">
                   {path.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-muted-foreground text-xs leading-relaxed mb-5">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                   {path.desc}
                 </p>
 
                 {/* Arrow CTA */}
-                <span className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-gold/60 group-hover:text-gold transition-colors duration-300 uppercase">
+                <span className="flex items-center gap-2 text-xs tracking-[0.25em] text-gold/80 group-hover:text-gold transition-colors duration-300 uppercase font-medium">
                   <span>{language === "es" ? "Entrar" : "Enter"}</span>
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </span>
 
                 {/* Left accent bar */}
-                <div className="absolute left-0 top-0 bottom-0 w-px bg-gold/0 group-hover:bg-gold/40 transition-all duration-400" />
+                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gold/0 group-hover:bg-gold/50 transition-all duration-400" />
               </motion.button>
             ))}
           </div>
@@ -382,17 +382,17 @@ const Index = () => {
       {/* ══════════════════════════════════════════════════════════════════════
           FOOTER
       ══════════════════════════════════════════════════════════════════════ */}
-      <footer className="py-10 sm:py-14 px-5 sm:px-8 lg:px-12 border-t border-border/30">
+      <footer className="py-10 sm:py-14 px-5 sm:px-8 lg:px-12 border-t border-border/40">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <div className="space-y-1">
-            <img src={logoMiro} alt="Clínica Miró" className="h-10 w-auto opacity-70" />
-            <p className="text-[10px] tracking-[0.25em] text-muted-foreground/40 font-mono uppercase">
+          <div className="space-y-2">
+            <img src={logoMiro} alt="Clínica Miró" className="h-12 w-auto opacity-80" />
+            <p className="text-xs tracking-[0.2em] text-muted-foreground font-mono uppercase">
               {language === "es" ? "Odontología Predictiva · Humana.AI" : "Predictive Dentistry · Humana.AI"}
             </p>
           </div>
           <div className="text-right space-y-1">
-            <p className="text-[10px] tracking-[0.3em] text-gold/50 font-mono uppercase">{t("location")}</p>
-            <p className="text-[10px] tracking-[0.2em] text-muted-foreground/30 font-mono">© 2025</p>
+            <p className="text-xs tracking-[0.25em] text-gold/70 font-mono uppercase">{t("location")}</p>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground/60 font-mono">© 2025</p>
           </div>
         </div>
       </footer>
@@ -401,3 +401,4 @@ const Index = () => {
 };
 
 export default Index;
+

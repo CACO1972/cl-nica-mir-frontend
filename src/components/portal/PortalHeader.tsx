@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import logoMiro from '@/assets/logo-clinica-miro-portal.svg';
+import logoMiro from '@/assets/logo-definitivo.svg';
 
 interface PortalHeaderProps {
   title?: string;
