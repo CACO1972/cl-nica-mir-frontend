@@ -243,9 +243,9 @@ const Index = () => {
             {...fadeUpProps(0.75)}
           >
           {language === "es" ? (
-              <>No restauramos sonrisas.<br /><em>Restauramos dignidad.</em></>
+              <>No son dientes.<br /><em>Es dignidad.</em></>
             ) : (
-              <>We don't restore smiles.<br /><em>We restore dignity.</em></>
+              <>Not teeth.<br /><em>Dignity.</em></>
             )}
           </motion.h1>
 
@@ -255,8 +255,8 @@ const Index = () => {
             {...fadeUpProps(1.0)}
           >
           {language === "es"
-              ? "No basta con un diagnóstico preciso. La dignidad está en que te expliquen con claridad y te dediquen el tiempo necesario para decidir con tranquilidad."
-              : "A precise diagnosis is not enough. Dignity lies in having it explained clearly and being given the time you need to decide with peace of mind."}
+              ? "Combinamos 30 años de experiencia clínica con inteligencia artificial para que tu diagnóstico sea claro y respaldado por evidencia. Porque decidir un tratamiento no debería ser confuso — y la dignidad comienza con la claridad."
+              : "We combine 30 years of clinical expertise with artificial intelligence so your diagnosis is clear and evidence-backed. Because deciding on treatment shouldn't be confusing — and dignity starts with clarity."}
           </motion.p>
 
           {/* Primary CTA */}
