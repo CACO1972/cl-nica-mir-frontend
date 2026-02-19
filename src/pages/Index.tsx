@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
@@ -11,6 +11,7 @@ import logoMiroHeader from "@/assets/logo-miro-header.svg";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 import DataGridCanvas from "@/components/DataGridCanvas";
+import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -48,6 +49,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedPath, setSelectedPath] = useState<PathKey | null>(null);
+  const [activeWizard, setActiveWizard] = useState<"nuevo" | "regional" | null>(null);
 
   const heroAudio = useAutoplayAudio({
     src: audioMainSrc,
@@ -131,6 +133,49 @@ const Index = () => {
           : "We design the outcome before intervening. Digital planning with no surprises.",
     },
   ];
+
+  // ── Wizard inline mode ────────────────────────────────────────────────────
+  if (activeWizard) {
+    const wizardOrigin = activeWizard === "regional" ? "regional-international" : "pre-evaluation-wizard";
+    return (
+      <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/20">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
+            <div className="flex items-center justify-between h-18 sm:h-20">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveWizard(null)}
+                  className="text-muted-foreground hover:text-gold transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <button onClick={() => setActiveWizard(null)}>
+                  <img src={logoMiroHeader} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
+                </button>
+              </div>
+              <div className="flex items-center gap-4 sm:gap-6">
+                <button
+                  onClick={() => setLanguage(language === "es" ? "en" : "es")}
+                  className="caption text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {language === "es" ? "EN" : "ES"}
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className="caption text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {theme === "light" ? "Night" : "Day"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="pt-20">
+          <PreEvaluationWizard origin={wizardOrigin} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
@@ -387,7 +432,15 @@ const Index = () => {
             {paths.map((path, i) => (
               <motion.button
                 key={path.key}
-                onClick={() => navigate(path.route)}
+              onClick={() => {
+                  if (path.key === "nuevo") {
+                    setActiveWizard("nuevo");
+                  } else if (path.key === "regional") {
+                    setActiveWizard("regional");
+                  } else {
+                    navigate(path.route);
+                  }
+                }}
                 className={`group relative text-left p-6 sm:p-7 border transition-all duration-400 ${
                   selectedPath === path.key
                     ? "border-gold bg-gold/5"
