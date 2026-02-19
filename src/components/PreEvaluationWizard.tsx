@@ -64,8 +64,8 @@ interface FormData {
   // Step 3 - Key Question
   lastVisitYear: string;
   lastTreatment: string;
-  // Step 4 - Image
-  imageFile: File | null;
+  // Step 4 - Images (up to 2)
+  imageFiles: File[];
 }
 
 interface PreEvaluationWizardProps {
@@ -95,7 +95,7 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
     habits: [],
     lastVisitYear: "",
     lastTreatment: "",
-    imageFile: null,
+    imageFiles: [],
   });
 
   const updateFormData = (field: keyof FormData, value: string | string[] | File | null) => {
@@ -165,24 +165,28 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
     }
   };
 
-  const handleUploadImage = async () => {
-    if (!leadId || !formData.imageFile) return true;
+  const handleUploadImages = async () => {
+    if (!leadId || formData.imageFiles.length === 0) return true;
 
     setIsProcessing(true);
     setError(null);
 
     try {
-      const response = await uploadFile({
-        lead_id: leadId,
-        file_type: 'selfie',
-        file: formData.imageFile,
-      });
-
-      if (!response.success) {
-        throw new Error(response.error || 'Error al subir la imagen');
+      // Upload each image sequentially (max 2)
+      const fileTypes: Array<'selfie' | 'photo_intraoral'> = ['selfie', 'photo_intraoral'];
+      for (let i = 0; i < formData.imageFiles.length; i++) {
+        const file = formData.imageFiles[i];
+        const fileType = fileTypes[i] ?? 'selfie';
+        const response = await uploadFile({
+          lead_id: leadId,
+          file_type: fileType,
+          file,
+        });
+        if (!response.success) {
+          throw new Error(response.error || `Error al subir imagen ${i + 1}`);
+        }
+        console.log(`[Wizard] Image ${i + 1} uploaded:`, response.data?.upload_id);
       }
-
-      console.log('[Wizard] Image uploaded:', response.data?.upload_id);
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
@@ -308,10 +312,10 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
     }
 
     if (currentStep === 4) {
-      if (formData.imageFile) {
-        const uploadSuccess = await handleUploadImage();
+      if (formData.imageFiles.length > 0) {
+        const uploadSuccess = await handleUploadImages();
         if (!uploadSuccess) return;
-        
+
         setCurrentStep(5);
         const iaScanSuccess = await handleIAScan();
         if (iaScanSuccess) {
@@ -525,58 +529,128 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
     </div>
   );
 
-  const renderStep4 = () => (
-    <div className="space-y-12 animate-fade-in">
-      <div className="space-y-4">
-        <p className="caption text-muted-foreground">{t("wizard.step4.caption")}</p>
-        <h2 className="display-medium text-foreground">{t("wizard.step4.headline")}</h2>
-      </div>
-      <p className="body-large text-muted-foreground max-w-lg">
-        {t("wizard.step4.intro")}
-      </p>
-      <div className="flex flex-col sm:flex-row gap-6 max-w-md">
-        <label className="flex-1 flex flex-col items-center justify-center gap-4 p-8 border border-dashed border-border hover:border-foreground/50 transition-colors cursor-pointer group">
-          <Upload className="w-8 h-8 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1} />
-          <span className="caption text-muted-foreground group-hover:text-foreground transition-colors">
-            {t("wizard.step4.upload")}
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => updateFormData("imageFile", e.target.files?.[0] || null)}
-          />
-        </label>
-        <label className="flex-1 flex flex-col items-center justify-center gap-4 p-8 border border-dashed border-border hover:border-foreground/50 transition-colors cursor-pointer group">
-          <Camera className="w-8 h-8 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1} />
-          <span className="caption text-muted-foreground group-hover:text-foreground transition-colors">
-            {t("wizard.step4.camera")}
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => updateFormData("imageFile", e.target.files?.[0] || null)}
-          />
-        </label>
-      </div>
-      {formData.imageFile && (
-        <div className="space-y-3">
-          <div className="relative max-w-xs overflow-hidden rounded border border-border">
-            <img
-              src={URL.createObjectURL(formData.imageFile)}
-              alt="Vista previa"
-              className="w-full h-auto max-h-64 object-contain bg-secondary"
-            />
+  const addImageFile = (file: File) => {
+    setFormData((prev) => {
+      if (prev.imageFiles.length >= 2) return prev; // max 2
+      return { ...prev, imageFiles: [...prev.imageFiles, file] };
+    });
+    setError(null);
+  };
+
+  const removeImageFile = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index),
+    }));
+  };
+
+  const renderStep4 = () => {
+    const slotsLeft = 2 - formData.imageFiles.length;
+    const canAddMore = slotsLeft > 0;
+
+    return (
+      <div className="space-y-10 animate-fade-in">
+        {/* Header */}
+        <div className="space-y-4">
+          <p className="caption text-muted-foreground">{t("wizard.step4.caption")}</p>
+          <h2 className="display-medium text-foreground">{t("wizard.step4.headline")}</h2>
+        </div>
+
+        {/* Instructions */}
+        <div className="max-w-lg space-y-3 p-5 border border-gold-muted/30 bg-gold-muted/5">
+          <p className="caption text-gold-muted uppercase tracking-widest">Instrucciones para mejores resultados</p>
+          <ul className="space-y-2">
+            {[
+              { icon: "01", text: "Sonrisa frontal: abre bien la boca, buena luz natural o artificial directa." },
+              { icon: "02", text: "Zona de preocupación: acerca la cámara a la zona que te molesta (encía, diente, etc.)." },
+              { icon: "💡", text: "Evita sombras y fondos oscuros. Más detalle = mejor análisis IA." },
+            ].map((tip) => (
+              <li key={tip.icon} className="flex items-start gap-3">
+                <span className="caption text-gold-muted mt-0.5 shrink-0">{tip.icon}</span>
+                <span className="body-small text-muted-foreground">{tip.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Upload slots */}
+        <div className="max-w-lg space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="caption text-muted-foreground">
+              IMÁGENES ADJUNTADAS ({formData.imageFiles.length}/2)
+            </span>
+            {formData.imageFiles.length > 0 && (
+              <span className="caption text-gold-muted">
+                {slotsLeft === 1 ? "Puedes añadir 1 imagen más" : slotsLeft > 1 ? "Añade hasta 2 imágenes" : "Límite alcanzado"}
+              </span>
+            )}
           </div>
-          <p className="body-small text-muted-foreground">
-            {t("wizard.step4.selected")}: {formData.imageFile.name}
+
+          {/* Preview grid */}
+          {formData.imageFiles.length > 0 && (
+            <div className="grid grid-cols-2 gap-4">
+              {formData.imageFiles.map((file, idx) => (
+                <div key={idx} className="relative group border border-gold-muted/30 overflow-hidden">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`Imagen ${idx + 1}`}
+                    className="w-full h-36 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                    <button
+                      onClick={() => removeImageFile(idx)}
+                      className="caption text-destructive border border-destructive px-3 py-1 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    >
+                      ELIMINAR
+                    </button>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-background/80 px-2 py-1">
+                    <p className="caption text-muted-foreground truncate">{idx === 0 ? "Imagen 1 · Sonrisa" : "Imagen 2 · Detalle"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add buttons — only when can add more */}
+          {canAddMore && (
+            <div className={`grid gap-4 ${formData.imageFiles.length === 0 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2'}`}>
+              <label className="flex flex-col items-center justify-center gap-3 p-6 border border-dashed border-border hover:border-gold-muted/60 transition-colors cursor-pointer group">
+                <Upload className="w-6 h-6 text-muted-foreground group-hover:text-gold-muted transition-colors" strokeWidth={1} />
+                <span className="caption text-muted-foreground group-hover:text-gold-muted transition-colors text-center">
+                  {formData.imageFiles.length === 0 ? "SUBIR DESDE GALERÍA" : "AÑADIR OTRA"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => { if (e.target.files?.[0]) addImageFile(e.target.files[0]); }}
+                />
+              </label>
+              <label className="flex flex-col items-center justify-center gap-3 p-6 border border-dashed border-border hover:border-gold-muted/60 transition-colors cursor-pointer group">
+                <Camera className="w-6 h-6 text-muted-foreground group-hover:text-gold-muted transition-colors" strokeWidth={1} />
+                <span className="caption text-muted-foreground group-hover:text-gold-muted transition-colors text-center">
+                  {formData.imageFiles.length === 0 ? "TOMAR FOTO" : "TOMAR OTRA"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => { if (e.target.files?.[0]) addImageFile(e.target.files[0]); }}
+                />
+              </label>
+            </div>
+          )}
+
+          {/* Skip note */}
+          <p className="body-small text-muted-foreground/60 text-center">
+            Las imágenes son opcionales. Sin ellas, el análisis IA será menos preciso.
           </p>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   const renderStep5 = () => (
     <div className="space-y-12 animate-fade-in">
