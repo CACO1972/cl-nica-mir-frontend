@@ -1,57 +1,154 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
-import ServicesBento from "@/components/ServicesBento";
-import AIEcosystem from "@/components/AIEcosystem";
-import PainPoints from "@/components/PainPoints";
-import FutureVarianceBlock from "@/components/FutureVarianceBlock";
 import AudioToggleButton from "@/components/AudioToggleButton";
 import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
-import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
-import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import logoMiroHeader from "@/assets/logo-miro-header.svg";
+import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
 
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+type PathKey = "segunda-opinion" | "nuevo" | "regional" | "portal";
+
+interface PathOption {
+  key: PathKey;
+  via: string;
+  title: string;
+  desc: string;
+  route: string;
+}
+
+// ─── Shared fade-up animation helper (inline, avoids Variants typing issues) ──
+const fadeUpProps = (delay = 0) => ({
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay, duration: 0.7, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+});
+
+// ─── ScanLine decoration ──────────────────────────────────────────────────────
+const ScanLine = () => (
+  <motion.div
+    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/15 to-transparent pointer-events-none"
+    initial={{ top: "10%", opacity: 0 }}
+    animate={{ top: ["10%", "90%", "10%"], opacity: [0, 0.8, 0] }}
+    transition={{ duration: 9, repeat: Infinity, ease: "linear", delay: 2.5 }}
+  />
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const Index = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedPath, setSelectedPath] = useState<PathKey | null>(null);
 
-  // Audio: teaser 3D — autoplay with fade-in on landing
   const heroAudio = useAutoplayAudio({
     src: audioMainSrc,
     autoplay: true,
     fadeInMs: 2000,
-    volume: 0.7,
+    volume: 0.6,
   });
+
+  const pathsRef = useRef<HTMLElement>(null);
+
+  const scrollToPaths = () => {
+    pathsRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const paths: PathOption[] = [
+    {
+      key: "segunda-opinion",
+      via: "01",
+      title: language === "es" ? "Segunda Opinión" : "Second Opinion",
+      desc:
+        language === "es"
+          ? "Valida tu diagnóstico actual con nuestra IA clínica."
+          : "Validate your current diagnosis with our clinical AI.",
+      route: "/segunda-opinion",
+    },
+    {
+      key: "nuevo",
+      via: "02",
+      title: language === "es" ? "Paciente Nuevo" : "New Patient",
+      desc:
+        language === "es"
+          ? "Evaluación integral bajo protocolo predictivo 3.0."
+          : "Comprehensive evaluation under predictive protocol 3.0.",
+      route: "/evaluation",
+    },
+    {
+      key: "regional",
+      via: "03",
+      title: language === "es" ? "Región / Exterior" : "Region / International",
+      desc:
+        language === "es"
+          ? "Tele-odontología y pre-análisis para pacientes remotos."
+          : "Tele-dentistry and pre-analysis for remote patients.",
+      route: "/regional",
+    },
+    {
+      key: "portal",
+      via: "04",
+      title: language === "es" ? "Ya soy Paciente" : "I'm a Patient",
+      desc:
+        language === "es"
+          ? "Acceso directo a tu historial, citas y evolución."
+          : "Direct access to your records, appointments and progress.",
+      route: "/portal",
+    },
+  ];
+
+  const pillars = [
+    {
+      num: "01",
+      title: language === "es" ? "Cero Incertidumbre" : "Zero Uncertainty",
+      desc:
+        language === "es"
+          ? "Nuestra IA contrasta tu caso contra miles de protocolos documentados. El diagnóstico deja de ser opinión."
+          : "Our AI cross-references your case against thousands of documented protocols. Diagnosis stops being an opinion.",
+    },
+    {
+      num: "02",
+      title: language === "es" ? "Comprensión Visual" : "Visual Understanding",
+      desc:
+        language === "es"
+          ? "Ves lo mismo que el especialista. Cuando entiendes, confías. Cuando confías, decides."
+          : "You see exactly what the specialist sees. When you understand, you trust. When you trust, you decide.",
+    },
+    {
+      num: "03",
+      title: language === "es" ? "Resultado Predecible" : "Predictable Result",
+      desc:
+        language === "es"
+          ? "Diseñamos el resultado antes de intervenir. Planificación digital sin sorpresas."
+          : "We design the outcome before intervening. Digital planning with no surprises.",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
-      {/* Menu Overlay */}
       <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      {/* Minimal Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/30">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="flex items-center justify-between h-20">
-            <Link to="/" className="flex items-center">
-              <img
-                src={logoMiroHeader}
-                alt="Clínica Miró"
-                className="h-14 w-auto object-contain"
-              />
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between h-18 sm:h-20">
+            <Link to="/">
+              <img src={logoMiroHeader} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
             </Link>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6">
+              {/* Deep link */}
               <Link
-                to="/portal"
-                className="caption text-gold-muted hover:text-gold transition-colors duration-300 tracking-widest"
+                to="/evaluation"
+                className="hidden sm:block caption text-muted-foreground/50 hover:text-muted-foreground transition-colors text-[10px] tracking-[0.25em] border-b border-transparent hover:border-muted-foreground/30"
               >
-                Portal Paciente
+                {language === "es" ? "Filosofía & Ciencia →" : "Philosophy & Science →"}
               </Link>
               <button
                 onClick={() => setLanguage(language === "es" ? "en" : "es")}
@@ -67,7 +164,7 @@ const Index = () => {
               </button>
               <button
                 onClick={() => setMenuOpen(true)}
-                className="caption text-muted-foreground hover:text-gold transition-colors duration-300"
+                className="caption text-muted-foreground hover:text-gold transition-colors"
               >
                 {t("menu.open")}
               </button>
@@ -76,7 +173,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Audio toggle */}
       <AudioToggleButton
         isPlaying={heroAudio.isPlaying}
         blocked={heroAudio.blocked}
@@ -85,264 +181,263 @@ const Index = () => {
         position="bottom-left"
       />
 
-      {/* Hero Section — Futuristic Clinical Interface */}
-      <section className="min-h-[100svh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-12 relative overflow-hidden bg-background">
+      {/* ══════════════════════════════════════════════════════════════════════
+          HERO — Máximo impacto, mínimo texto
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-background">
+        <ScanLine />
 
-        {/* Background grid — scanline aesthetic */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          {/* Horizontal scan line */}
-          <motion.div
-            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent"
-            initial={{ top: "20%", opacity: 0 }}
-            animate={{ top: ["20%", "80%", "20%"], opacity: [0, 0.6, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: 2 }}
-          />
-          {/* Corner brackets TL */}
-          <motion.div
-            className="absolute top-24 left-6 sm:left-12 w-8 h-8 border-t border-l border-gold/20"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          />
-          {/* Corner brackets BR */}
-          <motion.div
-            className="absolute bottom-24 right-6 sm:right-12 w-8 h-8 border-b border-r border-gold/20"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          />
-          {/* Coordinate labels */}
-          <motion.span
-            className="absolute top-[6.5rem] left-6 sm:left-12 text-[9px] tracking-[0.3em] text-gold/30 font-mono"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.8 }}
-          >
-            CL · MR · 2025
-          </motion.span>
-          <motion.span
-            className="absolute bottom-[6rem] right-6 sm:right-12 text-[9px] tracking-[0.3em] text-gold/30 font-mono"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.8 }}
-          >
-            AI · v2.0
-          </motion.span>
-        </div>
+        {/* Brackets decoration */}
+        <motion.div
+          className="absolute top-24 left-5 sm:left-12 w-7 h-7 border-t border-l border-gold/15"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        />
+        <motion.div
+          className="absolute bottom-24 right-5 sm:right-12 w-7 h-7 border-b border-r border-gold/15"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+        />
 
-        {/* Main content — strict vertical rhythm */}
-        <div className="max-w-5xl mx-auto w-full text-center relative z-10 flex flex-col items-center gap-0">
+        <div className="max-w-4xl mx-auto w-full text-center flex flex-col items-center">
 
-          {/* Status tag — clinical precision */}
+          {/* Status pill */}
           <motion.div
-            className="flex items-center gap-2 mb-10"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-2 mb-8"
+            {...fadeUpProps(0.1)}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-            <span className="text-[10px] tracking-[0.4em] text-gold-muted font-mono uppercase">
-              Sistema Activo · Santiago, Chile
+            <span className="text-[9px] sm:text-[10px] tracking-[0.4em] text-gold-muted font-mono uppercase">
+              Humana.AI · Santiago, Chile
             </span>
           </motion.div>
 
-          {/* Logo — centered, breathing */}
+          {/* Logo */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.25, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-12"
+            {...fadeUpProps(0.2)}
+            className="mb-8 sm:mb-10"
           >
             <img
               src={logoHero}
               alt="Clínica Miró"
-              className="h-28 sm:h-40 md:h-52 lg:h-60 w-auto mx-auto"
+              className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto"
             />
           </motion.div>
 
-          {/* Horizontal rule — precise separator */}
+          {/* Separator */}
           <motion.div
-            className="w-full max-w-xs h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent mb-10"
+            className="w-32 h-px bg-gradient-to-r from-transparent via-gold/35 to-transparent mb-8 sm:mb-10"
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           />
 
-          {/* Headline — absolute declaration */}
+          {/* Headline — the statement */}
           <motion.h1
-            className="display-institutional text-foreground leading-[0.92] text-shadow-subtle"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.85, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            className="text-foreground leading-[0.9] tracking-[-0.02em] mb-6"
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(2.8rem, 10vw, 8rem)",
+              fontWeight: 300,
+            }}
+            {...fadeUpProps(0.75)}
           >
-            No son dientes.
-            <br />
-            <span className="italic">Es dignidad.</span>
+            {language === "es" ? (
+              <>La odontología<br /><em>ya no es una opinión.</em></>
+            ) : (
+              <>Dentistry is no longer<br /><em>a matter of opinion.</em></>
+            )}
           </motion.h1>
 
-          {/* Triad — calibrated crescendo */}
-          <motion.div
-            className="flex items-baseline justify-center gap-3 sm:gap-5 mt-10 sm:mt-14"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.3, duration: 0.8 }}
-          >
-            {[
-              { word: "Repara",   size: "text-sm sm:text-base md:text-lg", weight: 300, opacity: 0.5 },
-              { word: "Recupera", size: "text-base sm:text-xl md:text-2xl", weight: 400, opacity: 0.75 },
-              { word: "Revive",   size: "text-xl sm:text-3xl md:text-4xl", weight: 600, opacity: 1 },
-            ].map((item, i) => (
-              <motion.span
-                key={item.word}
-                className={`${item.size} text-gold tracking-[0.2em]`}
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: item.weight, opacity: item.opacity }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: item.opacity, y: 0 }}
-                transition={{ delay: 1.35 + i * 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {item.word}
-                {i < 2 && (
-                  <span className="ml-3 sm:ml-5 text-gold/25 font-light">·</span>
-                )}
-              </motion.span>
-            ))}
-          </motion.div>
-
-          {/* Tagline */}
+          {/* Sub — one punchy sentence */}
           <motion.p
-            className="mt-10 text-sm sm:text-base text-muted-foreground tracking-wide max-w-sm mx-auto"
-            style={{ fontFamily: "'Lora', serif", fontStyle: "italic" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.7, duration: 0.8 }}
+            className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-sm mx-auto mb-10 sm:mb-14 leading-relaxed"
+            {...fadeUpProps(1.0)}
           >
-            La odontología del futuro, hoy.
+            {language === "es"
+              ? "Ahora es una certeza. Diagnóstico predictivo basado en IA, no en criterios contradictorios."
+              : "Now it's a certainty. Predictive diagnosis powered by AI, not conflicting opinions."}
           </motion.p>
-        </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.2, duration: 0.8 }}
-        >
-          <ChevronDown className="w-4 h-4 text-muted-foreground/30 animate-gentle-bounce" strokeWidth={1} />
-        </motion.div>
-      </section>
+          {/* Primary CTA */}
+          <motion.button
+            onClick={scrollToPaths}
+            className="group flex items-center gap-3 px-8 py-4 border border-gold/40 text-gold hover:bg-gold hover:text-background transition-all duration-500 text-[11px] tracking-[0.35em] uppercase font-light"
+            {...fadeUpProps(1.2)}
+          >
+            {language === "es" ? "Comenzar experiencia" : "Begin experience"}
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
 
-      {/* Bloque 2 — El Problema */}
-      <section id="como-trabajamos" className="py-section px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-            <div className="lg:sticky lg:top-32">
-              <p className="caption text-muted-foreground mb-6">El Problema</p>
-              <h2 className="display-large text-foreground text-shadow-subtle" style={{ fontFamily: "'Lora', serif" }}>
-                Cuando hay duda,<br />hay abandono.
-              </h2>
-            </div>
-            <div className="space-y-8 lg:pt-24">
-              <p className="body-large text-muted-foreground">
-                Una proporción significativa de tratamientos dentales nunca se completa.
-              </p>
-              <p className="body-large text-muted-foreground">
-                La literatura documenta variabilidad diagnóstica entre profesionales.
-              </p>
-              <p className="body-large text-muted-foreground">
-                América Latina presenta una de las mayores cargas de enfermedad oral del mundo.
-              </p>
-              <p className="body-large text-foreground font-medium" style={{ fontFamily: "'Lora', serif" }}>
-                El problema no es el precio.<br />Es la incertidumbre.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bloque 3 — La Solución */}
-      <section className="py-section px-6 lg:px-12 bg-secondary">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-            <div className="lg:sticky lg:top-32">
-              <p className="caption text-muted-foreground mb-6">La Solución</p>
-              <h2 className="display-large text-foreground text-shadow-subtle" style={{ fontFamily: "'Lora', serif" }}>
-                Claridad antes de tratarte.
-              </h2>
-            </div>
-            <div className="space-y-8 lg:pt-24">
-              <p className="body-large text-muted-foreground">
-                En Clínica Miró integramos inteligencia clínica avanzada para:
-              </p>
-              <ul className="space-y-3">
-                {["Estandarizar diagnósticos", "Visualizar tu caso con precisión", "Comparar escenarios de tratamiento", "Reducir variabilidad extrema", "Aumentar transparencia"].map((item) => (
-                  <li key={item} className="flex items-center gap-3 body-large text-muted-foreground">
-                    <span className="w-1 h-1 rounded-full bg-gold shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <p className="body-large text-foreground font-medium" style={{ fontFamily: "'Lora', serif" }}>
-                No reemplazamos al dentista.<br />Lo potenciamos.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pain Points — Evidencia */}
-      <PainPoints />
-
-      {/* Future Variance Block */}
-      <FutureVarianceBlock />
-
-      {/* Editorial Break */}
-      <section className="py-section-sm px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="border-t border-gold-muted/40" />
-        </div>
-      </section>
-
-      {/* AI Ecosystem Visualization */}
-      <AIEcosystem />
-
-      {/* Services Bento Grid */}
-      <ServicesBento />
-
-      {/* Vision + CTA Section */}
-      <section className="py-section px-6 lg:px-12 bg-secondary">
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h2 className="display-large text-foreground text-shadow-subtle" style={{ fontFamily: "'Lora', serif" }}>
-              Tu sonrisa merece decisiones informadas.
-            </h2>
-            <p className="body-large text-muted-foreground max-w-2xl mx-auto">
-              No te vendemos un tratamiento.<br />Te ayudamos a entender tu caso.
-            </p>
+          {/* Depth link */}
+          <motion.div
+            className="mt-8"
+            {...fadeUpProps(1.5)}
+          >
             <Link
               to="/evaluation"
-              className="inline-block px-10 py-4 bg-gold text-background text-sm tracking-widest caption hover:bg-gold-muted transition-colors duration-300"
+              className="text-[10px] tracking-[0.3em] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors uppercase border-b border-muted-foreground/20 hover:border-muted-foreground/40 pb-0.5"
             >
-              Empezar evaluación guiada
+              {language === "es" ? "Leer sobre nuestra ciencia →" : "Read about our science →"}
             </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          3 PILARES — Cómo funciona la IA
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-24 sm:py-32 px-5 sm:px-8 lg:px-12 bg-secondary">
+        <div className="max-w-6xl mx-auto">
+
+          {/* Section header */}
+          <motion.div
+            className="mb-16 sm:mb-20"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <p className="text-[10px] tracking-[0.4em] text-muted-foreground/50 font-mono uppercase mb-3">
+              {language === "es" ? "Por qué somos diferentes" : "Why we're different"}
+            </p>
+            <h2
+              className="text-foreground"
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+                fontWeight: 400,
+                lineHeight: 1.1,
+              }}
+            >
+              {language === "es"
+                ? <>Tu salud merece datos,<br /><em>no dudas.</em></>
+                : <>Your health deserves data,<br /><em>not doubts.</em></>}
+            </h2>
+          </motion.div>
+
+          {/* Pillars grid */}
+          <div className="grid sm:grid-cols-3 gap-8 lg:gap-12">
+            {pillars.map((p, i) => (
+              <motion.div
+                key={p.num}
+                className="relative pl-5 border-l border-gold/25 space-y-3"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="text-[9px] tracking-[0.4em] text-gold/50 font-mono">{p.num}</span>
+                <h3 className="text-foreground text-sm sm:text-base font-medium tracking-wide">{p.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{p.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-16 px-6 lg:px-12 border-t border-border">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div className="space-y-2">
-              <img src={logoClinicaMiro} alt="Clínica Miró" className="h-16 md:h-20 w-auto" />
-              <p className="body-large text-muted-foreground">
-                {t("footer.tagline")}
-              </p>
-            </div>
-            <div className="text-right space-y-2">
-              <p className="caption text-gold-muted">{t("location")}</p>
-              <p className="caption text-muted-foreground">© 2025</p>
-            </div>
+      {/* ══════════════════════════════════════════════════════════════════════
+          4 VÍAS — Selector de perfil de atención
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        ref={pathsRef}
+        className="py-24 sm:py-32 px-5 sm:px-8 lg:px-12 relative overflow-hidden"
+      >
+        {/* Subtle background text */}
+        <div
+          aria-hidden
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+        >
+          <span
+            className="text-foreground/[0.015] font-mono tracking-widest whitespace-nowrap"
+            style={{ fontSize: "clamp(4rem, 18vw, 18rem)", fontWeight: 700 }}
+          >
+            HUMANA.AI
+          </span>
+        </div>
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <motion.div
+            className="mb-14 sm:mb-18"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <p className="text-[10px] tracking-[0.4em] text-muted-foreground/50 font-mono uppercase mb-3">
+              {language === "es" ? "Selecciona tu perfil" : "Select your profile"}
+            </p>
+            <h2
+              className="text-foreground"
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+                fontWeight: 400,
+                lineHeight: 1.1,
+              }}
+            >
+              {language === "es" ? "¿Cómo podemos ayudarte?" : "How can we help you?"}
+            </h2>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {paths.map((path, i) => (
+              <motion.button
+                key={path.key}
+                onClick={() => navigate(path.route)}
+                className={`group relative text-left p-6 sm:p-7 border transition-all duration-400 ${
+                  selectedPath === path.key
+                    ? "border-gold bg-gold/5"
+                    : "border-border/40 hover:border-gold/50 hover:bg-gold/[0.03]"
+                }`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* Via number */}
+                <span className="block text-[9px] tracking-[0.4em] text-gold/50 font-mono mb-4">
+                  VÍA {path.via}
+                </span>
+
+                {/* Title */}
+                <h3 className="text-foreground text-sm sm:text-[0.9rem] font-medium mb-3 group-hover:text-gold transition-colors duration-300">
+                  {path.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-muted-foreground text-xs leading-relaxed mb-5">
+                  {path.desc}
+                </p>
+
+                {/* Arrow CTA */}
+                <span className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-gold/60 group-hover:text-gold transition-colors duration-300 uppercase">
+                  <span>{language === "es" ? "Entrar" : "Enter"}</span>
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </span>
+
+                {/* Left accent bar */}
+                <div className="absolute left-0 top-0 bottom-0 w-px bg-gold/0 group-hover:bg-gold/40 transition-all duration-400" />
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          FOOTER — Minimal
+      ══════════════════════════════════════════════════════════════════════ */}
+      <footer className="py-10 sm:py-14 px-5 sm:px-8 lg:px-12 border-t border-border/30">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="space-y-1">
+            <img src={logoMiroHeader} alt="Clínica Miró" className="h-10 w-auto opacity-70" />
+            <p className="text-[10px] tracking-[0.25em] text-muted-foreground/40 font-mono uppercase">
+              {language === "es" ? "Odontología Predictiva · Humana.AI" : "Predictive Dentistry · Humana.AI"}
+            </p>
+          </div>
+          <div className="text-right space-y-1">
+            <p className="text-[10px] tracking-[0.3em] text-gold/50 font-mono uppercase">{t("location")}</p>
+            <p className="text-[10px] tracking-[0.2em] text-muted-foreground/30 font-mono">© 2025</p>
           </div>
         </div>
       </footer>
