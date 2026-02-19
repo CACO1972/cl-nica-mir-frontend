@@ -254,9 +254,9 @@ const Index = () => {
             className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-10 sm:mb-14 leading-relaxed"
             {...fadeUpProps(1.0)}
           >
-            {language === "es"
-              ? "Visualiza tu diagnóstico. Entiende tus opciones. Decide con certeza — respaldado por IA y evidencia clínica, no por opiniones."
-              : "See your diagnosis. Understand your options. Decide with certainty — backed by AI and clinical evidence, not opinions."}
+          {language === "es"
+              ? "En Miró, nuestra IA suma una segunda capa de certeza a 30 años de experiencia clínica. Para que tu diagnóstico sea uno — claro, preciso, tuyo."
+              : "At Miró, our AI adds a second layer of certainty to 30 years of clinical expertise. So your diagnosis is one — clear, precise, yours."}
           </motion.p>
 
           {/* Primary CTA */}
