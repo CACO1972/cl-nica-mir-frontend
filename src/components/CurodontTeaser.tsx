@@ -10,10 +10,6 @@ interface CurodontTeaserProps {
 
 const SESSION_KEY = "curodont_teaser_seen";
 
-export function shouldShowCurodontTeaser(): boolean {
-  return !sessionStorage.getItem(SESSION_KEY);
-}
-
 const TIMELINE = [
   { id: "adult", duration: 4000, label: { es: "Caries no es el fin", en: "Cavities are not the end" }, sub: { es: "Es el inicio de algo nuevo", en: "It's the start of something new" } },
   { id: "child_peace", duration: 8000, label: { es: "Sin dolor, sin miedo", en: "No pain, no fear" }, sub: { es: "Odontología que regenera, no destruye", en: "Dentistry that regenerates, not destroys" } },

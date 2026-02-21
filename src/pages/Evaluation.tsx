@@ -7,12 +7,10 @@ import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import MenuOverlay from "@/components/MenuOverlay";
 import EditorialQuote from "@/components/EditorialQuote";
 import EvaluationSplash from "@/components/EvaluationSplash";
-import CurodontTeaser, { shouldShowCurodontTeaser } from "@/components/CurodontTeaser";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
 
 const SPLASH_SEEN_KEY = "evaluation_splash_seen";
-const CURODONT_SEEN_KEY = "curodont_teaser_seen";
 
 const Evaluation = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -33,13 +31,9 @@ const Evaluation = () => {
     }
   }, [searchParams]);
   
-  // Curodont teaser → then evaluation splash → then content
-  const curodontAlreadySeen = !shouldShowCurodontTeaser();
-  const [showCurodont, setShowCurodont] = useState(!curodontAlreadySeen);
-
   // Check if splash was already seen this session
   const splashAlreadySeen = sessionStorage.getItem(SPLASH_SEEN_KEY) === "true";
-  const [showSplash, setShowSplash] = useState(!splashAlreadySeen && curodontAlreadySeen);
+  const [showSplash, setShowSplash] = useState(!splashAlreadySeen);
   const [contentVisible, setContentVisible] = useState(splashAlreadySeen);
   
   // Reveal animation for entry points
@@ -59,17 +53,6 @@ const Evaluation = () => {
     window.addEventListener("keydown", handleResetSplash);
     return () => window.removeEventListener("keydown", handleResetSplash);
   }, [handleResetSplash]);
-
-  // Handle Curodont teaser completion
-  const handleCurodontComplete = () => {
-    setShowCurodont(false);
-    // Now show evaluation splash if not seen
-    if (!splashAlreadySeen) {
-      setShowSplash(true);
-    } else {
-      setTimeout(() => setContentVisible(true), 100);
-    }
-  };
 
   // Handle splash completion
   const handleSplashComplete = () => {
@@ -148,8 +131,6 @@ const Evaluation = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden scrollbar-hide">
-      {/* Curodont Teaser — before evaluation splash */}
-      {showCurodont && <CurodontTeaser onComplete={handleCurodontComplete} />}
       {/* Evaluation Splash Screen */}
       {showSplash && <EvaluationSplash onComplete={handleSplashComplete} />}
 
