@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -56,7 +56,7 @@ const Index = () => {
 
   const heroAudio = useAutoplayAudio({
     src: audioMainSrc,
-    autoplay: true,
+    autoplay: !showSplash,
     fadeInMs: 2000,
     volume: 0.6,
   });
@@ -157,9 +157,24 @@ const Index = () => {
     },
   ];
 
+  // Fade out hero audio when wizard opens (prevents overlap with CurodontTeaser)
+  useEffect(() => {
+    if (activeWizard) {
+      heroAudio.fadeOut();
+    }
+  }, [activeWizard]);
+
   // ── Splash screen ──────────────────────────────────────────────────────
   if (showSplash) {
-    return <HeroSplash onComplete={() => setShowSplash(false)} />;
+    return (
+      <HeroSplash
+        onComplete={() => {
+          setShowSplash(false);
+          // Start hero background audio after splash finishes its own audio
+          setTimeout(() => heroAudio.play(), 300);
+        }}
+      />
+    );
   }
 
   // ── Wizard inline mode ────────────────────────────────────────────────────
