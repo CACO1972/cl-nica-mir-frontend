@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronRight, ChevronLeft, Upload, Camera, Check, AlertCircle, Loader2, Calendar, MessageCircle } from "lucide-react";
 import { createLead, uploadFile, triggerIAScan, createCheckout, IAScanResponse, fetchAgendaOptions, bookAppointment, AgendaOption } from "@/services/funnelApi";
 import { toast } from "sonner";
+import CurodontTeaser from "@/components/CurodontTeaser";
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 // Medical condition options for checkboxes
@@ -83,6 +84,7 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
   const [loadingAgenda, setLoadingAgenda] = useState(false);
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
   const [booked, setBooked] = useState(false);
+  const [showCurodontTeaser, setShowCurodontTeaser] = useState(false);
   
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -319,7 +321,10 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
         setCurrentStep(5);
         const iaScanSuccess = await handleIAScan();
         if (iaScanSuccess) {
-          setTimeout(() => setCurrentStep(6), 1500);
+          setTimeout(() => {
+            setShowCurodontTeaser(true); // Will only render for zero_caries in renderStep6
+            setCurrentStep(6);
+          }, 1500);
         }
         return;
       } else {
@@ -710,10 +715,19 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
     </div>
   );
 
+  const handleCurodontComplete = useCallback(() => {
+    setShowCurodontTeaser(false);
+  }, []);
+
   const renderStep6 = () => {
     const clinicalRoute = iaResult ? determineClinicalRoute(iaResult) : 'general';
     const route = CLINICAL_ROUTES[clinicalRoute];
     const hasIA = !!iaResult;
+
+    // Show Curodont Teaser for zero_caries route
+    if (clinicalRoute === 'zero_caries' && showCurodontTeaser) {
+      return <CurodontTeaser onComplete={handleCurodontComplete} />;
+    }
 
     return (
       <div className="space-y-12 animate-fade-in">
