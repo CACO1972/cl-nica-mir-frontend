@@ -10,7 +10,7 @@ import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoMiroHeader from "@/assets/logo-miro-header.svg";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 import audioMainSrc from "@/assets/audio_main.mp3";
-import DataGridCanvas from "@/components/DataGridCanvas";
+
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import HeroSplash, { shouldShowHeroSplash, markHeroSplashSeen } from "@/components/HeroSplash";
 import PathAudioButton from "@/components/PathAudioButton";
@@ -274,8 +274,7 @@ const Index = () => {
           HERO — Máximo impacto, mínimo texto
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-background">
-        {/* Animated data grid background */}
-        <DataGridCanvas />
+        {/* Background removed — clean hero */}
         <ScanLine />
 
         {/* Brackets decoration */}
