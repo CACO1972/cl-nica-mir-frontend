@@ -274,7 +274,15 @@ const Index = () => {
           HERO — Máximo impacto, mínimo texto
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-background">
-        {/* Background removed — clean hero */}
+        {/* Ambient video background — 3s loop */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video
+            autoPlay muted loop playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.06]"
+            src="/videos/ambient-ai.mp4"
+          />
+          <div className="absolute inset-0 bg-background/80" />
+        </div>
         <ScanLine />
 
         {/* Brackets decoration */}
@@ -424,6 +432,16 @@ const Index = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ── Video interlude — dashboard AI ──────────────────────────────────── */}
+      <section className="relative h-32 sm:h-40 overflow-hidden">
+        <video
+          autoPlay muted loop playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/videos/ambient-dashboard.mp4"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
