@@ -274,14 +274,14 @@ const Index = () => {
           HERO — Máximo impacto, mínimo texto
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-background">
-        {/* Ambient video background — 3s loop */}
+      {/* Ambient video background */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <video
             autoPlay muted loop playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.06]"
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
             src="/videos/ambient-ai.mp4"
           />
-          <div className="absolute inset-0 bg-background/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/60 to-background/90" />
         </div>
         <ScanLine />
 
@@ -330,31 +330,50 @@ const Index = () => {
             transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
           />
 
-          {/* Headline — the statement */}
+          {/* Headline — bold Overjet-inspired */}
           <motion.h1
-            className="text-foreground leading-[0.9] tracking-[-0.02em] mb-6"
+            className="text-foreground leading-[0.95] tracking-[-0.03em] mb-6"
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(2.8rem, 10vw, 8rem)",
-              fontWeight: 300,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(2.2rem, 8vw, 5.5rem)",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "-0.02em",
             }}
             {...fadeUpProps(0.75)}
           >
             {language === "es" ? (
-              <>30 años de clínica.<br /><em>Ahora, con IA.</em></>
+              <>IA dental para<br /><span className="text-gold">potenciar tu clínica</span></>
             ) : (
-              <>30 years of clinic.<br /><em>Now, with AI.</em></>
+              <>Dental AI to<br /><span className="text-gold">enhance your care</span></>
             )}
           </motion.h1>
 
-          {/* Sub — one punchy sentence */}
+          {/* Sub-headline — serif editorial contrast */}
           <motion.p
-            className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-md mx-auto mb-10 sm:mb-14 leading-relaxed"
-            {...fadeUpProps(1.0)}
+            className="text-muted-foreground mb-6"
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(1.1rem, 3vw, 1.6rem)",
+              fontWeight: 300,
+              fontStyle: "italic",
+              lineHeight: 1.3,
+            }}
+            {...fadeUpProps(0.9)}
           >
             {language === "es"
-              ? "Sumamos inteligencia artificial a nuestra experiencia clínica para que cada diagnóstico sea más preciso, cada tratamiento más seguro y cada decisión se tome contigo, con total transparencia."
-              : "We add artificial intelligence to our clinical experience so every diagnosis is more precise, every treatment safer, and every decision is made with you, in full transparency."}
+              ? "30 años de experiencia clínica. Ahora, con inteligencia artificial."
+              : "30 years of clinical experience. Now, with artificial intelligence."}
+          </motion.p>
+
+          {/* Sub — one punchy sentence */}
+          <motion.p
+            className="text-muted-foreground text-sm sm:text-base max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
+            {...fadeUpProps(1.1)}
+          >
+            {language === "es"
+              ? "Diagnóstico más preciso. Tratamiento más seguro. Decisiones compartidas contigo, con total transparencia."
+              : "More precise diagnosis. Safer treatment. Decisions made with you, in full transparency."}
           </motion.p>
 
           {/* Primary CTA */}
@@ -435,13 +454,24 @@ const Index = () => {
       </section>
 
       {/* ── Video interlude — dashboard AI ──────────────────────────────────── */}
-      <section className="relative h-32 sm:h-40 overflow-hidden">
+      <section className="relative h-48 sm:h-64 lg:h-80 overflow-hidden">
         <video
           autoPlay muted loop playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
           src="/videos/ambient-dashboard.mp4"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/30 to-background" />
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <motion.p
+            className="text-[10px] sm:text-xs tracking-[0.5em] text-gold/70 font-mono uppercase"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+          >
+            {language === "es" ? "Análisis en tiempo real" : "Real-time analysis"}
+          </motion.p>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
