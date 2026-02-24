@@ -91,14 +91,14 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
   const messages =
     language === "es"
       ? [
-          { main: "CLÍNICA MIRÓ", sub: "30 años de experiencia clínica" },
-          { main: "INTELIGENCIA", sub: "Sumada a la experiencia humana", accent: "ARTIFICIAL" },
-          { main: "TU SONRISA", sub: "Con total transparencia", accent: "NUESTRO COMPROMISO" },
+          { main: "CARIES SIN", sub: "Tratamiento por infiltración · Sin fresa, sin anestesia", accent: "TALADRO" },
+          { main: "ARMONÍA", sub: "Análisis integral de estética facial y dental con IA", accent: "FACIAL + DENTAL" },
+          { main: "IMPLANTES", sub: "Evaluación predictiva a distancia · Desde cualquier región", accent: "A DISTANCIA" },
         ]
       : [
-          { main: "CLÍNICA MIRÓ", sub: "30 years of clinical experience" },
-          { main: "ARTIFICIAL", sub: "Combined with human expertise", accent: "INTELLIGENCE" },
-          { main: "YOUR SMILE", sub: "With full transparency", accent: "OUR COMMITMENT" },
+          { main: "CAVITIES", sub: "Infiltration treatment · No drill, no anesthesia", accent: "WITHOUT DRILLING" },
+          { main: "FACIAL +", sub: "Integrated facial & dental aesthetics analysis with AI", accent: "DENTAL HARMONY" },
+          { main: "REMOTE", sub: "Predictive evaluation from anywhere · Any region", accent: "IMPLANT PLANNING" },
         ];
 
   useEffect(() => {
