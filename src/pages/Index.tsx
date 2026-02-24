@@ -56,7 +56,7 @@ const Index = () => {
 
   const heroAudio = useAutoplayAudio({
     src: audioMainSrc,
-    autoplay: !showSplash,
+    autoplay: true,
     fadeInMs: 2000,
     volume: 0.6,
   });
@@ -170,8 +170,6 @@ const Index = () => {
       <HeroSplash
         onComplete={() => {
           setShowSplash(false);
-          // Start hero background audio after splash finishes its own audio
-          setTimeout(() => heroAudio.play(), 300);
         }}
       />
     );
