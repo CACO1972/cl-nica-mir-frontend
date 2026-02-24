@@ -6,7 +6,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import MenuOverlay from "@/components/MenuOverlay";
 import EditorialQuote from "@/components/EditorialQuote";
-import logoClinicaMiro from "@/assets/logo-clinica-miro.png";
+import LogoMiro from "@/components/LogoMiro";
 
 const Regional = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -26,7 +26,7 @@ const Regional = () => {
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <button onClick={() => setShowWizard(false)} className="editorial-link">
-                  <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
+                  <LogoMiro className="h-12 md:h-14 w-auto" />
                 </button>
               </div>
               <div className="flex items-center gap-6">
@@ -59,7 +59,7 @@ const Regional = () => {
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <Link to="/" className="editorial-link">
-                <img src={logoClinicaMiro} alt="Clínica Miró" className="h-12 md:h-14 w-auto" />
+                <LogoMiro className="h-12 md:h-14 w-auto" />
               </Link>
             </div>
             <div className="flex items-center gap-6">
@@ -175,7 +175,7 @@ const Regional = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div className="space-y-2">
               <Link to="/" className="editorial-link">
-                <img src={logoClinicaMiro} alt="Clínica Miró" className="h-10 w-auto" />
+                <LogoMiro className="h-10 w-auto" />
               </Link>
               <p className="body-large text-muted-foreground">{t("footer.tagline")}</p>
             </div>

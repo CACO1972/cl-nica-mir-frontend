@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Crosshair, Sparkles, Globe } from "lucide-react";
-import logoHero from "@/assets/logo-clinica-miro-hero.svg";
+import logoDark from "@/assets/logomiro-dark.png";
+import logoLight from "@/assets/logomiro-light.png";
+import { useTheme } from "@/contexts/ThemeContext";
 
 /* ─── Session gate ─────────────────────────────────────────────────────────── */
 const SESSION_KEY = "hero_splash_seen";
@@ -127,6 +129,7 @@ interface HeroSplashProps {
 
 const HeroSplash = ({ onComplete }: HeroSplashProps) => {
   const { language } = useLanguage();
+  const { theme } = useTheme();
   const [phase, setPhase] = useState(0);
   // phases: 0=init, 1=kicker, 2=h1, 3=sub, 4=chips, 5=ctas, 6=wow, 7=exit
 
@@ -241,7 +244,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
       {/* ── Top bar: logo + skip ─────────────────────────────────────────── */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 sm:px-10 py-5 sm:py-6">
         <img
-          src={logoHero}
+          src={theme === "dark" ? logoDark : logoLight}
           alt="Clínica Miró"
           className="h-8 sm:h-10 w-auto"
         />

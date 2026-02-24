@@ -5,8 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
-import logoMiroHeader from "@/assets/logo-miro-header.svg";
-import logoHero from "@/assets/logo-clinica-miro-hero.svg";
+import LogoMiro from "@/components/LogoMiro";
 
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import HeroSplash, { shouldShowHeroSplash, markHeroSplashSeen } from "@/components/HeroSplash";
@@ -180,7 +179,7 @@ const Index = () => {
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <button onClick={() => setActiveWizard(null)}>
-                  <img src={logoMiroHeader} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
+                  <LogoMiro className="h-12 sm:h-14 w-auto" />
                 </button>
               </div>
               <div className="flex items-center gap-4 sm:gap-6">
@@ -216,7 +215,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="flex items-center justify-between h-18 sm:h-20">
             <Link to="/">
-              <img src={logoMiroHeader} alt="Clínica Miró" className="h-12 sm:h-14 w-auto" />
+              <LogoMiro className="h-12 sm:h-14 w-auto" />
             </Link>
              <div className="flex items-center gap-3 sm:gap-6">
                {/* Deep link - desktop only */}
@@ -298,11 +297,7 @@ const Index = () => {
             {...fadeUpProps(0.2)}
             className="mb-8 sm:mb-10"
           >
-            <img
-              src={logoHero}
-              alt="Clínica Miró"
-              className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto"
-            />
+            <LogoMiro className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto" />
           </motion.div>
 
           {/* Separator */}
@@ -562,7 +557,7 @@ const Index = () => {
       <footer className="py-10 sm:py-14 px-5 sm:px-8 lg:px-12 border-t border-border/30">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div className="space-y-1">
-            <img src={logoMiroHeader} alt="Clínica Miró" className="h-10 w-auto opacity-70" />
+            <LogoMiro className="h-10 w-auto opacity-70" />
              <p className="text-xs tracking-[0.2em] text-muted-foreground font-mono uppercase">
                {language === "es" ? "Odontología Predictiva · Humana.AI" : "Predictive Dentistry · Humana.AI"}
              </p>
