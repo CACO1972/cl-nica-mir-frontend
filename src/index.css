@@ -29,9 +29,9 @@
     --space-aire-xl: clamp(6rem, 15vw, 14rem);
     
     /* Section padding using vh for vertical "breathing" */
-    --py-section: clamp(4rem, 12vh, 8rem);
-    --py-section-sm: clamp(2rem, 6vh, 4rem);
-    --py-section-lg: clamp(6rem, 18vh, 12rem);
+    --py-section: clamp(3rem, 10vh, 8rem);
+    --py-section-sm: clamp(1.5rem, 5vh, 4rem);
+    --py-section-lg: clamp(4rem, 14vh, 12rem);
     
     /* Container constraints */
     --container-max: 1280px;
@@ -45,10 +45,10 @@
     --fs-display-huge: clamp(3.5rem, 12vw, 10rem);
     --fs-display-large: clamp(2.5rem, 6vw, 5rem);
     --fs-display-medium: clamp(1.75rem, 4vw, 3rem);
-    --fs-body-large: clamp(1rem, 1.5vw, 1.25rem);
-    --fs-body: clamp(1rem, 0.2vw + 0.9rem, 1.15rem);
-    --fs-body-small: 0.875rem;
-    --fs-caption: 0.75rem;
+    --fs-body-large: clamp(1.0625rem, 1.5vw, 1.25rem);
+    --fs-body: clamp(1rem, 0.2vw + 0.95rem, 1.15rem);
+    --fs-body-small: clamp(0.9375rem, 0.2vw + 0.875rem, 1rem);
+    --fs-caption: clamp(0.8125rem, 0.15vw + 0.75rem, 0.875rem);
     
     /* ─────────────────────────────────────────────────────────────────
        COHERENT SHADOW SYSTEM - Brand-inherited warmth
@@ -102,7 +102,7 @@
 
     /* Muted - Lighter warm gray */
     --muted: calc(var(--brand-h)) 5% 94%;
-    --muted-foreground: 0 0% 35%;
+    --muted-foreground: 0 0% 27%;
 
     /* Accent - Subtle brand warmth */
     --accent: calc(var(--brand-h)) 5% 96%;
@@ -157,7 +157,7 @@
     --secondary-foreground: 0 0% 90%;
 
     --muted: calc(var(--brand-h)) 3% 15%;
-    --muted-foreground: 0 0% 72%;
+    --muted-foreground: 0 0% 75%;
 
     --accent: calc(var(--brand-h)) 3% 12%;
     --accent-foreground: 0 0% 95%;
@@ -273,7 +273,7 @@
 
   .body-large {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
     line-height: 1.7;
     font-weight: 300;
     letter-spacing: 0.01em;
@@ -281,16 +281,15 @@
 
   .body-small {
     font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
+    font-size: clamp(0.9375rem, 0.2vw + 0.875rem, 1rem);
     line-height: 1.6;
     font-weight: 300;
     letter-spacing: 0.02em;
-    text-transform: uppercase;
   }
 
   .caption {
     font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
+    font-size: clamp(0.8125rem, 0.15vw + 0.75rem, 0.875rem);
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0.1em;
