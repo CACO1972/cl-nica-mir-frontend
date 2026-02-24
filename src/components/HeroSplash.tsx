@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
-import AudioToggleButton from "@/components/AudioToggleButton";
-import audioMainSrc from "@/assets/audio_main.mp3";
-import audioCloseSrc from "@/assets/audio_close.mp3";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
 
 interface HeroSplashProps {
@@ -65,20 +61,6 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
   const [phase, setPhase] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
-  const mainAudio = useAutoplayAudio({
-    src: audioMainSrc,
-    autoplay: true,
-    fadeInMs: 1500,
-    volume: 0.7,
-  });
-
-  const closeAudio = useAutoplayAudio({
-    src: audioCloseSrc,
-    autoplay: false,
-    volume: 0.5,
-  });
-
-  // Particles data (generated once)
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     x: 15 + Math.random() * 70,
@@ -110,7 +92,6 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
       setTimeout(() => setPhase(5), 12000),
       setTimeout(() => {
         setIsExiting(true);
-        mainAudio.fadeOut(() => closeAudio.play());
         setTimeout(() => {
           markHeroSplashSeen();
           onComplete();
@@ -122,12 +103,11 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
 
   const handleSkip = useCallback(() => {
     setIsExiting(true);
-    mainAudio.fadeOut(() => closeAudio.play());
     setTimeout(() => {
       markHeroSplashSeen();
       onComplete();
     }, 800);
-  }, [onComplete, mainAudio, closeAudio]);
+  }, [onComplete]);
 
   const currentMsg = phase >= 2 && phase <= 5 ? messages[phase - 2] : null;
 
@@ -231,15 +211,6 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
           ))}
         </motion.div>
       </div>
-
-      {/* Audio toggle */}
-      <AudioToggleButton
-        isPlaying={mainAudio.isPlaying}
-        blocked={mainAudio.blocked}
-        onToggle={mainAudio.toggle}
-        onUnblock={mainAudio.play}
-        position="bottom-left"
-      />
 
       {/* Skip button */}
       <motion.button

@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
-import AudioToggleButton from "@/components/AudioToggleButton";
-import audioSplashSrc from "@/assets/audio_splash.mp3";
-import audioCloseSrc from "@/assets/audio_close.mp3";
 
 interface EvaluationSplashProps {
   onComplete: () => void;
@@ -16,16 +12,8 @@ const Particle = ({ delay, x, y }: { delay: number; x: number; y: number }) => (
     className="absolute w-1 h-1 rounded-full bg-gold-muted/30"
     style={{ left: `${x}%`, top: `${y}%` }}
     initial={{ opacity: 0, scale: 0 }}
-    animate={{ 
-      opacity: [0, 0.6, 0],
-      scale: [0, 1.5, 0],
-    }}
-    transition={{
-      duration: 3,
-      delay,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }}
+    animate={{ opacity: [0, 0.6, 0], scale: [0, 1.5, 0] }}
+    transition={{ duration: 3, delay, repeat: Infinity, ease: "easeInOut" }}
   />
 );
 
@@ -34,27 +22,16 @@ const ScanLine = ({ delay }: { delay: number }) => (
   <motion.div
     className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-muted to-transparent"
     initial={{ top: "0%", opacity: 0 }}
-    animate={{ 
-      top: ["0%", "100%"],
-      opacity: [0, 0.8, 0]
-    }}
-    transition={{
-      duration: 2.5,
-      delay,
-      ease: "easeInOut"
-    }}
+    animate={{ top: ["0%", "100%"], opacity: [0, 0.8, 0] }}
+    transition={{ duration: 2.5, delay, ease: "easeInOut" }}
   />
 );
 
 // Neural connection line
 const NeuralLine = ({ x1, y1, x2, y2, delay }: { x1: number; y1: number; x2: number; y2: number; delay: number }) => (
   <motion.line
-    x1={`${x1}%`}
-    y1={`${y1}%`}
-    x2={`${x2}%`}
-    y2={`${y2}%`}
-    stroke="hsl(var(--gold-muted))"
-    strokeWidth="0.5"
+    x1={`${x1}%`} y1={`${y1}%`} x2={`${x2}%`} y2={`${y2}%`}
+    stroke="hsl(var(--gold-muted))" strokeWidth="0.5"
     initial={{ pathLength: 0, opacity: 0 }}
     animate={{ pathLength: 1, opacity: [0, 0.4, 0.4, 0] }}
     transition={{ duration: 2, delay, ease: "easeOut" }}
@@ -64,22 +41,17 @@ const NeuralLine = ({ x1, y1, x2, y2, delay }: { x1: number; y1: number; x2: num
 // Neural node
 const NeuralNode = ({ x, y, delay, size = 4 }: { x: number; y: number; delay: number; size?: number }) => (
   <motion.circle
-    cx={`${x}%`}
-    cy={`${y}%`}
-    r={size}
+    cx={`${x}%`} cy={`${y}%`} r={size}
     fill="hsl(var(--gold-muted))"
     initial={{ scale: 0, opacity: 0 }}
-    animate={{ 
-      scale: [0, 1.2, 1],
-      opacity: [0, 0.8, 0.6, 0]
-    }}
+    animate={{ scale: [0, 1.2, 1], opacity: [0, 0.8, 0.6, 0] }}
     transition={{ duration: 2.5, delay, ease: "easeOut" }}
   />
 );
 
 // Stylized tooth SVG with AI scanning effect
 const ToothVisualization = ({ phase }: { phase: number }) => (
-  <motion.div 
+  <motion.div
     className="relative w-64 h-64 md:w-80 md:h-80"
     initial={{ opacity: 0 }}
     animate={{ opacity: phase >= 1 ? 1 : 0 }}
@@ -95,7 +67,6 @@ const ToothVisualization = ({ phase }: { phase: number }) => (
         <NeuralNode x={70} y={80} delay={1.3} size={3} />
         <NeuralNode x={85} y={60} delay={1.5} size={2} />
         <NeuralNode x={15} y={85} delay={1.7} size={2} />
-        
         <NeuralLine x1={20} y1={30} x2={50} y2={50} delay={0.8} />
         <NeuralLine x1={80} y1={20} x2={50} y2={50} delay={1.0} />
         <NeuralLine x1={50} y1={50} x2={30} y2={70} delay={1.2} />
@@ -106,46 +77,22 @@ const ToothVisualization = ({ phase }: { phase: number }) => (
 
       {/* Stylized tooth outline */}
       <motion.path
-        d="M100 25
-           C120 25 135 35 140 55
-           C145 75 145 95 140 115
-           C135 135 125 155 115 175
-           C110 185 105 190 100 190
-           C95 190 90 185 85 175
-           C75 155 65 135 60 115
-           C55 95 55 75 60 55
-           C65 35 80 25 100 25Z"
-        fill="none"
-        stroke="hsl(var(--foreground))"
-        strokeWidth="1"
+        d="M100 25 C120 25 135 35 140 55 C145 75 145 95 140 115 C135 135 125 155 115 175 C110 185 105 190 100 190 C95 190 90 185 85 175 C75 155 65 135 60 115 C55 95 55 75 60 55 C65 35 80 25 100 25Z"
+        fill="none" stroke="hsl(var(--foreground))" strokeWidth="1"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ 
-          pathLength: phase >= 1 ? 1 : 0,
-          opacity: phase >= 1 ? 0.3 : 0
-        }}
+        animate={{ pathLength: phase >= 1 ? 1 : 0, opacity: phase >= 1 ? 0.3 : 0 }}
         transition={{ duration: 2, delay: 0.5, ease: "easeOut" }}
       />
 
-      {/* AI scan overlay on tooth */}
+      {/* AI scan overlay */}
       <motion.path
-        d="M100 35
-           C115 35 125 42 130 58
-           C134 74 134 90 130 106
-           C126 122 118 140 110 158
-           C106 166 103 170 100 170
-           C97 170 94 166 90 158
-           C82 140 74 122 70 106
-           C66 90 66 74 70 58
-           C75 42 85 35 100 35Z"
+        d="M100 35 C115 35 125 42 130 58 C134 74 134 90 130 106 C126 122 118 140 110 158 C106 166 103 170 100 170 C97 170 94 166 90 158 C82 140 74 122 70 106 C66 90 66 74 70 58 C75 42 85 35 100 35Z"
         fill="url(#scanGradient)"
         initial={{ opacity: 0 }}
-        animate={{ 
-          opacity: phase >= 2 ? [0, 0.6, 0.3] : 0
-        }}
+        animate={{ opacity: phase >= 2 ? [0, 0.6, 0.3] : 0 }}
         transition={{ duration: 1.5, delay: 0.3 }}
       />
 
-      {/* Gradient definitions */}
       <defs>
         <linearGradient id="scanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="hsl(var(--gold-muted))" stopOpacity="0.1" />
@@ -158,71 +105,35 @@ const ToothVisualization = ({ phase }: { phase: number }) => (
         </radialGradient>
       </defs>
 
-      {/* Pulsing center point */}
-      <motion.circle
-        cx="100"
-        cy="100"
-        r="8"
-        fill="url(#pulseGradient)"
+      {/* Pulsing center */}
+      <motion.circle cx="100" cy="100" r="8" fill="url(#pulseGradient)"
         initial={{ scale: 0 }}
-        animate={{ 
-          scale: phase >= 2 ? [1, 1.5, 1] : 0,
-          opacity: phase >= 2 ? [0.8, 0.4, 0.8] : 0
-        }}
-        transition={{ 
-          duration: 2,
-          repeat: phase >= 2 ? Infinity : 0,
-          ease: "easeInOut"
-        }}
+        animate={{ scale: phase >= 2 ? [1, 1.5, 1] : 0, opacity: phase >= 2 ? [0.8, 0.4, 0.8] : 0 }}
+        transition={{ duration: 2, repeat: phase >= 2 ? Infinity : 0, ease: "easeInOut" }}
       />
 
-      {/* Data points appearing */}
+      {/* Data points */}
       {phase >= 2 && (
         <>
-          <motion.circle cx="85" cy="60" r="2" fill="hsl(var(--gold-muted))"
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }} />
-          <motion.circle cx="115" cy="65" r="2" fill="hsl(var(--gold-muted))"
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4 }} />
-          <motion.circle cx="100" cy="85" r="2" fill="hsl(var(--gold-muted))"
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.6 }} />
-          <motion.circle cx="90" cy="110" r="2" fill="hsl(var(--gold-muted))"
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.8 }} />
-          <motion.circle cx="110" cy={115} r="2" fill="hsl(var(--gold-muted))"
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.0 }} />
+          <motion.circle cx="85" cy="60" r="2" fill="hsl(var(--gold-muted))" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }} />
+          <motion.circle cx="115" cy="65" r="2" fill="hsl(var(--gold-muted))" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4 }} />
+          <motion.circle cx="100" cy="85" r="2" fill="hsl(var(--gold-muted))" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.6 }} />
+          <motion.circle cx="90" cy="110" r="2" fill="hsl(var(--gold-muted))" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.8 }} />
+          <motion.circle cx="110" cy={115} r="2" fill="hsl(var(--gold-muted))" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.0 }} />
         </>
       )}
     </svg>
 
-    {/* Rotating ring effect */}
-    <motion.div
-      className="absolute inset-0 border border-gold-muted/20 rounded-full"
+    {/* Rotating rings */}
+    <motion.div className="absolute inset-0 border border-gold-muted/20 rounded-full"
       initial={{ scale: 0.8, opacity: 0, rotate: 0 }}
-      animate={{ 
-        scale: phase >= 1 ? 1.2 : 0.8,
-        opacity: phase >= 1 ? [0, 0.5, 0.3] : 0,
-        rotate: 360
-      }}
-      transition={{ 
-        scale: { duration: 2 },
-        opacity: { duration: 2 },
-        rotate: { duration: 20, repeat: Infinity, ease: "linear" }
-      }}
+      animate={{ scale: phase >= 1 ? 1.2 : 0.8, opacity: phase >= 1 ? [0, 0.5, 0.3] : 0, rotate: 360 }}
+      transition={{ scale: { duration: 2 }, opacity: { duration: 2 }, rotate: { duration: 20, repeat: Infinity, ease: "linear" } }}
     />
-
-    {/* Second rotating ring */}
-    <motion.div
-      className="absolute inset-4 border border-gold-muted/10 rounded-full"
+    <motion.div className="absolute inset-4 border border-gold-muted/10 rounded-full"
       initial={{ scale: 0.9, opacity: 0, rotate: 0 }}
-      animate={{ 
-        scale: phase >= 1 ? 1.1 : 0.9,
-        opacity: phase >= 1 ? 0.4 : 0,
-        rotate: -360
-      }}
-      transition={{ 
-        scale: { duration: 2.5 },
-        opacity: { duration: 2.5 },
-        rotate: { duration: 15, repeat: Infinity, ease: "linear" }
-      }}
+      animate={{ scale: phase >= 1 ? 1.1 : 0.9, opacity: phase >= 1 ? 0.4 : 0, rotate: -360 }}
+      transition={{ scale: { duration: 2.5 }, opacity: { duration: 2.5 }, rotate: { duration: 15, repeat: Infinity, ease: "linear" } }}
     />
   </motion.div>
 );
@@ -232,22 +143,6 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
   const [phase, setPhase] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
-  // Audio: pitch emocional IA — autoplay with fade-in
-  const splashAudio = useAutoplayAudio({
-    src: audioSplashSrc,
-    autoplay: true,
-    fadeInMs: 1500,
-    volume: 0.85,
-  });
-
-  // Audio: close transition sound
-  const closeAudio = useAutoplayAudio({
-    src: audioCloseSrc,
-    autoplay: false,
-    volume: 0.6,
-  });
-
-  // Generate random particles
   const particles = Array.from({ length: 30 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
@@ -273,33 +168,25 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
   const currentMessages = messages[language as "es" | "en"] || messages.es;
 
   useEffect(() => {
-    // Phase progression
     const timers = [
-      setTimeout(() => setPhase(1), 500),    // Show tooth visualization
-      setTimeout(() => setPhase(2), 2000),   // AI scan effect
-      setTimeout(() => setPhase(3), 4000),   // Show first message
-      setTimeout(() => setPhase(4), 5500),   // Show second message
-      setTimeout(() => setPhase(5), 7000),   // Show third message
-      setTimeout(() => setPhase(6), 8500),   // Show fourth message
+      setTimeout(() => setPhase(1), 500),
+      setTimeout(() => setPhase(2), 2000),
+      setTimeout(() => setPhase(3), 4000),
+      setTimeout(() => setPhase(4), 5500),
+      setTimeout(() => setPhase(5), 7000),
+      setTimeout(() => setPhase(6), 8500),
       setTimeout(() => {
         setIsExiting(true);
-        splashAudio.fadeOut(() => {
-          closeAudio.play();
-        });
         setTimeout(onComplete, 1200);
-      }, 11000) // Exit
+      }, 11000)
     ];
-
     return () => timers.forEach(clearTimeout);
   }, [onComplete]);
 
   const handleSkip = useCallback(() => {
     setIsExiting(true);
-    splashAudio.fadeOut(() => {
-      closeAudio.play();
-    });
     setTimeout(onComplete, 800);
-  }, [onComplete, splashAudio, closeAudio]);
+  }, [onComplete]);
 
   return (
     <motion.div
@@ -328,7 +215,6 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
 
       {/* Main content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-8">
-        {/* Tooth visualization with AI effect */}
         <ToothVisualization phase={phase} />
 
         {/* Message display */}
@@ -343,7 +229,7 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                <motion.h2 
+                <motion.h2
                   className="font-serif text-3xl md:text-5xl lg:text-6xl text-foreground mb-4"
                   initial={{ letterSpacing: "0.1em" }}
                   animate={{ letterSpacing: "0.02em" }}
@@ -351,7 +237,7 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
                 >
                   {currentMessages[phase - 3]?.text}
                 </motion.h2>
-                <motion.p 
+                <motion.p
                   className="text-sm md:text-base text-gold-muted tracking-[0.3em] uppercase"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.8 }}
@@ -365,7 +251,7 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
         </div>
 
         {/* Progress indicator */}
-        <motion.div 
+        <motion.div
           className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: phase >= 3 ? 1 : 0 }}
@@ -382,15 +268,6 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
         </motion.div>
       </div>
 
-      {/* Audio toggle button */}
-      <AudioToggleButton
-        isPlaying={splashAudio.isPlaying}
-        blocked={splashAudio.blocked}
-        onToggle={splashAudio.toggle}
-        onUnblock={splashAudio.play}
-        position="bottom-left"
-      />
-
       {/* Skip button */}
       <motion.button
         onClick={handleSkip}
@@ -403,7 +280,7 @@ const EvaluationSplash = ({ onComplete }: EvaluationSplashProps) => {
       </motion.button>
 
       {/* Bottom gradient line */}
-      <motion.div 
+      <motion.div
         className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-muted/40 to-transparent"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: isExiting ? 0 : 1 }}
