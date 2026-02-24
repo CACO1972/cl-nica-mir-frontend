@@ -260,10 +260,10 @@ const Index = () => {
         <div className="absolute inset-0 z-0 overflow-hidden">
           <video
             autoPlay muted loop playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
             src="/videos/ambient-ai.mp4"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/60 to-background/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/40 to-background" />
         </div>
         <ScanLine />
 
