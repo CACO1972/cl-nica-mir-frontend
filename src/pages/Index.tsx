@@ -1,15 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
-import AudioToggleButton from "@/components/AudioToggleButton";
-import { useAutoplayAudio } from "@/hooks/useAutoplayAudio";
 import logoMiroHeader from "@/assets/logo-miro-header.svg";
 import logoHero from "@/assets/logo-clinica-miro-hero.svg";
-import audioMainSrc from "@/assets/audio_main.mp3";
 
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import HeroSplash, { shouldShowHeroSplash, markHeroSplashSeen } from "@/components/HeroSplash";
@@ -54,12 +51,8 @@ const Index = () => {
   const [activeWizard, setActiveWizard] = useState<"nuevo" | "regional" | null>(null);
   const [showSplash, setShowSplash] = useState(shouldShowHeroSplash);
 
-  const heroAudio = useAutoplayAudio({
-    src: audioMainSrc,
-    autoplay: true,
-    fadeInMs: 2000,
-    volume: 0.6,
-  });
+
+
 
   const pathsRef = useRef<HTMLElement>(null);
 
@@ -157,12 +150,8 @@ const Index = () => {
     },
   ];
 
-  // Fade out hero audio when wizard opens (prevents overlap with CurodontTeaser)
-  useEffect(() => {
-    if (activeWizard) {
-      heroAudio.fadeOut();
-    }
-  }, [activeWizard]);
+
+
 
   // ── Splash screen ──────────────────────────────────────────────────────
   if (showSplash) {
@@ -261,13 +250,8 @@ const Index = () => {
         </div>
       </header>
 
-      <AudioToggleButton
-        isPlaying={heroAudio.isPlaying}
-        blocked={heroAudio.blocked}
-        onToggle={heroAudio.toggle}
-        onUnblock={heroAudio.play}
-        position="bottom-left"
-      />
+
+
 
       {/* ══════════════════════════════════════════════════════════════════════
           HERO — Máximo impacto, mínimo texto
