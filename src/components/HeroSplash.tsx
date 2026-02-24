@@ -17,43 +17,70 @@ export function markHeroSplashSeen(): void {
   sessionStorage.setItem(SESSION_KEY, "1");
 }
 
-// ─── Animated pulse ring ─────────────────────────────────────────────────────
-const PulseRing = ({ delay, size }: { delay: number; size: number }) => (
+/* ─── Cinematic wipe line ──────────────────────────────────────────────── */
+const WipeLine = ({ direction = "horizontal" }: { direction?: "horizontal" | "vertical" }) => (
   <motion.div
-    className="absolute rounded-full border border-gold/20"
-    style={{
-      width: size,
-      height: size,
-      left: "50%",
-      top: "50%",
-      marginLeft: -size / 2,
-      marginTop: -size / 2,
-    }}
-    initial={{ scale: 0.6, opacity: 0 }}
-    animate={{ scale: [0.6, 1.2, 0.6], opacity: [0, 0.5, 0] }}
-    transition={{ duration: 4, delay, repeat: Infinity, ease: "easeInOut" }}
+    className={`absolute ${
+      direction === "horizontal"
+        ? "left-0 right-0 h-[2px]"
+        : "top-0 bottom-0 w-[2px]"
+    } bg-gradient-to-r from-transparent via-gold/60 to-transparent z-20`}
+    initial={direction === "horizontal" ? { top: "-2px", opacity: 0 } : { left: "-2px", opacity: 0 }}
+    animate={
+      direction === "horizontal"
+        ? { top: ["0%", "100%"], opacity: [0, 1, 1, 0] }
+        : { left: ["0%", "100%"], opacity: [0, 1, 1, 0] }
+    }
+    transition={{ duration: 2.5, ease: [0.25, 0.1, 0.25, 1] }}
   />
 );
 
-// ─── Floating gold particle ──────────────────────────────────────────────────
-const GoldParticle = ({ x, y, delay }: { x: number; y: number; delay: number }) => (
-  <motion.div
-    className="absolute w-1 h-1 rounded-full bg-gold/40"
-    style={{ left: `${x}%`, top: `${y}%` }}
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{ opacity: [0, 0.7, 0], scale: [0, 1.5, 0], y: [0, -20, -40] }}
-    transition={{ duration: 3.5, delay, repeat: Infinity, ease: "easeOut" }}
-  />
+/* ─── Corner bracket decoration ───────────────────────────────────────── */
+const CornerBrackets = ({ visible }: { visible: boolean }) => (
+  <>
+    <motion.div
+      className="absolute top-12 left-8 sm:top-16 sm:left-12 w-10 h-10 border-t border-l border-gold/30"
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.7 }}
+      transition={{ duration: 0.8, delay: 0.3 }}
+    />
+    <motion.div
+      className="absolute top-12 right-8 sm:top-16 sm:right-12 w-10 h-10 border-t border-r border-gold/30"
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.7 }}
+      transition={{ duration: 0.8, delay: 0.4 }}
+    />
+    <motion.div
+      className="absolute bottom-20 left-8 sm:bottom-24 sm:left-12 w-10 h-10 border-b border-l border-gold/30"
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.7 }}
+      transition={{ duration: 0.8, delay: 0.5 }}
+    />
+    <motion.div
+      className="absolute bottom-20 right-8 sm:bottom-24 sm:right-12 w-10 h-10 border-b border-r border-gold/30"
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.7 }}
+      transition={{ duration: 0.8, delay: 0.6 }}
+    />
+  </>
 );
 
-// ─── Horizontal scan line ────────────────────────────────────────────────────
-const SplashScanLine = ({ delay }: { delay: number }) => (
-  <motion.div
-    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent"
-    initial={{ top: "0%", opacity: 0 }}
-    animate={{ top: ["0%", "100%"], opacity: [0, 0.6, 0] }}
-    transition={{ duration: 3, delay, ease: "easeInOut" }}
-  />
+/* ─── Horizontal reveal mask (cinematic letterbox open) ───────────────── */
+const LetterboxReveal = ({ phase }: { phase: number }) => (
+  <>
+    <motion.div
+      className="absolute top-0 left-0 right-0 bg-background z-30"
+      initial={{ height: "50%" }}
+      animate={{ height: phase >= 1 ? "0%" : "50%" }}
+      transition={{ duration: 1.4, ease: [0.76, 0, 0.24, 1] }}
+    />
+    <motion.div
+      className="absolute bottom-0 left-0 right-0 bg-background z-30"
+      initial={{ height: "50%" }}
+      animate={{ height: phase >= 1 ? "0%" : "50%" }}
+      transition={{ duration: 1.4, ease: [0.76, 0, 0.24, 1] }}
+    />
+  </>
 );
 
 const HeroSplash = ({ onComplete }: HeroSplashProps) => {
@@ -61,42 +88,32 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
   const [phase, setPhase] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    x: 15 + Math.random() * 70,
-    y: 15 + Math.random() * 70,
-    delay: Math.random() * 6,
-  }));
-
   const messages =
     language === "es"
       ? [
-          { text: "Clínica Miró", sub: "30 años de experiencia clínica" },
-          { text: "Inteligencia artificial", sub: "Sumada a la experiencia humana" },
-          { text: "Diagnóstico preciso", sub: "Decisiones compartidas contigo" },
-          { text: "Tu sonrisa, nuestro compromiso", sub: "Con total transparencia" },
+          { main: "CLÍNICA MIRÓ", sub: "30 años de experiencia clínica" },
+          { main: "INTELIGENCIA", sub: "Sumada a la experiencia humana", accent: "ARTIFICIAL" },
+          { main: "TU SONRISA", sub: "Con total transparencia", accent: "NUESTRO COMPROMISO" },
         ]
       : [
-          { text: "Clínica Miró", sub: "30 years of clinical experience" },
-          { text: "Artificial intelligence", sub: "Combined with human expertise" },
-          { text: "Precise diagnosis", sub: "Decisions shared with you" },
-          { text: "Your smile, our commitment", sub: "With full transparency" },
+          { main: "CLÍNICA MIRÓ", sub: "30 years of clinical experience" },
+          { main: "ARTIFICIAL", sub: "Combined with human expertise", accent: "INTELLIGENCE" },
+          { main: "YOUR SMILE", sub: "With full transparency", accent: "OUR COMMITMENT" },
         ];
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 600),
-      setTimeout(() => setPhase(2), 3000),
-      setTimeout(() => setPhase(3), 6000),
-      setTimeout(() => setPhase(4), 9000),
-      setTimeout(() => setPhase(5), 12000),
+      setTimeout(() => setPhase(1), 300),     // Letterbox open
+      setTimeout(() => setPhase(2), 1800),    // Logo + first message
+      setTimeout(() => setPhase(3), 4500),    // Second message
+      setTimeout(() => setPhase(4), 7200),    // Third message
       setTimeout(() => {
         setIsExiting(true);
         setTimeout(() => {
           markHeroSplashSeen();
           onComplete();
-        }, 1200);
-      }, 15000),
+        }, 1000);
+      }, 9500),
     ];
     return () => timers.forEach(clearTimeout);
   }, [onComplete]);
@@ -106,86 +123,126 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
     setTimeout(() => {
       markHeroSplashSeen();
       onComplete();
-    }, 800);
+    }, 600);
   }, [onComplete]);
 
-  const currentMsg = phase >= 2 && phase <= 5 ? messages[phase - 2] : null;
+  const currentMsgIndex =
+    phase >= 4 ? 2 : phase >= 3 ? 1 : phase >= 2 ? 0 : -1;
+  const currentMsg = currentMsgIndex >= 0 ? messages[currentMsgIndex] : null;
 
   return (
     <motion.div
       className="fixed inset-0 z-[100] bg-background overflow-hidden"
       initial={{ opacity: 1 }}
       animate={{ opacity: isExiting ? 0 : 1 }}
-      transition={{ duration: 1 }}
+      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
     >
-      {/* Particles */}
-      {particles.map((p) => (
-        <GoldParticle key={p.id} x={p.x} y={p.y} delay={p.delay} />
-      ))}
+      {/* Letterbox reveal */}
+      <LetterboxReveal phase={phase} />
 
-      {/* Scan lines */}
-      <AnimatePresence>
-        {phase >= 1 && !isExiting && (
-          <>
-            <SplashScanLine delay={0} />
-            <SplashScanLine delay={2} />
-          </>
-        )}
-      </AnimatePresence>
+      {/* Wipe line on open */}
+      {phase >= 1 && phase < 3 && <WipeLine direction="horizontal" />}
 
-      {/* Pulse rings */}
-      <PulseRing delay={0.5} size={200} />
-      <PulseRing delay={1.5} size={320} />
-      <PulseRing delay={2.5} size={440} />
+      {/* Corner brackets */}
+      <CornerBrackets visible={phase >= 1 && !isExiting} />
+
+      {/* Ambient gradient orbs */}
+      <motion.div
+        className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--gold) / 0.06) 0%, transparent 70%)", filter: "blur(60px)" }}
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: phase >= 1 ? 1 : 0, scale: phase >= 1 ? 1 : 0.5 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--gold) / 0.04) 0%, transparent 70%)", filter: "blur(80px)" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: phase >= 2 ? 1 : 0 }}
+        transition={{ duration: 3 }}
+      />
 
       {/* Center content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-8">
-        {/* Logo */}
+        {/* Logo — appears with scale and blur */}
         <motion.img
           src={logoHero}
           alt="Clínica Miró"
-          className="h-20 sm:h-28 md:h-36 w-auto mb-10"
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: phase >= 1 ? 1 : 0, scale: phase >= 1 ? 1 : 0.85 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="h-16 sm:h-24 md:h-32 w-auto mb-8"
+          initial={{ opacity: 0, scale: 1.1, filter: "blur(12px)" }}
+          animate={{
+            opacity: phase >= 2 ? 1 : 0,
+            scale: phase >= 2 ? 1 : 1.1,
+            filter: phase >= 2 ? "blur(0px)" : "blur(12px)",
+          }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         />
 
-        {/* Gold separator */}
+        {/* Gold separator — expands cinematically */}
         <motion.div
-          className="w-24 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent mb-10"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: phase >= 1 ? 1 : 0 }}
-          transition={{ delay: 0.5, duration: 1.2 }}
+          className="h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent mb-8"
+          initial={{ width: 0, opacity: 0 }}
+          animate={{
+            width: phase >= 2 ? "clamp(120px, 30vw, 300px)" : 0,
+            opacity: phase >= 2 ? 1 : 0,
+          }}
+          transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         />
 
-        {/* Messages */}
-        <div className="h-28 flex flex-col items-center justify-center">
+        {/* Messages — cinematic text reveal */}
+        <div className="h-36 sm:h-44 flex flex-col items-center justify-center">
           <AnimatePresence mode="wait">
             {currentMsg && (
               <motion.div
-                key={phase}
+                key={currentMsgIndex}
                 className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -30, filter: "blur(4px)" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h2
-                  className="text-foreground mb-3"
+                {/* Main text — bold cinematic */}
+                <motion.h2
+                  className="text-foreground mb-2 overflow-hidden"
                   style={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: "clamp(1.8rem, 6vw, 4rem)",
-                    fontWeight: 300,
-                    lineHeight: 1.1,
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "clamp(1.8rem, 7vw, 5rem)",
+                    fontWeight: 800,
+                    lineHeight: 0.95,
+                    letterSpacing: "-0.03em",
                   }}
+                  initial={{ y: "110%" }}
+                  animate={{ y: "0%" }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {currentMsg.text}
-                </h2>
+                  {currentMsg.main}
+                </motion.h2>
+
+                {/* Accent word — gold */}
+                {"accent" in currentMsg && currentMsg.accent && (
+                  <motion.h2
+                    className="text-gold mb-4"
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: "clamp(1.8rem, 7vw, 5rem)",
+                      fontWeight: 800,
+                      lineHeight: 0.95,
+                      letterSpacing: "-0.03em",
+                    }}
+                    initial={{ y: "110%", opacity: 0 }}
+                    animate={{ y: "0%", opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {currentMsg.accent}
+                  </motion.h2>
+                )}
+
+                {/* Subtitle */}
                 <motion.p
-                  className="text-[11px] sm:text-xs text-gold-muted tracking-[0.3em] uppercase"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.8 }}
-                  transition={{ delay: 0.3 }}
+                  className="text-[10px] sm:text-xs text-muted-foreground tracking-[0.4em] uppercase mt-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 0.7, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
                 >
                   {currentMsg.sub}
                 </motion.p>
@@ -194,42 +251,47 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
           </AnimatePresence>
         </div>
 
-        {/* Progress dots */}
+        {/* Progress bar — cinematic style */}
         <motion.div
-          className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2"
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 w-24 h-[2px] bg-muted-foreground/10 rounded-full overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: phase >= 2 ? 1 : 0 }}
         >
-          {[2, 3, 4, 5].map((p) => (
-            <motion.div
-              key={p}
-              className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
-                phase >= p ? "bg-gold" : "bg-muted-foreground/20"
-              }`}
-              animate={{ scale: phase === p ? 1.4 : 1 }}
-            />
-          ))}
+          <motion.div
+            className="h-full bg-gold/60 rounded-full"
+            initial={{ width: "0%" }}
+            animate={{
+              width:
+                phase >= 4 ? "100%" : phase >= 3 ? "66%" : phase >= 2 ? "33%" : "0%",
+            }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
         </motion.div>
       </div>
+
+      {/* Status tag — top right */}
+      <motion.div
+        className="absolute top-6 right-8 sm:top-8 sm:right-12 flex items-center gap-2 z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: phase >= 2 && !isExiting ? 0.5 : 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+        <span className="text-[9px] tracking-[0.4em] text-muted-foreground font-mono uppercase">
+          {language === "es" ? "Cargando experiencia" : "Loading experience"}
+        </span>
+      </motion.div>
 
       {/* Skip button */}
       <motion.button
         onClick={handleSkip}
-        className="absolute bottom-8 right-8 caption text-muted-foreground/40 hover:text-foreground transition-all duration-500 tracking-widest uppercase z-20"
+        className="absolute bottom-6 right-8 sm:bottom-8 sm:right-12 text-[10px] text-muted-foreground/30 hover:text-muted-foreground/70 transition-all duration-500 tracking-[0.3em] uppercase z-20"
         initial={{ opacity: 0 }}
-        animate={{ opacity: isExiting ? 0 : 0.6 }}
-        whileHover={{ opacity: 1 }}
+        animate={{ opacity: isExiting ? 0 : 1 }}
+        transition={{ delay: 2 }}
       >
         {language === "es" ? "Saltar" : "Skip"}
       </motion.button>
-
-      {/* Bottom gradient line */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: isExiting ? 0 : 1 }}
-        transition={{ duration: 1.5 }}
-      />
     </motion.div>
   );
 };
