@@ -45,10 +45,10 @@
     --fs-display-huge: clamp(3.5rem, 12vw, 10rem);
     --fs-display-large: clamp(2.5rem, 6vw, 5rem);
     --fs-display-medium: clamp(1.75rem, 4vw, 3rem);
-    --fs-body-large: clamp(1.0625rem, 1.5vw, 1.25rem);
-    --fs-body: clamp(1rem, 0.2vw + 0.95rem, 1.15rem);
-    --fs-body-small: clamp(0.9375rem, 0.2vw + 0.875rem, 1rem);
-    --fs-caption: clamp(0.8125rem, 0.15vw + 0.75rem, 0.875rem);
+    --fs-body-large: clamp(1.125rem, 1.5vw, 1.3125rem);
+    --fs-body: clamp(1.0625rem, 0.2vw + 1rem, 1.1875rem);
+    --fs-body-small: clamp(1rem, 0.2vw + 0.9375rem, 1.0625rem);
+    --fs-caption: clamp(0.875rem, 0.15vw + 0.8125rem, 0.9375rem);
     
     /* ─────────────────────────────────────────────────────────────────
        COHERENT SHADOW SYSTEM - Brand-inherited warmth
@@ -102,7 +102,7 @@
 
     /* Muted - Lighter warm gray */
     --muted: calc(var(--brand-h)) 5% 94%;
-    --muted-foreground: 0 0% 27%;
+    --muted-foreground: 0 0% 27%; /* #444 equiv */
 
     /* Accent - Subtle brand warmth */
     --accent: calc(var(--brand-h)) 5% 96%;
@@ -199,7 +199,18 @@
     overflow-x: hidden;
     font-family: 'Inter', sans-serif;
     font-weight: 300;
+    font-size: clamp(1.0625rem, 0.2vw + 1rem, 1.1875rem);
+    line-height: 1.6;
     letter-spacing: 0.01em;
+  }
+
+  /* Reduce motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   /* Hide scrollbar globally */
