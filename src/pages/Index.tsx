@@ -320,10 +320,10 @@ const Index = () => {
             }}
             {...fadeUpProps(0.75)}
           >
-            {language === "es" ? (
-              <>IA dental para<br /><span className="text-gold">potenciar tu clínica</span></>
+          {language === "es" ? (
+              <>No son dientes.<br /><span className="text-gold">Es dignidad.</span></>
             ) : (
-              <>Dental AI to<br /><span className="text-gold">enhance your care</span></>
+              <>It's not teeth.<br /><span className="text-gold">It's dignity.</span></>
             )}
           </motion.h1>
 
@@ -340,8 +340,8 @@ const Index = () => {
             {...fadeUpProps(0.9)}
           >
             {language === "es"
-              ? "30 años de experiencia clínica. Ahora, con inteligencia artificial."
-              : "30 years of clinical experience. Now, with artificial intelligence."}
+              ? "30 años de experiencia clínica, ahora potenciados con IA."
+              : "30 years of clinical experience, now powered by AI."}
           </motion.p>
 
           {/* Sub — one punchy sentence */}
@@ -350,8 +350,8 @@ const Index = () => {
             {...fadeUpProps(1.1)}
           >
             {language === "es"
-              ? "Diagnóstico más preciso. Tratamiento más seguro. Decisiones compartidas contigo, con total transparencia."
-              : "More precise diagnosis. Safer treatment. Decisions made with you, in full transparency."}
+              ? "Esta evolución nos permite brindar diagnósticos más precisos, tratamientos más seguros y resultados más predecibles."
+              : "This evolution allows us to deliver more precise diagnoses, safer treatments, and more predictable outcomes."}
           </motion.p>
 
           {/* Primary CTA */}
