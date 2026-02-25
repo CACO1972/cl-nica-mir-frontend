@@ -255,15 +255,14 @@ const Index = () => {
       {/* ══════════════════════════════════════════════════════════════════════
           HERO — Máximo impacto, mínimo texto
       ══════════════════════════════════════════════════════════════════════ */}
-      <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-background">
-      {/* Ambient video background */}
+      <section className="min-h-[100svh] flex flex-col justify-center items-center px-5 sm:px-8 lg:px-12 relative overflow-hidden bg-black">
+      {/* Ambient video background — sin overlay, sin fade */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <video
             autoPlay muted loop playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
+            className="absolute inset-0 w-full h-full object-cover opacity-40"
             src="/videos/ambient-ai.mp4"
           />
-          <div className="absolute inset-0" />
         </div>
         <ScanLine />
 
@@ -287,7 +286,7 @@ const Index = () => {
             {...fadeUpProps(0.1)}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-             <span className="text-[10px] sm:text-xs tracking-[0.3em] text-white/70 font-mono uppercase">
+             <span className="text-[10px] sm:text-xs tracking-[0.3em] text-white/80 font-mono uppercase">
                Humana.AI · Santiago, Chile
             </span>
           </motion.div>
@@ -317,25 +316,27 @@ const Index = () => {
               fontWeight: 800,
               textTransform: "uppercase",
               letterSpacing: "-0.02em",
+              textShadow: "0 2px 20px rgba(0,0,0,0.6)",
             }}
             {...fadeUpProps(0.75)}
           >
           {language === "es" ? (
-              <>No son dientes.<br /><span className="text-white">Es dignidad.</span></>
+              <>No son dientes.<br />Es dignidad.</>
             ) : (
-              <>It's not teeth.<br /><span className="text-white">It's dignity.</span></>
+              <>It's not teeth.<br />It's dignity.</>
             )}
           </motion.h1>
 
           {/* Sub-headline — serif editorial contrast */}
           <motion.p
-            className="text-white/90 mb-6"
+            className="text-white mb-6"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: "clamp(1.1rem, 3vw, 1.6rem)",
               fontWeight: 300,
               fontStyle: "italic",
               lineHeight: 1.3,
+              textShadow: "0 1px 12px rgba(0,0,0,0.5)",
             }}
             {...fadeUpProps(0.9)}
           >
@@ -346,7 +347,8 @@ const Index = () => {
 
           {/* Sub — one punchy sentence */}
           <motion.p
-            className="text-white/80 text-base sm:text-lg max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
+            className="text-white/90 text-base sm:text-lg max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
+            style={{ textShadow: "0 1px 10px rgba(0,0,0,0.4)" }}
             {...fadeUpProps(1.1)}
           >
             {language === "es"
