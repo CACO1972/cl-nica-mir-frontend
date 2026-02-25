@@ -84,7 +84,7 @@ const Chip = ({
   phase: number;
 }) => (
   <motion.div
-    className="px-4 py-2 border border-gold/20 bg-gold/5 text-foreground text-sm sm:text-base font-medium tracking-wide"
+    className="px-4 py-2 border border-gold/30 bg-gold/10 text-white text-sm sm:text-base font-medium tracking-wide"
     initial={{ opacity: 0, scale: 0.98, y: 8 }}
     animate={
       phase >= 4
@@ -153,7 +153,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[100] bg-background overflow-hidden flex flex-col items-center justify-center"
+        className="fixed inset-0 z-[100] bg-black overflow-hidden flex flex-col items-center justify-center"
         initial={{ opacity: 1 }}
         animate={isExiting ? { opacity: 0 } : { opacity: 1 }}
         transition={{ duration: 0.8, ease: easeOutExpo }}
@@ -168,7 +168,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
             e.stopPropagation();
             handleSkip();
           }}
-          className="absolute top-6 right-6 sm:top-8 sm:right-8 text-sm tracking-[0.15em] text-muted-foreground/60 hover:text-muted-foreground transition-colors uppercase z-20 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="absolute top-6 right-6 sm:top-8 sm:right-8 text-sm tracking-[0.15em] text-white/60 hover:text-white transition-colors uppercase z-20 min-h-[44px] min-w-[44px] flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -190,7 +190,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
         <div className="relative z-10 flex flex-col items-center max-w-3xl mx-auto px-6 sm:px-8 text-center">
           {/* Kicker */}
           <motion.span
-            className="text-xs sm:text-sm tracking-[0.3em] text-gold uppercase font-semibold mb-6 sm:mb-8"
+            className="text-xs sm:text-sm tracking-[0.3em] text-gold uppercase font-semibold mb-6 sm:mb-8 drop-shadow-lg"
             initial={{ opacity: 0, filter: "blur(8px)" }}
             animate={
               phase >= 2
@@ -204,7 +204,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
 
           {/* H1 */}
           <motion.h1
-            className="text-foreground leading-[1.05] mb-4 sm:mb-6"
+            className="text-white leading-[1.05] mb-4 sm:mb-6"
             style={{
               fontFamily: "'Inter', sans-serif",
               fontSize: "clamp(2rem, 7vw, 4.5rem)",
@@ -251,7 +251,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
 
           {/* Subtitle — mask reveal */}
           <motion.p
-            className="text-muted-foreground max-w-xl mx-auto mb-8 sm:mb-10"
+            className="text-white/80 max-w-xl mx-auto mb-8 sm:mb-10"
             style={{
               fontFamily: "'Lora', serif",
               fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
@@ -291,7 +291,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
           >
             <motion.button
               onClick={handleEnter}
-              className="group flex items-center justify-center gap-3 px-8 py-4 min-h-[48px] bg-foreground text-background font-semibold text-base tracking-[0.1em] uppercase hover:bg-gold hover:text-background transition-all duration-300 w-full sm:w-auto"
+              className="group flex items-center justify-center gap-3 px-8 py-4 min-h-[48px] bg-white text-black font-semibold text-base tracking-[0.1em] uppercase hover:bg-gold hover:text-black transition-all duration-300 w-full sm:w-auto"
               whileHover={{ y: -2, boxShadow: "0 8px 24px hsl(var(--gold) / 0.25)" }}
               whileTap={{ scale: 0.98 }}
             >
@@ -316,7 +316,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
 
           {/* Disclaimer */}
           <motion.p
-            className="mt-6 text-xs text-muted-foreground/50 max-w-md mx-auto leading-relaxed"
+            className="mt-6 text-xs text-white/40 max-w-md mx-auto leading-relaxed"
             initial={{ opacity: 0 }}
             animate={phase >= 5 ? { opacity: 1 } : {}}
             transition={{ delay: 0.4, duration: 0.5 }}
