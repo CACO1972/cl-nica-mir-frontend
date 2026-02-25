@@ -263,7 +263,7 @@ const Index = () => {
             className="absolute inset-0 w-full h-full object-cover opacity-30"
             src="/videos/ambient-ai.mp4"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/40 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
         </div>
         <ScanLine />
 
@@ -310,7 +310,7 @@ const Index = () => {
 
           {/* Headline — bold Overjet-inspired */}
           <motion.h1
-            className="text-foreground leading-[0.95] tracking-[-0.03em] mb-6"
+            className="text-[#1A1A1A] dark:text-foreground leading-[0.95] tracking-[-0.03em] mb-6"
             style={{
               fontFamily: "'Inter', sans-serif",
               fontSize: "clamp(2.2rem, 8vw, 5.5rem)",
@@ -329,7 +329,7 @@ const Index = () => {
 
           {/* Sub-headline — serif editorial contrast */}
           <motion.p
-            className="text-muted-foreground mb-6"
+            className="text-[#333333] dark:text-foreground/90 mb-6"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: "clamp(1.1rem, 3vw, 1.6rem)",
@@ -346,7 +346,7 @@ const Index = () => {
 
           {/* Sub — one punchy sentence */}
           <motion.p
-            className="text-muted-foreground text-base sm:text-lg max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
+            className="text-[#444444] dark:text-foreground/80 text-base sm:text-lg max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
             {...fadeUpProps(1.1)}
           >
             {language === "es"
@@ -357,7 +357,7 @@ const Index = () => {
           {/* Primary CTA */}
           <motion.button
             onClick={scrollToPaths}
-             className="group flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 h-12 border border-gold/40 text-gold hover:bg-gold hover:text-background transition-all duration-500 text-sm sm:text-base tracking-[0.2em] uppercase font-semibold"
+             className="group flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 h-12 border-2 border-[#1A1A1A] dark:border-gold/40 text-[#1A1A1A] dark:text-gold hover:bg-[#1A1A1A] hover:text-white dark:hover:bg-gold dark:hover:text-background transition-all duration-500 text-sm sm:text-base tracking-[0.2em] uppercase font-semibold"
              {...fadeUpProps(1.2)}
           >
             {language === "es" ? "Comenzar experiencia" : "Begin experience"}
