@@ -263,7 +263,7 @@ const Index = () => {
             className="absolute inset-0 w-full h-full object-cover opacity-30"
             src="/videos/ambient-ai.mp4"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
+          <div className="absolute inset-0" />
         </div>
         <ScanLine />
 
@@ -287,7 +287,7 @@ const Index = () => {
             {...fadeUpProps(0.1)}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-             <span className="text-[10px] sm:text-xs tracking-[0.3em] text-gold-muted font-mono uppercase">
+             <span className="text-[10px] sm:text-xs tracking-[0.3em] text-white/70 font-mono uppercase">
                Humana.AI · Santiago, Chile
             </span>
           </motion.div>
@@ -310,7 +310,7 @@ const Index = () => {
 
           {/* Headline — bold Overjet-inspired */}
           <motion.h1
-            className="text-[#1A1A1A] dark:text-foreground leading-[0.95] tracking-[-0.03em] mb-6"
+            className="text-white leading-[0.95] tracking-[-0.03em] mb-6"
             style={{
               fontFamily: "'Inter', sans-serif",
               fontSize: "clamp(2.2rem, 8vw, 5.5rem)",
@@ -321,15 +321,15 @@ const Index = () => {
             {...fadeUpProps(0.75)}
           >
           {language === "es" ? (
-              <>No son dientes.<br /><span className="text-gold">Es dignidad.</span></>
+              <>No son dientes.<br /><span className="text-white">Es dignidad.</span></>
             ) : (
-              <>It's not teeth.<br /><span className="text-gold">It's dignity.</span></>
+              <>It's not teeth.<br /><span className="text-white">It's dignity.</span></>
             )}
           </motion.h1>
 
           {/* Sub-headline — serif editorial contrast */}
           <motion.p
-            className="text-[#333333] dark:text-foreground/90 mb-6"
+            className="text-white/90 mb-6"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: "clamp(1.1rem, 3vw, 1.6rem)",
@@ -346,7 +346,7 @@ const Index = () => {
 
           {/* Sub — one punchy sentence */}
           <motion.p
-            className="text-[#444444] dark:text-foreground/80 text-base sm:text-lg max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
+            className="text-white/80 text-base sm:text-lg max-w-xs sm:max-w-lg mx-auto mb-10 sm:mb-14 leading-relaxed"
             {...fadeUpProps(1.1)}
           >
             {language === "es"
@@ -357,7 +357,7 @@ const Index = () => {
           {/* Primary CTA */}
           <motion.button
             onClick={scrollToPaths}
-             className="group flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 h-12 border-2 border-[#1A1A1A] dark:border-gold/40 text-[#1A1A1A] dark:text-gold hover:bg-[#1A1A1A] hover:text-white dark:hover:bg-gold dark:hover:text-background transition-all duration-500 text-sm sm:text-base tracking-[0.2em] uppercase font-semibold"
+             className="group flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 h-12 border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-500 text-sm sm:text-base tracking-[0.2em] uppercase font-semibold"
              {...fadeUpProps(1.2)}
           >
             {language === "es" ? "Comenzar experiencia" : "Begin experience"}
@@ -371,7 +371,7 @@ const Index = () => {
           >
             <Link
               to="/evaluation"
-               className="text-xs tracking-[0.2em] text-muted-foreground hover:text-muted-foreground/80 transition-colors uppercase border-b border-muted-foreground/30 hover:border-muted-foreground/50 pb-0.5"
+               className="text-xs tracking-[0.2em] text-white/60 hover:text-white/80 transition-colors uppercase border-b border-white/30 hover:border-white/50 pb-0.5"
             >
               {language === "es" ? "Leer sobre nuestra ciencia →" : "Read about our science →"}
             </Link>
