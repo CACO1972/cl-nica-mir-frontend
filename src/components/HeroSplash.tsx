@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import LogoMiro from "@/components/LogoMiro";
+import logoFull from "@/assets/logo-clinica-miro-full.png";
 
 /* ─── Session gate ─────────────────────────────────────────────────────────── */
 const SESSION_KEY = "hero_splash_seen";
@@ -226,7 +226,7 @@ const HeroSplash = ({ onComplete }: HeroSplashProps) => {
             }
             transition={{ duration: 1.2, ease: expo }}
           >
-            <LogoMiro className="h-16 sm:h-20 w-auto" />
+            <img src={logoFull} alt="Clínica Miró" className="h-20 sm:h-28 w-auto" />
 
             {/* Shine sweep over logo */}
             <motion.div
