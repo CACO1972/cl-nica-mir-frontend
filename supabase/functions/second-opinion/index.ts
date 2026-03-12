@@ -16,8 +16,7 @@ interface SecondOpinionRequest {
   external_clinic_name?: string;
   flow_type?: 'ia_only' | 'ia_plus_specialist';
   second_opinion_id?: string;
-  // Image upload support
-  image_data?: string; // base64
+  image_data?: string;
   image_name?: string;
   image_mime?: string;
 }
@@ -45,37 +44,45 @@ async function generateIAReport(
   const apiKey = Deno.env.get('LOVABLE_API_KEY');
   if (!apiKey) {
     console.error('[Second Opinion] LOVABLE_API_KEY not configured');
-    return generateFallbackReport(diagnosis, externalAmount);
+    return generateFallbackReport(reason, diagnosis, externalAmount);
   }
 
   try {
-    const systemPrompt = `Eres un asistente clínico dental especializado en segundas opiniones. Analiza el caso y genera un informe estructurado.
+    const systemPrompt = `Eres un odontólogo especialista con 20 años de experiencia clínica, experto en diagnóstico dental integral. Un paciente solicita una segunda opinión sobre un tratamiento propuesto por otro dentista.
 
-INSTRUCCIONES:
-- Evalúa el motivo de consulta, diagnóstico previo y presupuesto externo
-- Si hay imagen, analiza signos visibles (caries, inflamación gingival, pérdida ósea, alineación)
-- Determina urgencia: low, moderate, high
-- Sugiere hallazgos clave y recomendaciones
-- Si hay presupuesto externo, estima un ahorro potencial (10-25%)
-- Siempre recomienda la Evaluación Presencial Premium
+Tu rol es analizar toda la información proporcionada y generar un informe clínico detallado, útil y accionable.
 
-Responde SOLO con JSON válido con esta estructura:
-{
-  "assessment": "Resumen del análisis en 2-3 oraciones",
-  "key_findings": ["hallazgo 1", "hallazgo 2", ...],
-  "recommendations": ["recomendación 1", ...],
-  "comparison_notes": "Notas sobre presupuesto externo si aplica",
-  "estimated_savings": number o null,
-  "urgency": "low" | "moderate" | "high",
-  "cta_evaluation_premium": true,
-  "disclaimer": "Este informe es orientativo y no constituye un diagnóstico clínico."
-}`;
+INSTRUCCIONES DETALLADAS:
+1. Lee cuidadosamente el motivo de consulta y el diagnóstico previo
+2. Si hay imagen (radiografía o foto), analiza detalladamente: presencia de caries, estado periodontal, nivel óseo, posición dental, restauraciones existentes, anomalías visibles
+3. Evalúa si el diagnóstico previo es consistente con lo que observas
+4. Genera hallazgos específicos y detallados (mínimo 4-5 hallazgos)
+5. Proporciona recomendaciones clínicas concretas (mínimo 3-4 recomendaciones)
+6. Si hay presupuesto externo, analiza si los montos son razonables y estima un ahorro potencial realista (10-25%)
+7. Determina el nivel de urgencia basándote en la evidencia clínica
+
+IMPORTANTE: 
+- Sé específico y detallado en cada punto, no uses frases genéricas
+- Menciona zonas dentales específicas cuando sea posible (ej: "zona de premolares superiores derechos")
+- Incluye alternativas de tratamiento cuando corresponda
+- El assessment debe ser un párrafo completo de 3-5 oraciones con análisis real del caso`;
+
+    const userMessage = `CASO CLÍNICO PARA SEGUNDA OPINIÓN:
+
+MOTIVO DE CONSULTA: ${reason}
+
+DIAGNÓSTICO PREVIO: ${diagnosis || 'No proporcionado por el paciente'}
+
+CLÍNICA DE ORIGEN: ${clinicName || 'No especificada'}
+
+PRESUPUESTO EXTERNO: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP` : 'No proporcionado'}
+
+${imageBase64 ? 'Se adjunta imagen clínica/radiográfica para análisis visual.' : 'No se proporcionó imagen - basar análisis solo en información textual.'}
+
+Por favor genera el informe de segunda opinión completo.`;
 
     const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
-      {
-        type: "text",
-        text: `Motivo: ${reason}\nDiagnóstico previo: ${diagnosis || 'No proporcionado'}\nClínica externa: ${clinicName || 'No proporcionada'}\nPresupuesto externo: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP` : 'No proporcionado'}`,
-      },
+      { type: "text", text: userMessage },
     ];
 
     if (imageBase64) {
@@ -85,89 +92,154 @@ Responde SOLO con JSON válido con esta estructura:
       });
     }
 
+    const requestBody: any = {
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent },
+      ],
+      temperature: 0.4,
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "generate_second_opinion_report",
+            description: "Genera un informe estructurado de segunda opinión dental basado en el análisis clínico del caso.",
+            parameters: {
+              type: "object",
+              properties: {
+                assessment: {
+                  type: "string",
+                  description: "Párrafo de 3-5 oraciones con el análisis clínico detallado del caso, incluyendo observaciones sobre el diagnóstico previo, estado general observado y contexto del tratamiento propuesto."
+                },
+                key_findings: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Lista de 4-6 hallazgos clínicos específicos y detallados. Cada hallazgo debe ser una oración completa con información clínica relevante, mencionando zonas dentales específicas cuando sea posible."
+                },
+                recommendations: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Lista de 3-5 recomendaciones clínicas concretas y accionables. Incluir alternativas de tratamiento, exámenes complementarios sugeridos y pasos a seguir."
+                },
+                comparison_notes: {
+                  type: "string",
+                  description: "Análisis del presupuesto externo si fue proporcionado: si los montos son razonables, qué incluye vs qué podría faltar, y sugerencias para el paciente."
+                },
+                estimated_savings: {
+                  type: "number",
+                  description: "Estimación de ahorro potencial en CLP si se proporcionó presupuesto externo. Calcular entre 10-25% del monto original basado en alternativas de tratamiento."
+                },
+                urgency: {
+                  type: "string",
+                  enum: ["low", "moderate", "high"],
+                  description: "Nivel de urgencia clínica: 'low' para casos estéticos o preventivos, 'moderate' para tratamientos necesarios sin urgencia inmediata, 'high' para dolor agudo, infección o riesgo de pérdida dental."
+                },
+              },
+              required: ["assessment", "key_findings", "recommendations", "urgency"],
+              additionalProperties: false,
+            },
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "generate_second_opinion_report" } },
+    };
+
+    console.log('[Second Opinion] Calling AI gateway with tool_calls...');
     const response = await fetch(AI_GATEWAY_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent },
-        ],
-        temperature: 0.3,
-        max_tokens: 1500,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
-      console.error('[Second Opinion] AI gateway error:', response.status);
-      return generateFallbackReport(diagnosis, externalAmount);
+      const errText = await response.text();
+      console.error('[Second Opinion] AI gateway error:', response.status, errText);
+      if (response.status === 429) {
+        console.error('[Second Opinion] Rate limited');
+      }
+      return generateFallbackReport(reason, diagnosis, externalAmount);
     }
 
     const aiData = await response.json();
-    const rawText = aiData.choices?.[0]?.message?.content || '';
+    console.log('[Second Opinion] AI response received');
     
-    // Parse JSON from response (handle markdown code blocks)
-    const jsonMatch = rawText.match(/```json\s*([\s\S]*?)```/) || rawText.match(/\{[\s\S]*\}/);
-    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : rawText;
+    // Extract from tool_calls
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    let parsed: any;
     
-    const parsed = JSON.parse(jsonStr);
+    if (toolCall?.function?.arguments) {
+      parsed = JSON.parse(toolCall.function.arguments);
+      console.log('[Second Opinion] Parsed tool_call arguments successfully');
+    } else {
+      // Fallback: try to parse from content
+      const rawText = aiData.choices?.[0]?.message?.content || '';
+      console.log('[Second Opinion] No tool_calls, trying content parse. Raw:', rawText.substring(0, 200));
+      const jsonMatch = rawText.match(/```json\s*([\s\S]*?)```/) || rawText.match(/\{[\s\S]*\}/);
+      const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : rawText;
+      parsed = JSON.parse(jsonStr);
+    }
     
     return {
       assessment: parsed.assessment || 'Análisis completado.',
       key_findings: parsed.key_findings || [],
       recommendations: parsed.recommendations || [],
-      comparison_notes: parsed.comparison_notes,
-      estimated_savings: parsed.estimated_savings,
+      comparison_notes: parsed.comparison_notes || undefined,
+      estimated_savings: parsed.estimated_savings || undefined,
       urgency: parsed.urgency || 'moderate',
-      cta_evaluation_premium: parsed.cta_evaluation_premium !== false,
-      disclaimer: parsed.disclaimer || 'Este informe es orientativo y no constituye un diagnóstico clínico.',
+      cta_evaluation_premium: true,
+      disclaimer: 'Este informe es orientativo y no constituye un diagnóstico clínico definitivo. Los resultados deben ser validados por un profesional de la salud dental en una evaluación presencial.',
     };
   } catch (error) {
     console.error('[Second Opinion] AI analysis error:', error);
-    return generateFallbackReport(diagnosis, externalAmount);
+    return generateFallbackReport(reason, diagnosis, externalAmount);
   }
 }
 
 function generateFallbackReport(
+  reason: string,
   diagnosis: string | null,
   externalAmount: number | null
 ): IAReport {
   const findings: string[] = [];
   const recommendations: string[] = [];
 
+  // Use reason to create relevant findings
+  findings.push(`Motivo de consulta: ${reason}`);
+  
   if (diagnosis) {
-    findings.push(`Diagnóstico reportado: ${diagnosis}`);
-    findings.push('Se requiere validación clínica presencial para confirmar hallazgos');
+    findings.push(`Diagnóstico previo reportado: ${diagnosis}. Este diagnóstico requiere validación con examen clínico y radiográfico presencial.`);
+    findings.push('Es importante considerar que un diagnóstico puede variar significativamente según la experiencia del profesional y las herramientas diagnósticas utilizadas.');
   } else {
-    findings.push('Sin diagnóstico previo proporcionado');
-    findings.push('Recomendamos una evaluación completa');
+    findings.push('No se proporcionó diagnóstico previo. Una evaluación presencial completa es fundamental para establecer un plan de tratamiento adecuado.');
   }
+
+  findings.push('Se recomienda obtener radiografías panorámica y periapicales de la zona de interés para un diagnóstico más preciso.');
 
   if (externalAmount && externalAmount > 0) {
     const potentialSavings = Math.round(externalAmount * 0.15);
-    findings.push(`Presupuesto externo: $${externalAmount.toLocaleString('es-CL')} CLP`);
-    recommendations.push(`Potencial ahorro estimado: $${potentialSavings.toLocaleString('es-CL')} CLP`);
+    findings.push(`Presupuesto externo de $${externalAmount.toLocaleString('es-CL')} CLP recibido para análisis comparativo.`);
+    recommendations.push(`Ahorro potencial estimado de $${potentialSavings.toLocaleString('es-CL')} CLP al considerar alternativas de tratamiento y materiales.`);
   }
 
-  recommendations.push('Evaluación Presencial Premium para diagnóstico definitivo con IA en vivo');
-  recommendations.push('Visualización de alternativas de tratamiento sobre sus propias imágenes');
-  recommendations.push('Plan de tratamiento personalizado con financiamiento flexible');
+  recommendations.push('Agendar una Evaluación Presencial Premium con tecnología IA para diagnóstico definitivo con visualización sobre sus propias imágenes.');
+  recommendations.push('Solicitar radiografías actualizadas (panorámica y periapicales) si no se han tomado en los últimos 6 meses.');
+  recommendations.push('Considerar una evaluación periodontal completa antes de iniciar cualquier tratamiento restaurador.');
 
   return {
-    assessment: 'Basado en la información proporcionada, hemos analizado su caso.',
+    assessment: `Basado en la información proporcionada sobre "${reason}", hemos realizado un análisis preliminar de su caso. ${diagnosis ? `Su diagnóstico previo de "${diagnosis}" es un punto de partida importante que requiere confirmación con examen clínico directo.` : 'Sin un diagnóstico previo, recomendamos una evaluación integral.'} Para una opinión más precisa, una evaluación presencial con tecnología de IA le permitirá visualizar las opciones de tratamiento directamente sobre sus imágenes.`,
     key_findings: findings,
     recommendations,
     comparison_notes: externalAmount
-      ? 'Su presupuesto externo ha sido analizado. En la Evaluación Premium le mostraremos alternativas con tecnología IA.'
+      ? `Su presupuesto externo de $${externalAmount.toLocaleString('es-CL')} CLP ha sido registrado para análisis comparativo. En la Evaluación Premium le mostraremos alternativas con desglose detallado y tecnología IA para visualización.`
       : undefined,
     estimated_savings: externalAmount ? Math.round(externalAmount * 0.15) : undefined,
     urgency: 'moderate',
     cta_evaluation_premium: true,
-    disclaimer: 'Este informe es orientativo y no constituye un diagnóstico clínico. Los resultados deben ser validados por un profesional de la salud dental.',
+    disclaimer: 'Este informe es orientativo y no constituye un diagnóstico clínico definitivo. Los resultados deben ser validados por un profesional de la salud dental en una evaluación presencial.',
   };
 }
 
@@ -195,7 +267,6 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Store image if provided
         let rxStoragePaths: string[] = [];
         if (body.image_data && body.image_name) {
           try {
@@ -292,7 +363,6 @@ Deno.serve(async (req) => {
           .update({ status: 'ia_processing' })
           .eq('id', body.second_opinion_id);
 
-        // Get image data if available
         let imageBase64: string | null = null;
         if (opinion.rx_storage_paths && Array.isArray(opinion.rx_storage_paths) && opinion.rx_storage_paths.length > 0) {
           try {
@@ -310,7 +380,6 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Generate real IA report
         const iaReport = await generateIAReport(
           opinion.reason,
           opinion.current_diagnosis,
@@ -339,6 +408,7 @@ Deno.serve(async (req) => {
           event_data: {
             urgency: iaReport.urgency,
             has_savings: !!iaReport.estimated_savings,
+            findings_count: iaReport.key_findings.length,
           },
         });
 
