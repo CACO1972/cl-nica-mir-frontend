@@ -6,6 +6,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import LogoMiro from "@/components/LogoMiro";
+import logoFull from "@/assets/logo-clinica-miro-full.png";
 
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import HeroSplash, { shouldShowHeroSplash, markHeroSplashSeen } from "@/components/HeroSplash";
@@ -296,7 +297,7 @@ const Index = () => {
             {...fadeUpProps(0.2)}
             className="mb-8 sm:mb-10"
           >
-            <LogoMiro className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto" />
+            <img src={logoFull} alt="Clínica Miró" className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto" />
           </motion.div>
 
           {/* Separator */}
