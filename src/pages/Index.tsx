@@ -441,7 +441,7 @@ const Index = () => {
           className="absolute inset-0 w-full h-full object-cover opacity-60"
           src="/videos/ambient-dashboard.mp4"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/30 to-background" />
+        
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <motion.p
             className="text-xs sm:text-sm tracking-[0.4em] text-gold font-mono uppercase"
