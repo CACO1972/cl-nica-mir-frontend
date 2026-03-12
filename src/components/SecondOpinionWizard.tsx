@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, ChevronRight, Loader2, FileText, Video, CheckCircle, AlertTriangle, Shield, Upload, Camera } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, FileText, Video, CheckCircle, AlertTriangle, Shield, Upload, Camera, Clock } from "lucide-react";
 import { createSecondOpinion, requestIAReport, createSpecialistCheckout, type IAReport } from "@/services/secondOpinionApi";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,13 +23,18 @@ interface FormData {
   imageFile: File | null;
 }
 
+const ANALYSIS_ESTIMATED_SECONDS = 45;
+
 const SecondOpinionWizard = () => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [secondOpinionId, setSecondOpinionId] = useState<string | null>(null);
   const [iaReport, setIaReport] = useState<IAReport | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(ANALYSIS_ESTIMATED_SECONDS);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -45,7 +50,44 @@ const SecondOpinionWizard = () => {
 
   const updateField = useCallback((field: keyof FormData, value: string | FlowType | File | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === "imageFile" && value instanceof File) {
+      const url = URL.createObjectURL(value);
+      setImagePreviewUrl(url);
+    } else if (field === "imageFile" && value === null) {
+      setImagePreviewUrl(null);
+    }
   }, []);
+
+  // Cleanup preview URL
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
+
+  // Countdown timer for step 5
+  useEffect(() => {
+    if (step === 5) {
+      setCountdown(ANALYSIS_ESTIMATED_SECONDS);
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    }
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [step]);
 
   const validateStep1 = () => {
     return formData.name.trim() && formData.email.includes("@") && formData.phone.trim();
@@ -55,7 +97,6 @@ const SecondOpinionWizard = () => {
     return formData.reason.trim().length >= 10;
   };
 
-  // Convert file to base64 for sending to edge function
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -89,7 +130,7 @@ const SecondOpinionWizard = () => {
 
       if (response.success && response.data) {
         setSecondOpinionId(response.data.id);
-        setStep(5); // Go to IA analysis
+        setStep(5);
         await handleRequestIAReport(response.data.id);
       } else {
         toast({
@@ -115,7 +156,7 @@ const SecondOpinionWizard = () => {
       const response = await requestIAReport(id);
       if (response.success && response.data) {
         setIaReport(response.data.ia_report);
-        setStep(6); // Show results
+        setStep(6);
       } else {
         toast({
           title: "Error",
@@ -196,6 +237,12 @@ const SecondOpinionWizard = () => {
     }
   };
 
+  const formatCountdown = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="min-h-[calc(100vh-5rem)] flex flex-col justify-center px-6 lg:px-12 py-16">
       <div className="max-w-2xl mx-auto w-full">
@@ -227,6 +274,7 @@ const SecondOpinionWizard = () => {
                     id="name"
                     value={formData.name}
                     onChange={(e) => updateField("name", e.target.value)}
+                    placeholder={language === "es" ? "Ej: María González" : "E.g.: María González"}
                     className="bg-secondary border-border focus:border-gold-muted h-14 text-lg"
                   />
                 </div>
@@ -240,6 +288,7 @@ const SecondOpinionWizard = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => updateField("email", e.target.value)}
+                    placeholder={language === "es" ? "Ej: maria@correo.cl" : "E.g.: maria@email.com"}
                     className="bg-secondary border-border focus:border-gold-muted h-14 text-lg"
                   />
                 </div>
@@ -253,6 +302,7 @@ const SecondOpinionWizard = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => updateField("phone", e.target.value)}
+                    placeholder={language === "es" ? "Ej: +56 9 1234 5678" : "E.g.: +56 9 1234 5678"}
                     className="bg-secondary border-border focus:border-gold-muted h-14 text-lg"
                   />
                 </div>
@@ -287,7 +337,9 @@ const SecondOpinionWizard = () => {
                     id="reason"
                     value={formData.reason}
                     onChange={(e) => updateField("reason", e.target.value)}
-                    placeholder={t("opinion.step2.reasonPlaceholder")}
+                    placeholder={language === "es" 
+                      ? "Ej: Me dijeron que necesito 3 coronas pero quiero confirmar si realmente es necesario" 
+                      : "E.g.: I was told I need 3 crowns but want to confirm if it's really necessary"}
                     className="bg-secondary border-border focus:border-gold-muted min-h-[120px] text-lg"
                   />
                 </div>
@@ -300,7 +352,9 @@ const SecondOpinionWizard = () => {
                     id="current_diagnosis"
                     value={formData.current_diagnosis}
                     onChange={(e) => updateField("current_diagnosis", e.target.value)}
-                    placeholder={t("opinion.step2.diagnosisPlaceholder")}
+                    placeholder={language === "es" 
+                      ? "Ej: Caries profunda en molares superiores, posible tratamiento de conducto" 
+                      : "E.g.: Deep cavities in upper molars, possible root canal treatment"}
                     className="bg-secondary border-border focus:border-gold-muted min-h-[100px] text-lg"
                   />
                 </div>
@@ -314,6 +368,7 @@ const SecondOpinionWizard = () => {
                       id="external_clinic_name"
                       value={formData.external_clinic_name}
                       onChange={(e) => updateField("external_clinic_name", e.target.value)}
+                      placeholder={language === "es" ? "Ej: Clínica Dental Sur" : "E.g.: South Dental Clinic"}
                       className="bg-secondary border-border focus:border-gold-muted h-14 text-lg"
                     />
                   </div>
@@ -327,7 +382,7 @@ const SecondOpinionWizard = () => {
                       type="number"
                       value={formData.external_budget_amount}
                       onChange={(e) => updateField("external_budget_amount", e.target.value)}
-                      placeholder="$"
+                      placeholder={language === "es" ? "Ej: 850000" : "E.g.: 850000"}
                       className="bg-secondary border-border focus:border-gold-muted h-14 text-lg"
                     />
                   </div>
@@ -336,7 +391,7 @@ const SecondOpinionWizard = () => {
             </motion.div>
           )}
 
-          {/* Step 3: Image Upload (NEW) */}
+          {/* Step 3: Image Upload */}
           {step === 3 && (
             <motion.div
               key="step3"
@@ -395,7 +450,7 @@ const SecondOpinionWizard = () => {
             </motion.div>
           )}
 
-          {/* Step 4: Choose Flow Type (was step 3) */}
+          {/* Step 4: Choose Flow Type */}
           {step === 4 && (
             <motion.div
               key="step4"
@@ -477,28 +532,111 @@ const SecondOpinionWizard = () => {
             </motion.div>
           )}
 
-          {/* Step 5: Processing */}
+          {/* Step 5: Processing with Scanner Effect */}
           {step === 5 && (
             <motion.div
               key="step5"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-12 text-center py-20"
+              className="space-y-8 py-12"
             >
-              <div className="flex justify-center">
-                <Loader2 className="w-16 h-16 text-gold-muted animate-spin" />
-              </div>
-              <div>
-                <h2 className="display-medium text-foreground mb-4">
+              {/* Image with scanner effect */}
+              {imagePreviewUrl ? (
+                <div className="relative w-full max-w-md mx-auto rounded-xl overflow-hidden border border-border">
+                  <img
+                    src={imagePreviewUrl}
+                    alt="Imagen subida"
+                    className="w-full h-auto object-cover"
+                  />
+                  {/* Scanner overlay */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Scan line */}
+                    <motion.div
+                      className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_20px_hsl(var(--gold))]"
+                      initial={{ top: "0%" }}
+                      animate={{ top: ["0%", "100%", "0%"] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    />
+                    {/* Grid overlay */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(200,170,110,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(200,170,110,0.05)_1px,transparent_1px)] bg-[size:20px_20px]" />
+                    {/* Corner markers */}
+                    <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-gold/60" />
+                    <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-gold/60" />
+                    <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-gold/60" />
+                    <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-gold/60" />
+                    {/* Pulsing overlay */}
+                    <motion.div
+                      className="absolute inset-0 bg-gold/5"
+                      animate={{ opacity: [0, 0.15, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                  </div>
+                  {/* Status label */}
+                  <motion.div
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-full border border-gold-muted/30"
+                    animate={{ opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <span className="caption text-gold font-medium tracking-wider">
+                      ANALIZANDO
+                    </span>
+                  </motion.div>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <Loader2 className="w-16 h-16 text-gold-muted animate-spin" />
+                </div>
+              )}
+
+              {/* Countdown timer */}
+              <div className="text-center space-y-4">
+                <h2 className="display-medium text-foreground">
                   {t("opinion.step4.headline")}
                 </h2>
                 <p className="body-large text-muted-foreground">
                   {formData.imageFile 
-                    ? "Analizando tu imagen y datos clínicos con IA..."
+                    ? (language === "es" 
+                      ? "Analizando tu imagen y datos clínicos con IA..." 
+                      : "Analyzing your image and clinical data with AI...")
                     : t("opinion.step4.message")
                   }
                 </p>
+                <div className="flex items-center justify-center gap-3 mt-6">
+                  <Clock className="w-5 h-5 text-gold-muted" />
+                  <span className="text-2xl font-mono text-gold tracking-wider">
+                    {formatCountdown(countdown)}
+                  </span>
+                </div>
+                <p className="caption text-muted-foreground/50">
+                  {language === "es" ? "Tiempo estimado restante" : "Estimated time remaining"}
+                </p>
+              </div>
+
+              {/* Processing steps */}
+              <div className="max-w-xs mx-auto space-y-3 mt-8">
+                {[
+                  language === "es" ? "Validando datos clínicos" : "Validating clinical data",
+                  language === "es" ? "Procesando imagen" : "Processing image",
+                  language === "es" ? "Generando informe IA" : "Generating AI report",
+                ].map((label, i) => (
+                  <motion.div
+                    key={i}
+                    className="flex items-center gap-3"
+                    initial={{ opacity: 0.3 }}
+                    animate={{ opacity: countdown < ANALYSIS_ESTIMATED_SECONDS - (i * 10) ? 1 : 0.3 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {countdown < ANALYSIS_ESTIMATED_SECONDS - ((i + 1) * 10) ? (
+                      <CheckCircle className="w-4 h-4 text-gold flex-shrink-0" />
+                    ) : countdown < ANALYSIS_ESTIMATED_SECONDS - (i * 10) ? (
+                      <Loader2 className="w-4 h-4 text-gold-muted animate-spin flex-shrink-0" />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full border border-border flex-shrink-0" />
+                    )}
+                    <span className="caption text-muted-foreground">{label}</span>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           )}
