@@ -297,7 +297,7 @@ const Index = () => {
             {...fadeUpProps(0.2)}
             className="mb-8 sm:mb-10"
           >
-            <img src={logoFull} alt="Clínica Miró" className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto mx-auto" />
+            <img src={logoFull} alt="Clínica Miró" className="h-48 sm:h-72 md:h-96 lg:h-[28rem] w-auto mx-auto" />
           </motion.div>
 
           {/* Separator */}
