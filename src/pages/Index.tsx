@@ -6,6 +6,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import MenuOverlay from "@/components/MenuOverlay";
 import LogoMiro from "@/components/LogoMiro";
+import logoFull from "@/assets/logo-clinica-miro-full.png";
 
 import PreEvaluationWizard from "@/components/PreEvaluationWizard";
 import HeroSplash, { shouldShowHeroSplash, markHeroSplashSeen } from "@/components/HeroSplash";
