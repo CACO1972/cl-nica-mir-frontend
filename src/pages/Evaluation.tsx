@@ -21,12 +21,23 @@ const Evaluation = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  // Handle payment return
+  // Handle payment return + reconcile with Flow if token present
   useEffect(() => {
     const paymentParam = searchParams.get("payment");
-    if (paymentParam === "success") {
+    const flowToken = searchParams.get("token");
+
+    if (paymentParam === "success" || flowToken) {
       setPaymentSuccess(true);
-      // Clean URL
+
+      // Force-reconcile payment status via edge function (covers webhook lag)
+      if (flowToken) {
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        fetch(`https://${projectId}.supabase.co/functions/v1/funnel-checkout?token=${encodeURIComponent(flowToken)}`)
+          .then(r => r.json())
+          .then(data => console.log("[Evaluation] Payment reconciled:", data))
+          .catch(err => console.error("[Evaluation] Reconciliation error:", err));
+      }
+
       window.history.replaceState({}, "", "/evaluation");
     }
   }, [searchParams]);

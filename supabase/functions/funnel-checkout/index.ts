@@ -135,6 +135,69 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const url = new URL(req.url);
+
+    // ─── Manual reconciliation endpoint (GET ?token=xxx or ?lead_id=xxx) ───
+    // Used when user returns from Flow to force-update payment status if webhook lagged
+    if (req.method === 'GET') {
+      const token = url.searchParams.get('token');
+      const leadId = url.searchParams.get('lead_id');
+
+      if (token) {
+        try {
+          const flowPayment = await getFlowPaymentStatus(token) as Record<string, any>;
+          const flowOrderStr = String(flowPayment.flowOrder);
+          let paymentStatus: 'pending' | 'approved' | 'rejected' | 'cancelled' = 'pending';
+          if (flowPayment.status === 2) paymentStatus = 'approved';
+          else if (flowPayment.status === 3) paymentStatus = 'rejected';
+          else if (flowPayment.status === 4) paymentStatus = 'cancelled';
+
+          await supabase.from('funnel_payments').update({
+            mercadopago_payment_id: String(flowPayment.flowOrder),
+            mercadopago_status: String(flowPayment.status),
+            mercadopago_response: flowPayment,
+            status: paymentStatus,
+            paid_at: paymentStatus === 'approved' ? new Date().toISOString() : null,
+          }).eq('mercadopago_preference_id', flowOrderStr);
+
+          if (paymentStatus === 'approved') {
+            const { data: payRec } = await supabase
+              .from('funnel_payments').select('lead_id')
+              .eq('mercadopago_preference_id', flowOrderStr).single();
+            if (payRec?.lead_id) {
+              await supabase.from('funnel_leads').update({ status: 'PAID' }).eq('id', payRec.lead_id);
+            }
+          }
+
+          return new Response(
+            JSON.stringify({ success: true, status: paymentStatus, flowOrder: flowOrderStr }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (err) {
+          console.error('[Funnel Checkout] Reconciliation error:', err);
+          return new Response(
+            JSON.stringify({ success: false, error: 'Reconciliation failed' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      if (leadId) {
+        const { data: payment } = await supabase
+          .from('funnel_payments').select('status, paid_at, amount')
+          .eq('lead_id', leadId).order('created_at', { ascending: false }).limit(1).single();
+        return new Response(
+          JSON.stringify({ success: true, payment }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: 'Missing token or lead_id' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Detect if this is a Flow confirmation callback (urlConfirmation)
     // Flow sends POST with application/x-www-form-urlencoded containing "token"
     const contentType = req.headers.get('content-type') || '';
@@ -313,8 +376,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build URLs - use frontend-provided success_url
-    const urlReturn = body.success_url || `https://miro-patient-portal.lovable.app/evaluation?payment=success`;
+    // Build URLs - prefer frontend-provided success_url, fall back to request Origin
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://miro-patient-portal.lovable.app';
+    const urlReturn = body.success_url || `${origin}/evaluation?payment=success`;
     const urlConfirmation = `${supabaseUrl}/functions/v1/funnel-checkout`;
 
     // Create Flow payment
