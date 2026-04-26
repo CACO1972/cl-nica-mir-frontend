@@ -376,8 +376,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build URLs - use frontend-provided success_url
-    const urlReturn = body.success_url || `https://miro-patient-portal.lovable.app/evaluation?payment=success`;
+    // Build URLs - prefer frontend-provided success_url, fall back to request Origin
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://miro-patient-portal.lovable.app';
+    const urlReturn = body.success_url || `${origin}/evaluation?payment=success`;
     const urlConfirmation = `${supabaseUrl}/functions/v1/funnel-checkout`;
 
     // Create Flow payment
