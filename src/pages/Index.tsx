@@ -561,13 +561,13 @@ const Index = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div className="space-y-1">
             <LogoMiro className="h-10 w-auto opacity-70" />
-             <p className="text-xs tracking-[0.2em] text-muted-foreground font-mono uppercase">
-               {language === "es" ? "Odontología Predictiva · Humana.AI" : "Predictive Dentistry · Humana.AI"}
-             </p>
-           </div>
-           <div className="text-right space-y-1">
-             <p className="text-xs tracking-[0.2em] text-gold font-mono uppercase">{t("location")}</p>
-             <p className="text-xs tracking-[0.15em] text-muted-foreground font-mono">© 2025</p>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground font-mono uppercase">
+              {language === "es" ? "Odontología predictiva. Modelo 4P." : "Predictive dentistry. 4P Model."}
+            </p>
+          </div>
+          <div className="text-right space-y-1">
+            <p className="text-xs tracking-[0.2em] text-gold font-mono uppercase">Av. Nueva Providencia 2214, Of. 189</p>
+            <p className="text-xs tracking-[0.15em] text-muted-foreground font-mono">Providencia, Santiago.</p>
           </div>
         </div>
       </footer>

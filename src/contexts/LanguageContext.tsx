@@ -11,7 +11,7 @@ interface LanguageContextType {
 const translations: Record<Language, Record<string, string>> = {
   es: {
     // Header
-    "location": "Av. Nueva Providencia 2214, Piso 18, Of. 1802 · Santiago",
+    "location": "Av. Nueva Providencia 2214, Of. 189 · Providencia, Santiago",
     
     // Philosophy Section
     "philosophy.caption": "Nuestra Filosofía",
@@ -250,7 +250,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   en: {
     // Header
-    "location": "Av. Nueva Providencia 2214, Floor 18, Of. 1802 · Santiago",
+    "location": "Av. Nueva Providencia 2214, Of. 189 · Providencia, Santiago",
     
     // Philosophy Section
     "philosophy.caption": "Our Philosophy",
