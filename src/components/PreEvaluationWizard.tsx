@@ -819,7 +819,7 @@ const PreEvaluationWizard = ({ origin = 'pre-evaluation-wizard' }: PreEvaluation
         <div className="space-y-6">
           <p className="caption text-gold-muted tracking-widest">{t("wizard.step7.includes")}</p>
           <div className="space-y-4">
-            {["item1", "item2", "item3"].map((item, index) => (
+            {["item1", "item2", "item3", "item4"].map((item, index) => (
               <div 
                 key={item} 
                 className="group relative pl-6 py-4 pr-4 border-l-2 border-gold-muted/30 hover:border-gold-muted bg-background/30 hover:bg-background/50 transition-all duration-500 ease-out"
