@@ -399,6 +399,7 @@ const translations: Record<Language, Record<string, string>> = {
     "wizard.step7.item1": "Visualize your diagnosis live. You see what we see: findings, risks and patterns often missed in traditional exams.",
     "wizard.step7.item2": "We show you your alternatives on your own mouth. Visually, the different treatment options and how they would look in your case.",
     "wizard.step7.item3": "We explain everything and how to approach it. Why each alternative matters, what happens if you treat now or wait, and the real cost of each option.",
+    "wizard.step7.item4": "Includes panoramic X-ray and digital intraoral scan. We capture your diagnostic images at the clinic to analyze your case with real precision.",
     "wizard.step7.experience": "The experience",
     "wizard.step7.experienceText": "The evaluation takes approximately 90–100 minutes, guided step by step by the clinical team, with direct explanation in front of the screen. No rush. No pressure.",
     "wizard.step7.price": "49,000 CLP",
