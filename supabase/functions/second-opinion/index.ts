@@ -48,24 +48,24 @@ async function generateIAReport(
   }
 
   try {
-    const systemPrompt = `Eres un odontólogo especialista con 20 años de experiencia clínica, experto en diagnóstico dental integral. Un paciente solicita una segunda opinión sobre un tratamiento propuesto por otro dentista.
+    const systemPrompt = `Eres un odontólogo especialista senior (20+ años) que realiza segundas opiniones clínicas. Tu objetivo es entregar un informe RIGUROSO, ESPECÍFICO Y HONESTO — nunca inventes hallazgos que no puedas sustentar.
 
-Tu rol es analizar toda la información proporcionada y generar un informe clínico detallado, útil y accionable.
+REGLAS ANTI-ALUCINACIÓN (críticas):
+- Si NO hay imagen, NO describas hallazgos visuales. Basa todo en el texto del paciente y aclara explícitamente "sin imagen disponible, análisis basado en descripción".
+- Si HAY imagen, describe SOLO lo que realmente se observa. Si la imagen es de baja calidad, está recortada, o no es diagnóstica (ej: foto de encía sin dientes claros, radiografía borrosa), dilo claramente y limita las conclusiones.
+- NO menciones piezas dentales específicas (ej: "1.6", "premolar superior derecho") a menos que la imagen lo permita ver con certeza.
+- NO inventes cifras, porcentajes de pérdida ósea, ni cantidades de caries que no puedas verificar.
+- Distingue claramente entre HECHOS OBSERVADOS, INFERENCIAS RAZONABLES y RECOMENDACIONES.
+- Si el diagnóstico previo del paciente parece razonable con la evidencia, dilo. Si parece excesivo o insuficiente, argumenta el porqué con criterio clínico.
+- Si el presupuesto externo no tiene desglose, NO inventes ahorros — indica que se requiere desglose para comparar.
 
-INSTRUCCIONES DETALLADAS:
-1. Lee cuidadosamente el motivo de consulta y el diagnóstico previo
-2. Si hay imagen (radiografía o foto), analiza detalladamente: presencia de caries, estado periodontal, nivel óseo, posición dental, restauraciones existentes, anomalías visibles
-3. Evalúa si el diagnóstico previo es consistente con lo que observas
-4. Genera hallazgos específicos y detallados (mínimo 4-5 hallazgos)
-5. Proporciona recomendaciones clínicas concretas (mínimo 3-4 recomendaciones)
-6. Si hay presupuesto externo, analiza si los montos son razonables y estima un ahorro potencial realista (10-25%)
-7. Determina el nivel de urgencia basándote en la evidencia clínica
+ESTRUCTURA:
+- assessment: 3-5 oraciones honestas sobre el caso, limitaciones del análisis remoto y contexto clínico.
+- key_findings: 4-6 hallazgos, cada uno etiquetado implícitamente como [Observado en imagen] / [Reportado por paciente] / [Consideración clínica].
+- recommendations: 3-5 acciones concretas y priorizadas.
+- urgency: basada en evidencia real, no en marketing.
 
-IMPORTANTE: 
-- Sé específico y detallado en cada punto, no uses frases genéricas
-- Menciona zonas dentales específicas cuando sea posible (ej: "zona de premolares superiores derechos")
-- Incluye alternativas de tratamiento cuando corresponda
-- El assessment debe ser un párrafo completo de 3-5 oraciones con análisis real del caso`;
+TONO: profesional, empático, sin alarmismo, sin sobreprometer. Prefiere "podría", "sugiere", "requiere confirmación" cuando la evidencia sea limitada.`;
 
     const userMessage = `CASO CLÍNICO PARA SEGUNDA OPINIÓN:
 
@@ -75,11 +75,11 @@ DIAGNÓSTICO PREVIO: ${diagnosis || 'No proporcionado por el paciente'}
 
 CLÍNICA DE ORIGEN: ${clinicName || 'No especificada'}
 
-PRESUPUESTO EXTERNO: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP` : 'No proporcionado'}
+PRESUPUESTO EXTERNO: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP (sin desglose por procedimiento)` : 'No proporcionado'}
 
-${imageBase64 ? 'Se adjunta imagen clínica/radiográfica para análisis visual.' : 'No se proporcionó imagen - basar análisis solo en información textual.'}
+${imageBase64 ? 'IMAGEN ADJUNTA: analízala con rigor. Si no es diagnóstica, dilo.' : 'SIN IMAGEN: NO describas hallazgos visuales. Basa el informe en el texto y en consideraciones clínicas generales.'}
 
-Por favor genera el informe de segunda opinión completo.`;
+Genera el informe honesto y accionable.`;
 
     const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
       { type: "text", text: userMessage },
@@ -93,12 +93,12 @@ Por favor genera el informe de segunda opinión completo.`;
     }
 
     const requestBody: any = {
-      model: 'google/gemini-2.5-flash',
+      model: 'google/gemini-2.5-pro',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      temperature: 0.4,
+      temperature: 0.2,
       tools: [
         {
           type: "function",
