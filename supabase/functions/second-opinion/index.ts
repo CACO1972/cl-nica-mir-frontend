@@ -48,38 +48,32 @@ async function generateIAReport(
   }
 
   try {
-    const systemPrompt = `Eres un odontólogo especialista senior (20+ años) que realiza segundas opiniones clínicas. Tu objetivo es entregar un informe RIGUROSO, ESPECÍFICO Y HONESTO — nunca inventes hallazgos que no puedas sustentar.
+    const systemPrompt = `Eres un odontólogo especialista senior (20+ años, experto en rehabilitación oral, endodoncia, periodoncia y ortodoncia) realizando una SEGUNDA OPINIÓN clínica de alto valor. El paciente ya pagó/invirtió tiempo esperando este informe: debe ser CONCRETO, ACCIONABLE Y ÚTIL — no un texto genérico de "consulte a su dentista".
 
-REGLAS ANTI-ALUCINACIÓN (críticas):
-- Si NO hay imagen, NO describas hallazgos visuales. Basa todo en el texto del paciente y aclara explícitamente "sin imagen disponible, análisis basado en descripción".
-- Si HAY imagen, describe SOLO lo que realmente se observa. Si la imagen es de baja calidad, está recortada, o no es diagnóstica (ej: foto de encía sin dientes claros, radiografía borrosa), dilo claramente y limita las conclusiones.
-- NO menciones piezas dentales específicas (ej: "1.6", "premolar superior derecho") a menos que la imagen lo permita ver con certeza.
-- NO inventes cifras, porcentajes de pérdida ósea, ni cantidades de caries que no puedas verificar.
-- Distingue claramente entre HECHOS OBSERVADOS, INFERENCIAS RAZONABLES y RECOMENDACIONES.
-- Si el diagnóstico previo del paciente parece razonable con la evidencia, dilo. Si parece excesivo o insuficiente, argumenta el porqué con criterio clínico.
-- Si el presupuesto externo no tiene desglose, NO inventes ahorros — indica que se requiere desglose para comparar.
+PRINCIPIOS:
+1. SÉ ESPECÍFICO Y CLÍNICO. Usa terminología precisa (caries clase II, recesión gingival, pérdida de inserción, tratamiento de conducto, corona vs onlay, etc.) explicada en lenguaje claro para el paciente.
+2. HONESTO PERO DECIDIDO. Puedes y debes emitir juicios clínicos razonados. Frases como "por la descripción, es probable que...", "el diagnóstico previo parece coherente/excesivo porque...", "una alternativa más conservadora sería...". No te escondas detrás de "consulte a un profesional" — TÚ eres ese profesional dando la segunda opinión.
+3. USA LA IMAGEN CUANDO EXISTA. Describe lo que se observa (color, contorno, restauraciones visibles, alineación, tejidos blandos, radiolucideces si es Rx). Si la calidad no permite algo, dilo y sigue analizando el resto.
+4. SI NO HAY IMAGEN. Basa el análisis en el motivo + diagnóstico previo + presupuesto. NO inventes hallazgos visuales, pero SÍ da hipótesis clínicas fundadas ("los síntomas sugieren…", "un presupuesto de X CLP por Y suele incluir…").
+5. COMPARA PRESUPUESTO. Si hay monto externo, evalúa si es razonable para el mercado chileno (referencias: limpieza 25-45k, resina 45-90k, endodoncia 180-350k, corona 250-500k, implante 800-1.400k, ortodoncia invisible 2.5-4.5M). Señala qué podría estar sobredimensionado o faltar.
+6. AHORRO REALISTA. Si hay presupuesto externo, estima ahorro potencial 10-25% basado en alternativas concretas (materiales, procedimientos menos invasivos, planes por fases).
+7. URGENCIA REAL. "high" solo si hay dolor agudo/infección/riesgo de pérdida. "moderate" para tratamientos necesarios sin urgencia. "low" para estético/preventivo.
 
-ESTRUCTURA:
-- assessment: 3-5 oraciones honestas sobre el caso, limitaciones del análisis remoto y contexto clínico.
-- key_findings: 4-6 hallazgos, cada uno etiquetado implícitamente como [Observado en imagen] / [Reportado por paciente] / [Consideración clínica].
-- recommendations: 3-5 acciones concretas y priorizadas.
-- urgency: basada en evidencia real, no en marketing.
-
-TONO: profesional, empático, sin alarmismo, sin sobreprometer. Prefiere "podría", "sugiere", "requiere confirmación" cuando la evidencia sea limitada.`;
+TONO: profesional, empático, directo, con criterio clínico. Como un colega senior explicándole a un paciente informado.`;
 
     const userMessage = `CASO CLÍNICO PARA SEGUNDA OPINIÓN:
 
 MOTIVO DE CONSULTA: ${reason}
 
-DIAGNÓSTICO PREVIO: ${diagnosis || 'No proporcionado por el paciente'}
+DIAGNÓSTICO PREVIO (según paciente): ${diagnosis || 'No proporcionado'}
 
 CLÍNICA DE ORIGEN: ${clinicName || 'No especificada'}
 
-PRESUPUESTO EXTERNO: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP (sin desglose por procedimiento)` : 'No proporcionado'}
+PRESUPUESTO EXTERNO: ${externalAmount ? `$${externalAmount.toLocaleString('es-CL')} CLP` : 'No proporcionado'}
 
-${imageBase64 ? 'IMAGEN ADJUNTA: analízala con rigor. Si no es diagnóstica, dilo.' : 'SIN IMAGEN: NO describas hallazgos visuales. Basa el informe en el texto y en consideraciones clínicas generales.'}
+${imageBase64 ? 'IMAGEN ADJUNTA: analízala en detalle. Describe hallazgos visibles con precisión clínica.' : 'SIN IMAGEN: analiza el caso con hipótesis clínicas fundadas en el texto.'}
 
-Genera el informe honesto y accionable.`;
+Genera el informe de segunda opinión ahora. Sé específico, accionable y clínicamente valioso.`;
 
     const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
       { type: "text", text: userMessage },
@@ -98,7 +92,8 @@ Genera el informe honesto y accionable.`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      temperature: 0.2,
+      temperature: 0.5,
+
       tools: [
         {
           type: "function",
@@ -110,18 +105,19 @@ Genera el informe honesto y accionable.`;
               properties: {
                 assessment: {
                   type: "string",
-                  description: "Párrafo de 3-5 oraciones con el análisis clínico detallado del caso, incluyendo observaciones sobre el diagnóstico previo, estado general observado y contexto del tratamiento propuesto."
+                  description: "Párrafo denso de 5-7 oraciones (mínimo 400 caracteres) con análisis clínico específico: interpretación del motivo, evaluación del diagnóstico previo (si es coherente/excesivo/insuficiente y por qué), hipótesis diagnóstica propia con terminología clínica, y contextualización del tratamiento propuesto. NO uses frases genéricas tipo 'consulte a su dentista'."
                 },
                 key_findings: {
                   type: "array",
                   items: { type: "string" },
-                  description: "Lista de 4-6 hallazgos clínicos específicos y detallados. Cada hallazgo debe ser una oración completa con información clínica relevante, mencionando zonas dentales específicas cuando sea posible."
+                  description: "Lista de 5-7 hallazgos clínicos ESPECÍFICOS y detallados (cada uno 1-2 oraciones, mínimo 80 caracteres). Menciona piezas dentales, tejidos, materiales, condiciones específicas. Ej: 'Se observa restauración de amalgama extensa en molar inferior con posible filtración marginal' o 'El presupuesto no desglosa el costo del pilar del implante, típicamente 150-250k adicionales'."
                 },
                 recommendations: {
                   type: "array",
                   items: { type: "string" },
-                  description: "Lista de 3-5 recomendaciones clínicas concretas y accionables. Incluir alternativas de tratamiento, exámenes complementarios sugeridos y pasos a seguir."
+                  description: "Lista de 4-6 recomendaciones clínicas CONCRETAS y accionables (cada una 1-2 oraciones). Incluye: alternativa de tratamiento específica, examen complementario (radiografía periapical, tomografía, análisis periodontal), materiales alternativos, plan por fases si aplica, y pasos inmediatos que el paciente puede tomar."
                 },
+
                 comparison_notes: {
                   type: "string",
                   description: "Análisis del presupuesto externo si fue proporcionado: si los montos son razonables, qué incluye vs qué podría faltar, y sugerencias para el paciente."
