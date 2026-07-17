@@ -159,6 +159,7 @@ const translations: Record<Language, Record<string, string>> = {
     "wizard.step7.item1": "Visualiza en vivo tu diagnóstico. Ves lo mismo que vemos nosotros: hallazgos, riesgos y patrones que muchas veces no se detectan en un examen tradicional.",
     "wizard.step7.item2": "Te mostramos tus alternativas sobre tu propia boca. De forma visual, las distintas opciones de tratamiento y cómo se verían en tu caso.",
     "wizard.step7.item3": "Te explicamos todo y cómo abordarlo. El porqué de cada alternativa, qué pasa si decides tratar ahora o esperar, y el costo real de cada opción.",
+    "wizard.step7.item4": "Incluye Rx panorámica y escaneo intraoral digital. Tomamos tus imágenes diagnósticas en la clínica para analizar tu caso con precisión real.",
     "wizard.step7.experience": "Cómo se vive",
     "wizard.step7.experienceText": "La evaluación dura aproximadamente 90–100 minutos, guiada paso a paso por el equipo clínico, con explicación directa frente a pantalla. Sin prisa. Sin presión.",
     "wizard.step7.price": "49.000 CLP",
