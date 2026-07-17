@@ -105,18 +105,19 @@ Genera el informe de segunda opinión ahora. Sé específico, accionable y clín
               properties: {
                 assessment: {
                   type: "string",
-                  description: "Párrafo de 3-5 oraciones con el análisis clínico detallado del caso, incluyendo observaciones sobre el diagnóstico previo, estado general observado y contexto del tratamiento propuesto."
+                  description: "Párrafo denso de 5-7 oraciones (mínimo 400 caracteres) con análisis clínico específico: interpretación del motivo, evaluación del diagnóstico previo (si es coherente/excesivo/insuficiente y por qué), hipótesis diagnóstica propia con terminología clínica, y contextualización del tratamiento propuesto. NO uses frases genéricas tipo 'consulte a su dentista'."
                 },
                 key_findings: {
                   type: "array",
                   items: { type: "string" },
-                  description: "Lista de 4-6 hallazgos clínicos específicos y detallados. Cada hallazgo debe ser una oración completa con información clínica relevante, mencionando zonas dentales específicas cuando sea posible."
+                  description: "Lista de 5-7 hallazgos clínicos ESPECÍFICOS y detallados (cada uno 1-2 oraciones, mínimo 80 caracteres). Menciona piezas dentales, tejidos, materiales, condiciones específicas. Ej: 'Se observa restauración de amalgama extensa en molar inferior con posible filtración marginal' o 'El presupuesto no desglosa el costo del pilar del implante, típicamente 150-250k adicionales'."
                 },
                 recommendations: {
                   type: "array",
                   items: { type: "string" },
-                  description: "Lista de 3-5 recomendaciones clínicas concretas y accionables. Incluir alternativas de tratamiento, exámenes complementarios sugeridos y pasos a seguir."
+                  description: "Lista de 4-6 recomendaciones clínicas CONCRETAS y accionables (cada una 1-2 oraciones). Incluye: alternativa de tratamiento específica, examen complementario (radiografía periapical, tomografía, análisis periodontal), materiales alternativos, plan por fases si aplica, y pasos inmediatos que el paciente puede tomar."
                 },
+
                 comparison_notes: {
                   type: "string",
                   description: "Análisis del presupuesto externo si fue proporcionado: si los montos son razonables, qué incluye vs qué podría faltar, y sugerencias para el paciente."
